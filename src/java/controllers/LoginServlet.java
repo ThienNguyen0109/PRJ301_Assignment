@@ -30,6 +30,15 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Check if user is already logged in
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            // User is already logged in, redirect to dashboard
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            return;
+        }
+        
         // Forward to login.jsp
         RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
         dispatcher.forward(request, response);
@@ -69,8 +78,8 @@ public class LoginServlet extends HttpServlet {
                         
                         LOGGER.log(Level.INFO, "User logged in: " + email);
                         
-                        // Redirect to home page or dashboard
-                        response.sendRedirect("index.jsp");
+                        // Redirect to dashboard
+                        response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
                         return;
                     } else {
                         // Account is inactive
