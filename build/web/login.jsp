@@ -126,12 +126,34 @@
             .footer-links a:hover {
                 text-decoration: underline;
             }
+            
+            .success-message {
+                background-color: #d4edda;
+                color: #155724;
+                padding: 12px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                display: block;
+                border: 1px solid #c3e6cb;
+            }
         </style>
     </head>
     <body>
         <div class="login-container">
             <h1>Đăng Nhập</h1>
             <p>E-Vehicle Rental System</p>
+            
+            <% 
+                Object successMsg = session.getAttribute("registrationSuccess");
+                if (successMsg != null) {
+            %>
+                <div class="success-message">
+                    <%= successMsg %>
+                </div>
+            <% 
+                    session.removeAttribute("registrationSuccess");
+                }
+            %>
             
             <% 
                 String error = (String) request.getAttribute("error");
@@ -142,7 +164,7 @@
                 </div>
             <% } %>
             
-            <form action="login" method="POST">
+            <form action="login" method="POST" accept-charset="UTF-8">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input 
@@ -170,8 +192,7 @@
             </form>
             
             <div class="footer-links">
-                <a href="#forgot">Quên mật khẩu?</a> | 
-                <a href="#signup">Đăng ký</a>
+                <a href="<%= request.getContextPath() %>?page=register">Đăng ký</a>
             </div>
         </div>
     </body>

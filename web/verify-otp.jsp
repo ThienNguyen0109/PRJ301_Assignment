@@ -1,6 +1,6 @@
 <%-- 
-    Document   : login
-    Created on : May 28, 2026, 7:47:20 AM
+    Document   : verify-otp
+    Created on : June 1, 2026
     Author     : thien
 --%>
 
@@ -10,7 +10,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Đăng Nhập - E-Vehicle Rental</title>
+        <title>Xác Minh OTP - E-Vehicle Rental</title>
         <style>
             * {
                 margin: 0;
@@ -25,29 +25,40 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                padding: 20px;
             }
             
-            .login-container {
+            .verify-container {
                 background: white;
                 border-radius: 10px;
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
                 width: 100%;
-                max-width: 400px;
+                max-width: 450px;
                 padding: 40px;
+                text-align: center;
             }
             
-            .login-container h1 {
+            .verify-container h1 {
                 color: #333;
                 margin-bottom: 10px;
-                text-align: center;
-                font-size: 24px;
+                font-size: 28px;
             }
             
-            .login-container p {
+            .verify-container p {
                 color: #666;
-                text-align: center;
                 margin-bottom: 30px;
                 font-size: 14px;
+                line-height: 1.6;
+            }
+            
+            .info-box {
+                background: #f0f4ff;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                border-left: 4px solid #667eea;
+                text-align: left;
+                font-size: 13px;
             }
             
             .form-group {
@@ -62,18 +73,20 @@
                 font-size: 14px;
             }
             
-            input[type="email"],
-            input[type="password"] {
+            input[type="text"] {
                 width: 100%;
-                padding: 12px;
-                border: 1px solid #ddd;
+                padding: 15px;
+                border: 2px solid #ddd;
                 border-radius: 5px;
-                font-size: 14px;
+                font-size: 18px;
+                text-align: center;
+                letter-spacing: 5px;
+                font-weight: bold;
                 transition: border-color 0.3s;
+                font-family: 'Courier New', monospace;
             }
             
-            input[type="email"]:focus,
-            input[type="password"]:focus {
+            input[type="text"]:focus {
                 outline: none;
                 border-color: #667eea;
                 box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
@@ -89,7 +102,7 @@
                 border: 1px solid #f5c6cb;
             }
             
-            .login-btn {
+            .verify-btn {
                 width: 100%;
                 padding: 12px;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -102,58 +115,72 @@
                 transition: transform 0.2s, box-shadow 0.2s;
             }
             
-            .login-btn:hover {
+            .verify-btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             }
             
-            .login-btn:active {
+            .verify-btn:active {
                 transform: translateY(0);
             }
             
-            .footer-links {
+            .back-link {
                 text-align: center;
                 margin-top: 20px;
+            }
+            
+            .back-link a {
+                color: #667eea;
+                text-decoration: none;
                 font-size: 14px;
             }
             
-            .footer-links a {
-                color: #667eea;
-                text-decoration: none;
-                margin: 0 10px;
-            }
-            
-            .footer-links a:hover {
+            .back-link a:hover {
                 text-decoration: underline;
             }
             
-            .success-message {
-                background-color: #d4edda;
-                color: #155724;
-                padding: 12px;
-                border-radius: 5px;
-                margin-bottom: 20px;
-                display: block;
-                border: 1px solid #c3e6cb;
+            .timer {
+                color: #ff6b6b;
+                font-weight: 600;
+                margin-top: 15px;
+                font-size: 14px;
             }
         </style>
+        <script>
+            // OTP Timer - 5 minutes
+            let timeLeft = 5 * 60; // 5 minutes in seconds
+            
+            function startTimer() {
+                const timerElement = document.getElementById('timer');
+                
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    timerElement.textContent = `Mã OTP hết hạn trong: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        timerElement.textContent = 'Mã OTP đã hết hạn. Vui lòng đăng ký lại.';
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    }
+                }, 1000);
+            }
+            
+            window.onload = () => {
+                startTimer();
+            };
+        </script>
     </head>
     <body>
-        <div class="login-container">
-            <h1>Đăng Nhập</h1>
-            <p>E-Vehicle Rental System</p>
+        <div class="verify-container">
+            <h1>Xác Minh Email</h1>
+            <p>Mã OTP đã được gửi đến email của bạn.<br/>Vui lòng nhập mã OTP để hoàn tất đăng ký.</p>
             
-            <% 
-                Object successMsg = session.getAttribute("registrationSuccess");
-                if (successMsg != null) {
-            %>
-                <div class="success-message">
-                    <%= successMsg %>
-                </div>
-            <% 
-                    session.removeAttribute("registrationSuccess");
-                }
-            %>
+            <div class="info-box">
+                ⏱️ <strong>Lưu ý:</strong> Mã OTP có hiệu lực trong 5 phút
+            </div>
             
             <% 
                 String error = (String) request.getAttribute("error");
@@ -164,35 +191,30 @@
                 </div>
             <% } %>
             
-            <form action="login" method="POST" accept-charset="UTF-8">
+            <form action="verify-otp" method="POST" accept-charset="UTF-8">
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="otp">Nhập Mã OTP (6 chữ số) *</label>
                     <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        placeholder="Nhập email của bạn"
+                        type="text" 
+                        id="otp" 
+                        name="otp" 
+                        placeholder="000000"
+                        maxlength="6"
+                        pattern="\d{6}"
                         required
-                        value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
+                        autofocus
                     >
                 </div>
                 
-                <div class="form-group">
-                    <label for="password">Mật Khẩu</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Nhập mật khẩu của bạn"
-                        required
-                    >
-                </div>
+                <button type="submit" class="verify-btn">Xác Minh</button>
                 
-                <button type="submit" class="login-btn">Đăng Nhập</button>
+                <div class="timer" id="timer">
+                    Mã OTP hết hạn trong: 5:00
+                </div>
             </form>
             
-            <div class="footer-links">
-                <a href="<%= request.getContextPath() %>?page=register">Đăng ký</a>
+            <div class="back-link">
+                <a href="<%= request.getContextPath() %>?page=register">← Quay lại Đăng Ký</a>
             </div>
         </div>
     </body>

@@ -22,4 +22,18 @@ public interface IAccountDAO {
      * @return Account object if found, null otherwise
      */
     Account getAccountByEmail(String email);
+    
+    /**
+     * Check if email already exists
+     * @param email User email
+     * @return true if email exists, false otherwise
+     */
+    boolean isEmailExists(String email);
+    
+    /**
+     * Create new account
+     * @param account Account object to create
+     * @return true if created successfully, false otherwise
+     */
+    boolean createAccount(Account account);
 }

@@ -106,8 +106,74 @@ public class AccountDAO implements IAccountDAO {
     }
 
     /**
-     * Close database resources
+     * Check if email already exists
+     * @param email User email
+     * @return true if email exists, false otherwise
      */
+    @Override
+    public boolean isEmailExists(String email) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtils.getConnection();
+            String sql = "SELECT COUNT(*) FROM Account WHERE email = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, email);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+
+        return false;
+    }
+
+    /**
+     * Create new account
+     * @param account Account object to create
+     * @return true if created successfully, false otherwise
+     */
+    @Override
+    public boolean createAccount(Account account) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBUtils.getConnection();
+            String sql = "INSERT INTO Account (email, password, full_name, phone, is_verified, role, status) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, account.getEmail());
+            stmt.setString(2, account.getPassword());
+            stmt.setString(3, account.getFullName());
+            stmt.setString(4, account.getPhone());
+            stmt.setBoolean(5, account.getIsVerified() != null ? account.getIsVerified() : true);
+            stmt.setString(6, account.getRole() != null ? account.getRole().getValue() : Role.CUSTOMER.getValue());
+            stmt.setString(7, account.getStatus() != null ? account.getStatus() : "ACTIVE");
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+
+        return false;
+    }
+     
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         try {
             if (rs != null) rs.close();

@@ -31,11 +31,15 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        
         // Check if user is already logged in
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             // User is already logged in, redirect to dashboard
-            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "?page=dashboard");
             return;
         }
         
@@ -50,6 +54,11 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Set request encoding to UTF-8
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
         
         String email = request.getParameter("email");
         String password = request.getParameter("password");
@@ -79,7 +88,7 @@ public class LoginServlet extends HttpServlet {
                         LOGGER.log(Level.INFO, "User logged in: " + email);
                         
                         // Redirect to dashboard
-                        response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+                        response.sendRedirect(request.getContextPath() + "?page=dashboard");
                         return;
                     } else {
                         // Account is inactive
