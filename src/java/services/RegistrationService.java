@@ -18,15 +18,12 @@ import java.util.regex.Pattern;
  */
 public class RegistrationService {
     private static final Logger LOGGER = Logger.getLogger(RegistrationService.class.getName());
-    
+
     private IAccountDAO accountDAO = new AccountDAO();
     private IWalletDAO walletDAO = new WalletDAO();
 
-    // Email validation regex
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
-
-    // Password minimum length
     private static final int PASSWORD_MIN_LENGTH = 6;
 
     /**
@@ -42,7 +39,6 @@ public class RegistrationService {
         result.put("valid", true);
         result.put("message", "");
 
-        // Validate full name
         if (fullName == null || fullName.trim().isEmpty()) {
             result.put("valid", false);
             result.put("message", "Họ và tên không được để trống");
@@ -55,7 +51,6 @@ public class RegistrationService {
             return result;
         }
 
-        // Validate email
         if (email == null || email.trim().isEmpty()) {
             result.put("valid", false);
             result.put("message", "Email không được để trống");
@@ -68,14 +63,12 @@ public class RegistrationService {
             return result;
         }
 
-        // Check if email already exists
         if (accountDAO.isEmailExists(email.trim())) {
             result.put("valid", false);
             result.put("message", "Email này đã được đăng ký");
             return result;
         }
 
-        // Validate password
         if (password == null || password.isEmpty()) {
             result.put("valid", false);
             result.put("message", "Mật khẩu không được để trống");
@@ -88,7 +81,6 @@ public class RegistrationService {
             return result;
         }
 
-        // Validate phone
         if (phone != null && !phone.trim().isEmpty()) {
             if (!phone.matches("\\d{10,11}")) {
                 result.put("valid", false);
@@ -115,7 +107,6 @@ public class RegistrationService {
         result.put("accountId", null);
 
         try {
-            // Create Account object
             Account account = new Account();
             account.setFullName(fullName.trim());
             account.setEmail(email.trim());
@@ -125,24 +116,20 @@ public class RegistrationService {
             account.setRole(Role.CUSTOMER);
             account.setStatus("ACTIVE");
 
-            // Save account to database
             if (!accountDAO.createAccount(account)) {
                 result.put("message", "Lỗi khi tạo tài khoản. Vui lòng thử lại.");
                 return result;
             }
 
-            // Get created account to get account ID
             Account createdAccount = accountDAO.getAccountByEmail(email.trim());
             if (createdAccount == null) {
                 result.put("message", "Lỗi khi lấy thông tin tài khoản.");
                 return result;
             }
 
-            // Create Wallet for account
             Wallet wallet = new Wallet(createdAccount.getAccountId());
             if (!walletDAO.createWallet(wallet)) {
                 LOGGER.log(Level.WARNING, "Failed to create wallet for account: " + createdAccount.getAccountId());
-                // Continue even if wallet creation fails
             }
 
             result.put("success", true);
@@ -150,7 +137,6 @@ public class RegistrationService {
             result.put("accountId", createdAccount.getAccountId());
 
             LOGGER.log(Level.INFO, "Account registered successfully: " + email);
-
         } catch (Exception ex) {
             result.put("message", "Có lỗi xảy ra: " + ex.getMessage());
             LOGGER.log(Level.SEVERE, "Error registering account: " + ex.getMessage(), ex);

@@ -30,14 +30,13 @@ public class VerifyOTPServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
-        
+
         HttpSession session = request.getSession(false);
-        
-        // Check if OTP exists in session
+
         if (session == null || session.getAttribute("otp") == null) {
             response.sendRedirect(request.getContextPath() + "/register");
             return;
@@ -53,52 +52,44 @@ public class VerifyOTPServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Set request encoding to UTF-8
+
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
-        
+
         String enteredOTP = request.getParameter("otp");
         String error = "";
 
         try {
             HttpSession session = request.getSession(false);
-            
-            // Check if session exists and has OTP
+
             if (session == null || session.getAttribute("otp") == null) {
                 error = "Session hết hạn. Vui lòng đăng ký lại.";
             } else if (enteredOTP == null || enteredOTP.trim().isEmpty()) {
                 error = "Mã OTP không được để trống";
             } else {
-                // Get stored OTP and creation time from session
                 String storedOTP = (String) session.getAttribute("otp");
                 Long otpCreationTime = (Long) session.getAttribute("otpCreationTime");
-                
-                // Validate OTP
+
                 if (!OTPService.validateOTP(storedOTP, enteredOTP.trim(), otpCreationTime)) {
                     error = "Mã OTP không đúng hoặc đã hết hạn";
                 } else {
-                    // OTP is valid, proceed with account creation
                     RegistrationData regData = (RegistrationData) session.getAttribute("registrationData");
-                    
+
                     if (regData == null) {
                         error = "Dữ liệu đăng ký bị mất. Vui lòng đăng ký lại.";
                     } else {
-                        // Register account
                         Map<String, Object> result = registrationService.registerAccount(
                             regData.fullName, regData.email, regData.password, regData.phone);
-                        
+
                         if ((Boolean) result.get("success")) {
-                            // Clear session data
                             session.removeAttribute("otp");
                             session.removeAttribute("otpCreationTime");
                             session.removeAttribute("registrationData");
-                            
+
                             LOGGER.log(Level.INFO, "User registered successfully: " + regData.email);
-                            
-                            // Redirect to login page with success message
-                            request.getSession().setAttribute("registrationSuccess", 
+
+                            request.getSession().setAttribute("registrationSuccess",
                                 "Đăng ký thành công! Vui lòng đăng nhập.");
                             response.sendRedirect(request.getContextPath() + "?page=login");
                             return;
@@ -113,7 +104,6 @@ public class VerifyOTPServlet extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Error during OTP verification: " + ex.getMessage(), ex);
         }
 
-        // Forward back to verify-otp page with error message
         request.setAttribute("error", error);
         RequestDispatcher dispatcher = request.getRequestDispatcher("verify-otp.jsp");
         dispatcher.forward(request, response);

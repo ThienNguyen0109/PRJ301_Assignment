@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +33,7 @@ public class RegisterServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
-        
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("register.jsp");
         dispatcher.forward(request, response);
     }
@@ -45,12 +44,11 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Set request encoding to UTF-8
+
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
-        
+
         String fullName = request.getParameter("fullName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
@@ -60,7 +58,6 @@ public class RegisterServlet extends HttpServlet {
         String error = "";
 
         try {
-            // Validate input
             if (fullName == null || fullName.trim().isEmpty()) {
                 error = "Họ và tên không được để trống";
             } else if (email == null || email.trim().isEmpty()) {
@@ -72,31 +69,25 @@ public class RegisterServlet extends HttpServlet {
             } else if (!password.equals(confirmPassword)) {
                 error = "Mật khẩu không trùng khớp";
             } else {
-                // Validate registration data
                 Map<String, Object> validationResult = registrationService.validateRegistrationData(
                     fullName, email, password, phone);
-                
+
                 if (!(Boolean) validationResult.get("valid")) {
                     error = (String) validationResult.get("message");
                 } else {
-                    // Generate OTP
                     String otp = OTPService.generateOTP();
-                    
-                    // Send OTP email
                     boolean emailSent = EmailService.sendOTPEmail(email.trim(), otp);
-                    
+
                     if (!emailSent) {
                         error = "Lỗi khi gửi mã OTP. Vui lòng thử lại.";
                     } else {
-                        // Save OTP and registration data to session
                         HttpSession session = request.getSession();
                         session.setAttribute("otp", otp);
                         session.setAttribute("otpCreationTime", System.currentTimeMillis());
                         session.setAttribute("registrationData", new RegistrationData(fullName, email, password, phone));
-                        
+
                         LOGGER.log(Level.INFO, "OTP sent to email: " + email);
-                        
-                        // Redirect to OTP verification page
+
                         response.sendRedirect(request.getContextPath() + "?page=verify-otp");
                         return;
                     }
@@ -107,12 +98,11 @@ public class RegisterServlet extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Error during registration: " + ex.getMessage(), ex);
         }
 
-        // Forward back to registration page with error message
         request.setAttribute("error", error);
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
-        
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("register.jsp");
         dispatcher.forward(request, response);
     }
