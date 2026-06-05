@@ -85,8 +85,36 @@ public class WalletDAO implements IWalletDAO {
     }
 
     /**
-     * Close database resources
+     * Update wallet balance
+     * @param walletId Wallet ID
+     * @param newBalance New balance amount
+     * @return true if updated successfully, false otherwise
      */
+    @Override
+    public boolean updateWalletBalance(String walletId, Double newBalance) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBUtils.getConnection();
+            String sql = "UPDATE Wallet SET balance = ?, updated_at = GETDATE() WHERE wallet_id = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setDouble(1, newBalance);
+            stmt.setString(2, walletId);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+
+        return false;
+    }
+     
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         try {
             if (rs != null) rs.close();

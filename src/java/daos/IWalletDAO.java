@@ -21,4 +21,12 @@ public interface IWalletDAO {
      * @return Wallet object if found, null otherwise
      */
     Wallet getWalletByAccountId(String accountId);
+    
+    /**
+     * Update wallet balance
+     * @param walletId Wallet ID
+     * @param newBalance New balance amount
+     * @return true if updated successfully, false otherwise
+     */
+    boolean updateWalletBalance(String walletId, Double newBalance);
 }

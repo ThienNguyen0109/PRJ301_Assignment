@@ -38,8 +38,8 @@ public class LoginServlet extends HttpServlet {
         // Check if user is already logged in
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            // User is already logged in, redirect to dashboard
-            response.sendRedirect(request.getContextPath() + "?page=dashboard");
+            Account loggedInUser = (Account) session.getAttribute("user");
+            response.sendRedirect(request.getContextPath() + getRedirectPageByRole(loggedInUser));
             return;
         }
         
@@ -87,8 +87,7 @@ public class LoginServlet extends HttpServlet {
                         
                         LOGGER.log(Level.INFO, "User logged in: " + email);
                         
-                        // Redirect to dashboard
-                        response.sendRedirect(request.getContextPath() + "?page=dashboard");
+                        response.sendRedirect(request.getContextPath() + getRedirectPageByRole(account));
                         return;
                     } else {
                         // Account is inactive
@@ -114,5 +113,12 @@ public class LoginServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Login Servlet for handling user authentication";
+    }
+
+    private String getRedirectPageByRole(Account account) {
+        if (account != null && account.getRole() == Role.ADMIN) {
+            return "?page=dashboard";
+        }
+        return "?page=home";
     }
 }

@@ -1,5 +1,7 @@
 package controllers;
 
+import models.Account;
+import models.Role;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -52,17 +54,43 @@ public class HomeServlet extends HttpServlet {
                 case "login":
                     // If already logged in, redirect to dashboard
                     if (isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+                        Account user = (Account) session.getAttribute("user");
+                        response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
                         return;
                     }
                     RequestDispatcher loginDispatcher = request.getRequestDispatcher("login.jsp");
                     loginDispatcher.forward(request, response);
                     return;
                     
+                case "home":
+                    // Only allow access to home if logged in
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    RequestDispatcher homeDispatcher = request.getRequestDispatcher("home.jsp");
+                    homeDispatcher.forward(request, response);
+                    return;
+                    
+                case "wallet":
+                    // Only allow access to wallet if logged in
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    RequestDispatcher walletDispatcher = request.getRequestDispatcher("wallet.jsp");
+                    walletDispatcher.forward(request, response);
+                    return;
+                    
                 case "dashboard":
                     // Only allow access to dashboard if logged in
                     if (!isLoggedIn) {
                         response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    Account dashboardUser = (Account) session.getAttribute("user");
+                    if (dashboardUser == null || dashboardUser.getRole() != Role.ADMIN) {
+                        response.sendRedirect(request.getContextPath() + "?page=home");
                         return;
                     }
                     RequestDispatcher dashboardDispatcher = request.getRequestDispatcher("dashboard.jsp");
@@ -76,8 +104,8 @@ public class HomeServlet extends HttpServlet {
 
         // Default routing
         if (isLoggedIn) {
-            // User is logged in, show dashboard
-            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            Account user = (Account) session.getAttribute("user");
+            response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
         } else {
             // User is not logged in, show login page
             response.sendRedirect(request.getContextPath() + "?page=login");
@@ -87,6 +115,13 @@ public class HomeServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Home Servlet for main navigation routing";
+    }
+
+    private String getRedirectPageByRole(Account account) {
+        if (account != null && account.getRole() == Role.ADMIN) {
+            return "?page=dashboard";
+        }
+        return "?page=home";
     }
 }
 
