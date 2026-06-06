@@ -36,4 +36,12 @@ public interface IAccountDAO {
      * @return true if created successfully, false otherwise
      */
     boolean createAccount(Account account);
+
+    /**
+     * Update account password by email
+     * @param email User email
+     * @param newPassword New password
+     * @return true if updated successfully, false otherwise
+     */
+    boolean updatePasswordByEmail(String email, String newPassword);
 }

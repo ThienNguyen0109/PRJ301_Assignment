@@ -34,8 +34,7 @@ public class RegisterServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("register.jsp");
-        dispatcher.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "?page=register");
     }
 
     /**

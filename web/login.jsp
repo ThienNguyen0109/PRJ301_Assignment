@@ -185,19 +185,28 @@
                 box-shadow: 0 16px 36px rgba(180, 122, 31, 0.3);
             }
 
+            .helper-row {
+                text-align: right;
+                margin-top: -8px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+
             .footer-links {
                 text-align: center;
                 margin-top: 22px;
                 font-size: 14px;
             }
 
-            .footer-links a {
+            .footer-links a,
+            .helper-row a {
                 color: #b47a1f;
                 font-weight: 800;
                 text-decoration: none;
             }
 
-            .footer-links a:hover {
+            .footer-links a:hover,
+            .helper-row a:hover {
                 text-decoration: underline;
             }
 
@@ -286,6 +295,10 @@
                             placeholder="Nhập mật khẩu của bạn"
                             required
                         >
+                    </div>
+
+                    <div class="helper-row">
+                        <a href="<%= request.getContextPath() %>?page=reset-password">Quên mật khẩu?</a>
                     </div>
 
                     <button type="submit" class="login-btn">Đăng Nhập</button>

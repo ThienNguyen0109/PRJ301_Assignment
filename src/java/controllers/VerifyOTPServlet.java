@@ -38,7 +38,7 @@ public class VerifyOTPServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         if (session == null || session.getAttribute("otp") == null) {
-            response.sendRedirect(request.getContextPath() + "/register");
+            response.sendRedirect(request.getContextPath() + "?page=register");
             return;
         }
 

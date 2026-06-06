@@ -43,9 +43,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         
-        // Forward to login.jsp
-        RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
-        dispatcher.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "?page=login");
     }
 
     /**

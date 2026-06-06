@@ -173,6 +173,37 @@ public class AccountDAO implements IAccountDAO {
 
         return false;
     }
+
+    /**
+     * Update account password by email
+     * @param email User email
+     * @param newPassword New password
+     * @return true if updated successfully, false otherwise
+     */
+    @Override
+    public boolean updatePasswordByEmail(String email, String newPassword) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBUtils.getConnection();
+            String sql = "UPDATE Account SET password = ? WHERE email = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, newPassword);
+            stmt.setString(2, email);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+
+        return false;
+    }
      
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         try {

@@ -61,6 +61,15 @@ public class HomeServlet extends HttpServlet {
                     RequestDispatcher loginDispatcher = request.getRequestDispatcher("login.jsp");
                     loginDispatcher.forward(request, response);
                     return;
+
+                case "reset-password":
+                    HttpSession resetSession = request.getSession();
+                    if (resetSession.getAttribute("resetStep") == null) {
+                        resetSession.setAttribute("resetStep", "email");
+                    }
+                    RequestDispatcher resetPasswordDispatcher = request.getRequestDispatcher("reset-password.jsp");
+                    resetPasswordDispatcher.forward(request, response);
+                    return;
                     
                 case "home":
                     // Only allow access to home if logged in

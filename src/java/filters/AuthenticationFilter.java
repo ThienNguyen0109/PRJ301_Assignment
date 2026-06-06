@@ -38,7 +38,7 @@ public class AuthenticationFilter implements Filter {
         // Check if user is logged in
         if (session == null || session.getAttribute("user") == null) {
             LOGGER.log(Level.WARNING, "Unauthorized access attempt to: " + httpRequest.getRequestURI());
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "?page=login");
             return;
         }
 
