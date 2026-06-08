@@ -1,7 +1,21 @@
 package controllers;
 
+import daos.CategoryDAO;
+import daos.ICategoryDAO;
+import daos.IStationDAO;
+import daos.IVehicleSearchDAO;
+import daos.StationDAO;
+import daos.VehicleSearchDAO;
+import daos.WalletDAO;
+import daos.WalletTransactionDAO;
+import java.sql.Date;
+import java.util.List;
 import models.Account;
 import models.Role;
+import models.Vehicle;
+import models.VehicleSearchResult;
+import models.Wallet;
+import models.WalletTransaction;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,6 +31,11 @@ import java.io.IOException;
  */
 @WebServlet(name = "HomeServlet", urlPatterns = {"", "/home"})
 public class HomeServlet extends HttpServlet {
+    private IStationDAO stationDAO = new StationDAO();
+    private ICategoryDAO categoryDAO = new CategoryDAO();
+    private IVehicleSearchDAO vehicleSearchDAO = new VehicleSearchDAO();
+    private WalletDAO walletDAO = new WalletDAO();
+    private WalletTransactionDAO walletTransactionDAO = new WalletTransactionDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -77,8 +96,39 @@ public class HomeServlet extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
                     }
+                    prepareHomePage(request);
                     RequestDispatcher homeDispatcher = request.getRequestDispatcher("home.jsp");
                     homeDispatcher.forward(request, response);
+                    return;
+
+                case "vehicle-options":
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    prepareVehicleOptionsPage(request);
+                    RequestDispatcher vehicleOptionsDispatcher = request.getRequestDispatcher("vehicle-options.jsp");
+                    vehicleOptionsDispatcher.forward(request, response);
+                    return;
+
+                case "vehicle-detail":
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    prepareVehicleDetailPage(request);
+                    RequestDispatcher vehicleDetailDispatcher = request.getRequestDispatcher("vehicle-detail.jsp");
+                    vehicleDetailDispatcher.forward(request, response);
+                    return;
+
+                case "booking":
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    prepareBookingPage(request);
+                    RequestDispatcher bookingDispatcher = request.getRequestDispatcher("booking.jsp");
+                    bookingDispatcher.forward(request, response);
                     return;
                     
                 case "wallet":
@@ -87,8 +137,20 @@ public class HomeServlet extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
                     }
+                    prepareWalletPage(request, session);
                     RequestDispatcher walletDispatcher = request.getRequestDispatcher("wallet.jsp");
                     walletDispatcher.forward(request, response);
+                    return;
+
+                case "profile":
+                    // Only allow access to profile if logged in
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    prepareProfilePage(request, session);
+                    RequestDispatcher profileDispatcher = request.getRequestDispatcher("profile.jsp");
+                    profileDispatcher.forward(request, response);
                     return;
                     
                 case "dashboard":
@@ -131,6 +193,176 @@ public class HomeServlet extends HttpServlet {
             return "?page=dashboard";
         }
         return "?page=home";
+    }
+
+    private void prepareHomePage(HttpServletRequest request) {
+        request.setAttribute("stations", stationDAO.getAllStations());
+        request.setAttribute("categories", categoryDAO.getAllCategories());
+        request.setAttribute("featuredVehicles", vehicleSearchDAO.getFeaturedAvailableVehicleModels(6));
+
+        String action = request.getParameter("action");
+        if (!"search".equals(action)) {
+            return;
+        }
+
+        String stationId = request.getParameter("stationId");
+        String categoryId = request.getParameter("categoryId");
+        String startDateStr = request.getParameter("startDate");
+        String endDateStr = request.getParameter("endDate");
+
+        request.setAttribute("selectedStationId", stationId);
+        request.setAttribute("selectedCategoryId", categoryId);
+        request.setAttribute("selectedStartDate", startDateStr);
+        request.setAttribute("selectedEndDate", endDateStr);
+        request.setAttribute("searchPerformed", true);
+
+        try {
+            if (isBlank(stationId) || isBlank(categoryId) || isBlank(startDateStr) || isBlank(endDateStr)) {
+                request.setAttribute("searchError", "Vui lòng chọn đầy đủ trạm, loại xe, ngày bắt đầu và ngày kết thúc.");
+                return;
+            }
+
+            Date startDate = Date.valueOf(startDateStr);
+            Date endDate = Date.valueOf(endDateStr);
+
+            if (!endDate.after(startDate)) {
+                request.setAttribute("searchError", "Ngày kết thúc phải sau ngày bắt đầu.");
+                return;
+            }
+
+            List<VehicleSearchResult> searchResults =
+                vehicleSearchDAO.searchAvailableVehicleModels(stationId, categoryId, startDate, endDate);
+            request.setAttribute("vehicleSearchResults", searchResults);
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("searchError", "Ngày thuê không hợp lệ.");
+        }
+    }
+
+    private void prepareVehicleOptionsPage(HttpServletRequest request) {
+        String stationId = request.getParameter("stationId");
+        String categoryId = request.getParameter("categoryId");
+        String modelId = request.getParameter("modelId");
+        String startDateStr = request.getParameter("startDate");
+        String endDateStr = request.getParameter("endDate");
+
+        request.setAttribute("stationId", stationId);
+        request.setAttribute("categoryId", categoryId);
+        request.setAttribute("modelId", modelId);
+        request.setAttribute("startDate", startDateStr);
+        request.setAttribute("endDate", endDateStr);
+
+        try {
+            if (isBlank(stationId) || isBlank(modelId) || isBlank(startDateStr) || isBlank(endDateStr)) {
+                request.setAttribute("vehicleOptionsError", "Thiếu thông tin tìm kiếm xe.");
+                return;
+            }
+
+            Date startDate = Date.valueOf(startDateStr);
+            Date endDate = Date.valueOf(endDateStr);
+
+            if (!endDate.after(startDate)) {
+                request.setAttribute("vehicleOptionsError", "Ngày kết thúc phải sau ngày bắt đầu.");
+                return;
+            }
+
+            List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
+            request.setAttribute("availableVehicles", vehicles);
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("vehicleOptionsError", "Ngày thuê không hợp lệ.");
+        }
+    }
+
+    private void prepareVehicleDetailPage(HttpServletRequest request) {
+        String stationId = request.getParameter("stationId");
+        String modelId = request.getParameter("modelId");
+        String startDateStr = request.getParameter("startDate");
+        String endDateStr = request.getParameter("endDate");
+        String action = request.getParameter("action");
+
+        request.setAttribute("stationId", stationId);
+        request.setAttribute("modelId", modelId);
+        request.setAttribute("startDate", startDateStr);
+        request.setAttribute("endDate", endDateStr);
+
+        if (isBlank(stationId) || isBlank(modelId)) {
+            request.setAttribute("vehicleDetailError", "Thiếu thông tin mẫu xe hoặc trạm.");
+            return;
+        }
+
+        VehicleSearchResult vehicleInfo = vehicleSearchDAO.getAvailableVehicleModelAtStation(modelId, stationId);
+        request.setAttribute("vehicleInfo", vehicleInfo);
+        if (vehicleInfo == null) {
+            request.setAttribute("vehicleDetailError", "Mẫu xe này hiện không còn sẵn tại trạm đã chọn.");
+            return;
+        }
+
+        if (!"check".equals(action)) {
+            return;
+        }
+
+        request.setAttribute("detailSearchPerformed", true);
+        try {
+            if (isBlank(startDateStr) || isBlank(endDateStr)) {
+                request.setAttribute("vehicleDetailError", "Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
+                return;
+            }
+
+            Date startDate = Date.valueOf(startDateStr);
+            Date endDate = Date.valueOf(endDateStr);
+
+            if (!endDate.after(startDate)) {
+                request.setAttribute("vehicleDetailError", "Ngày kết thúc phải sau ngày bắt đầu.");
+                return;
+            }
+
+            List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
+            request.setAttribute("availableVehicles", vehicles);
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("vehicleDetailError", "Ngày thuê không hợp lệ.");
+        }
+    }
+
+    private void prepareBookingPage(HttpServletRequest request) {
+        request.setAttribute("vehicleId", request.getParameter("vehicleId"));
+        request.setAttribute("stationId", request.getParameter("stationId"));
+        request.setAttribute("startDate", request.getParameter("startDate"));
+        request.setAttribute("endDate", request.getParameter("endDate"));
+    }
+
+    private void prepareProfilePage(HttpServletRequest request, HttpSession session) {
+        Account user = (Account) session.getAttribute("user");
+        request.setAttribute("profileUser", user);
+        request.setAttribute("displayName", firstNonBlank((String) session.getAttribute("userName"), user.getFullName()));
+        request.setAttribute("displayEmail", firstNonBlank((String) session.getAttribute("userEmail"), user.getEmail()));
+        request.setAttribute("wallet", walletDAO.getWalletByAccountId(user.getAccountId()));
+    }
+
+    private void prepareWalletPage(HttpServletRequest request, HttpSession session) {
+        Account user = (Account) session.getAttribute("user");
+        Wallet wallet = walletDAO.getWalletByAccountId(user.getAccountId());
+        List<WalletTransaction> transactions = walletTransactionDAO.getTransactionsByWalletId(
+            wallet != null ? wallet.getWalletId() : "");
+
+        Boolean topupSuccess = (Boolean) session.getAttribute("topupSuccess");
+        Long topupAmount = (Long) session.getAttribute("topupSuccessAmount");
+        if (Boolean.TRUE.equals(topupSuccess)) {
+            session.removeAttribute("topupSuccess");
+            session.removeAttribute("topupSuccessAmount");
+        }
+
+        request.setAttribute("wallet", wallet);
+        request.setAttribute("transactions", transactions);
+        request.setAttribute("topupSuccess", topupSuccess);
+        request.setAttribute("topupSuccessAmount", topupAmount);
+        request.setAttribute("paymentError", request.getParameter("error"));
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private String firstNonBlank(String preferred, String fallback) {
+        return isBlank(preferred) ? fallback : preferred;
     }
 }
 
