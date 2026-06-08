@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for rental statuses
@@ -7,7 +7,8 @@ public enum RentalStatus {
     BOOKED("BOOKED"),
     RENTED("RENTED"),
     COMPLETED("COMPLETED"),
-    CANCELLED("CANCELLED");
+    CANCELLED("CANCELLED"),
+    NO_SHOW("NO_SHOW");
 
     private final String value;
 
@@ -36,3 +37,4 @@ public enum RentalStatus {
         return value;
     }
 }
+

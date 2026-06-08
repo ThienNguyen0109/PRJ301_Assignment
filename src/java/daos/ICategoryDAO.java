@@ -9,3 +9,4 @@ import models.Category;
 public interface ICategoryDAO {
     List<Category> getAllCategories();
 }
+

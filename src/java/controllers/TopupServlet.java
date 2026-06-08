@@ -39,7 +39,7 @@ public class TopupServlet extends HttpServlet {
         try {
             // Check if user is logged in
             if (session == null || session.getAttribute("user") == null) {
-                error = "Vui lòng đăng nhập trước";
+                error = "Vui lÃ²ng Ä‘Äƒng nháº­p trÆ°á»›c";
                 request.setAttribute("error", error);
                 response.sendRedirect(request.getContextPath() + "?page=login");
                 return;
@@ -48,13 +48,13 @@ public class TopupServlet extends HttpServlet {
             String amountStr = request.getParameter("amount");
             
             if (amountStr == null || amountStr.trim().isEmpty()) {
-                error = "Vui lòng nhập số tiền";
+                error = "Vui lÃ²ng nháº­p sá»‘ tiá»n";
             } else {
                 long amount = Long.parseLong(amountStr);
                 
                 // Validate amount
                 if (!VNPayService.isValidAmount(amount)) {
-                    error = "Số tiền nạp phải từ 10,000 đến 100,000,000 VND";
+                    error = "Sá»‘ tiá»n náº¡p pháº£i tá»« 10,000 Ä‘áº¿n 100,000,000 VND";
                 } else {
                     // Get user and wallet info
                     Account user = (Account) session.getAttribute("user");
@@ -63,7 +63,7 @@ public class TopupServlet extends HttpServlet {
                     // Get wallet
                     Wallet wallet = walletDAO.getWalletByAccountId(accountId);
                     if (wallet == null) {
-                        error = "Không tìm thấy ví của bạn";
+                        error = "KhÃ´ng tÃ¬m tháº¥y vÃ­ cá»§a báº¡n";
                     } else {
                         // Generate order ID
                         String orderId = "TOPUP" + System.currentTimeMillis();
@@ -91,16 +91,16 @@ public class TopupServlet extends HttpServlet {
                             response.sendRedirect(paymentUrl);
                             return;
                         } else {
-                            error = "Lỗi tạo URL thanh toán. Vui lòng thử lại";
+                            error = "Lá»—i táº¡o URL thanh toÃ¡n. Vui lÃ²ng thá»­ láº¡i";
                         }
                     }
                 }
             }
         } catch (NumberFormatException ex) {
-            error = "Số tiền không hợp lệ";
+            error = "Sá»‘ tiá»n khÃ´ng há»£p lá»‡";
             LOGGER.log(Level.WARNING, "Invalid amount format: " + ex.getMessage());
         } catch (Exception ex) {
-            error = "Có lỗi xảy ra. Vui lòng thử lại";
+            error = "CÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá»­ láº¡i";
             LOGGER.log(Level.SEVERE, "Error during topup: " + ex.getMessage(), ex);
         }
 
@@ -130,3 +130,4 @@ public class TopupServlet extends HttpServlet {
         return "Top-up Servlet for wallet recharge";
     }
 }
+

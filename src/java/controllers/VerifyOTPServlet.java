@@ -64,20 +64,20 @@ public class VerifyOTPServlet extends HttpServlet {
             HttpSession session = request.getSession(false);
 
             if (session == null || session.getAttribute("otp") == null) {
-                error = "Session hết hạn. Vui lòng đăng ký lại.";
+                error = "Session háº¿t háº¡n. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i.";
             } else if (enteredOTP == null || enteredOTP.trim().isEmpty()) {
-                error = "Mã OTP không được để trống";
+                error = "MÃ£ OTP khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else {
                 String storedOTP = (String) session.getAttribute("otp");
                 Long otpCreationTime = (Long) session.getAttribute("otpCreationTime");
 
                 if (!OTPService.validateOTP(storedOTP, enteredOTP.trim(), otpCreationTime)) {
-                    error = "Mã OTP không đúng hoặc đã hết hạn";
+                    error = "MÃ£ OTP khÃ´ng Ä‘Ãºng hoáº·c Ä‘Ã£ háº¿t háº¡n";
                 } else {
                     RegistrationData regData = (RegistrationData) session.getAttribute("registrationData");
 
                     if (regData == null) {
-                        error = "Dữ liệu đăng ký bị mất. Vui lòng đăng ký lại.";
+                        error = "Dá»¯ liá»‡u Ä‘Äƒng kÃ½ bá»‹ máº¥t. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i.";
                     } else {
                         Map<String, Object> result = registrationService.registerAccount(
                             regData.fullName, regData.email, regData.password, regData.phone);
@@ -90,7 +90,7 @@ public class VerifyOTPServlet extends HttpServlet {
                             LOGGER.log(Level.INFO, "User registered successfully: " + regData.email);
 
                             request.getSession().setAttribute("registrationSuccess",
-                                "Đăng ký thành công! Vui lòng đăng nhập.");
+                                "ÄÄƒng kÃ½ thÃ nh cÃ´ng! Vui lÃ²ng Ä‘Äƒng nháº­p.");
                             response.sendRedirect(request.getContextPath() + "?page=login");
                             return;
                         } else {
@@ -100,7 +100,7 @@ public class VerifyOTPServlet extends HttpServlet {
                 }
             }
         } catch (Exception ex) {
-            error = "Có lỗi xảy ra trong quá trình xác minh";
+            error = "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh xÃ¡c minh";
             LOGGER.log(Level.SEVERE, "Error during OTP verification: " + ex.getMessage(), ex);
         }
 
@@ -114,3 +114,4 @@ public class VerifyOTPServlet extends HttpServlet {
         return "OTP Verification Servlet for handling registration confirmation";
     }
 }
+

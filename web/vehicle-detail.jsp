@@ -72,6 +72,16 @@
             }
             .meta-line { color: #566070; font-size: 15px; margin-bottom: 10px; line-height: 1.55; }
             .meta-line strong { color: #111827; }
+            .availability-note {
+                color: #7d8794; font-size: 13px; line-height: 1.55; margin: 12px 0 16px;
+                padding: 11px 13px; border-radius: 7px; background: rgba(248,250,252,0.78);
+                border: 1px solid rgba(17,24,39,0.08);
+            }
+            .model-description {
+                color: #3f4b5d; font-size: 15px; line-height: 1.7; margin: 14px 0 16px;
+                padding: 14px 16px; border-radius: 8px; background: rgba(255,255,255,0.68);
+                border: 1px solid rgba(17,24,39,0.08);
+            }
             .price { color: #b47a1f; font-size: 25px; font-weight: 800; margin: 16px 0 22px; }
             .date-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
             label { display: block; color: #111827; font-weight: 700; margin-bottom: 8px; font-size: 14px; }
@@ -153,9 +163,13 @@
                             <h2 class="section-title">${vehicleInfo.modelName}</h2>
                             <div class="meta-line"><strong>Thương hiệu:</strong> ${empty vehicleInfo.brand ? 'Chưa cập nhật' : vehicleInfo.brand}</div>
                             <div class="meta-line"><strong>Số ghế:</strong> ${empty vehicleInfo.seatCount ? 0 : vehicleInfo.seatCount}</div>
+                            <c:if test="${not empty vehicleInfo.description}">
+                                <div class="model-description">${vehicleInfo.description}</div>
+                            </c:if>
                             <div class="meta-line"><strong>Trạm:</strong> ${vehicleInfo.stationName}</div>
                             <div class="meta-line"><strong>Địa chỉ:</strong> ${empty vehicleInfo.stationAddress ? 'Chưa cập nhật địa chỉ trạm' : vehicleInfo.stationAddress}</div>
-                            <div class="meta-line"><strong>Xe đang sẵn tại trạm:</strong> ${vehicleInfo.remaining}</div>
+                            <div class="meta-line"><strong>Số xe tại trạm:</strong> ${vehicleInfo.remaining}</div>
+                            <div class="availability-note">Con số này chưa áp dụng lịch thuê. Vui lòng chọn ngày để hệ thống kiểm tra xe trống theo đúng khoảng thời gian.</div>
                             <div class="price"><fmt:formatNumber value="${vehicleInfo.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
 
                             <form action="${pageContext.request.contextPath}/" method="GET">
@@ -174,7 +188,7 @@
                                     </div>
                                 </div>
                                 <div class="actions">
-                                    <button type="submit" class="primary-btn">Kiểm tra xe trống</button>
+                                    <button type="submit" class="primary-btn">Kiểm tra xe trống theo ngày</button>
                                     <a class="secondary-btn" href="${pageContext.request.contextPath}?page=home">Quay lại Home</a>
                                 </div>
                             </form>
@@ -185,7 +199,7 @@
 
             <c:if test="${detailSearchPerformed}">
                 <div class="panel">
-                    <h2 class="section-title">🚘 Xe có thể đặt</h2>
+                    <h2 class="section-title">🚘 Xe trống theo thời gian đã chọn</h2>
                     <c:choose>
                         <c:when test="${not empty availableVehicles}">
                             <div class="vehicle-list">

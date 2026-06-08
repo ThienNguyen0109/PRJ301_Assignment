@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for incident severity levels
@@ -35,3 +35,4 @@ public enum IncidentSeverity {
         return value;
     }
 }
+

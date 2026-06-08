@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for payment statuses
@@ -35,3 +35,4 @@ public enum PaymentStatus {
         return value;
     }
 }
+

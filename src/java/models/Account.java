@@ -1,5 +1,6 @@
 package models;
 
+import enums.Role;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -126,3 +127,5 @@ public class Account implements Serializable {
                 '}';
     }
 }
+
+

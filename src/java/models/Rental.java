@@ -1,6 +1,8 @@
 package models;
 
+import enums.RentalStatus;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 
@@ -17,7 +19,7 @@ public class Rental implements Serializable {
     private Date startDate;
     private Date endDate;
     private Integer totalDays;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     private RentalStatus status;
     private Timestamp createdAt;
 
@@ -25,7 +27,7 @@ public class Rental implements Serializable {
     }
 
     public Rental(String customerId, String vehicleId, String pickupStationId, Date startDate, Date endDate,
-                  Integer totalDays, Double totalAmount, RentalStatus status) {
+                  Integer totalDays, BigDecimal totalAmount, RentalStatus status) {
         this.customerId = customerId;
         this.vehicleId = vehicleId;
         this.pickupStationId = pickupStationId;
@@ -37,7 +39,7 @@ public class Rental implements Serializable {
     }
 
     public Rental(String rentalId, String customerId, String vehicleId, String pickupStationId, Date startDate,
-                  Date endDate, Integer totalDays, Double totalAmount, RentalStatus status, Timestamp createdAt) {
+                  Date endDate, Integer totalDays, BigDecimal totalAmount, RentalStatus status, Timestamp createdAt) {
         this.rentalId = rentalId;
         this.customerId = customerId;
         this.vehicleId = vehicleId;
@@ -106,11 +108,11 @@ public class Rental implements Serializable {
         this.totalDays = totalDays;
     }
 
-    public Double getTotalAmount() {
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(Double totalAmount) {
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 
@@ -142,3 +144,5 @@ public class Rental implements Serializable {
                 '}';
     }
 }
+
+

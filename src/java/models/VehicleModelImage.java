@@ -1,5 +1,6 @@
 package models;
 
+import enums.VehicleModelImageType;
 import java.io.Serializable;
 
 /**
@@ -71,3 +72,5 @@ public class VehicleModelImage implements Serializable {
                 '}';
     }
 }
+
+

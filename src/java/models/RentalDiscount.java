@@ -59,3 +59,4 @@ public class RentalDiscount implements Serializable {
                 '}';
     }
 }
+

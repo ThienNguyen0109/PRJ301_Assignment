@@ -1,5 +1,6 @@
 package models;
 
+import enums.VehicleStatus;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -118,3 +119,5 @@ public class Vehicle implements Serializable {
                 '}';
     }
 }
+
+

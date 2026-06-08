@@ -58,15 +58,15 @@ public class RegisterServlet extends HttpServlet {
 
         try {
             if (fullName == null || fullName.trim().isEmpty()) {
-                error = "Họ và tên không được để trống";
+                error = "Há» vÃ  tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else if (email == null || email.trim().isEmpty()) {
-                error = "Email không được để trống";
+                error = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else if (password == null || password.isEmpty()) {
-                error = "Mật khẩu không được để trống";
+                error = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else if (confirmPassword == null || confirmPassword.isEmpty()) {
-                error = "Xác nhận mật khẩu không được để trống";
+                error = "XÃ¡c nháº­n máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else if (!password.equals(confirmPassword)) {
-                error = "Mật khẩu không trùng khớp";
+                error = "Máº­t kháº©u khÃ´ng trÃ¹ng khá»›p";
             } else {
                 Map<String, Object> validationResult = registrationService.validateRegistrationData(
                     fullName, email, password, phone);
@@ -78,7 +78,7 @@ public class RegisterServlet extends HttpServlet {
                     boolean emailSent = EmailService.sendOTPEmail(email.trim(), otp);
 
                     if (!emailSent) {
-                        error = "Lỗi khi gửi mã OTP. Vui lòng thử lại.";
+                        error = "Lá»—i khi gá»­i mÃ£ OTP. Vui lÃ²ng thá»­ láº¡i.";
                     } else {
                         HttpSession session = request.getSession();
                         session.setAttribute("otp", otp);
@@ -93,7 +93,7 @@ public class RegisterServlet extends HttpServlet {
                 }
             }
         } catch (Exception ex) {
-            error = "Có lỗi xảy ra trong quá trình đăng ký";
+            error = "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh Ä‘Äƒng kÃ½";
             LOGGER.log(Level.SEVERE, "Error during registration: " + ex.getMessage(), ex);
         }
 
@@ -128,3 +128,4 @@ public class RegisterServlet extends HttpServlet {
         }
     }
 }
+

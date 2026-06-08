@@ -8,14 +8,9 @@ import daos.StationDAO;
 import daos.VehicleSearchDAO;
 import daos.WalletDAO;
 import daos.WalletTransactionDAO;
+import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
-import models.Account;
-import models.Role;
-import models.Vehicle;
-import models.VehicleSearchResult;
-import models.Wallet;
-import models.WalletTransaction;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -23,10 +18,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import models.Account;
+import dto.BookingDetail;
+import dto.BookingQuote;
+import enums.Role;
+import models.Vehicle;
+import dto.VehicleSearchResult;
+import models.Wallet;
+import models.WalletTransaction;
+import services.BookingService;
 
 /**
- * Servlet for handling home page and main navigation routing
+ * Servlet for handling home page and main navigation routing.
  * URL Pattern: / and /home
  */
 @WebServlet(name = "HomeServlet", urlPatterns = {"", "/home"})
@@ -36,49 +39,41 @@ public class HomeServlet extends HttpServlet {
     private IVehicleSearchDAO vehicleSearchDAO = new VehicleSearchDAO();
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO walletTransactionDAO = new WalletTransactionDAO();
+    private BookingService bookingService = new BookingService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
-        
+
         HttpSession session = request.getSession(false);
         String page = request.getParameter("page");
-        
-        // Check if user is logged in
         boolean isLoggedIn = session != null && session.getAttribute("user") != null;
 
-        // Determine which page to show
         if (page != null) {
             switch (page) {
                 case "register":
-                    RequestDispatcher registerDispatcher = request.getRequestDispatcher("register.jsp");
-                    registerDispatcher.forward(request, response);
+                    forward(request, response, "register.jsp");
                     return;
-                    
+
                 case "verify-otp":
-                    // Only allow access to verify-otp if OTP session exists
                     if (session != null && session.getAttribute("otp") != null) {
-                        RequestDispatcher verifyDispatcher = request.getRequestDispatcher("verify-otp.jsp");
-                        verifyDispatcher.forward(request, response);
-                        return;
+                        forward(request, response, "verify-otp.jsp");
                     } else {
                         response.sendRedirect(request.getContextPath() + "?page=register");
-                        return;
                     }
-                    
+                    return;
+
                 case "login":
-                    // If already logged in, redirect to dashboard
                     if (isLoggedIn) {
                         Account user = (Account) session.getAttribute("user");
                         response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
                         return;
                     }
-                    RequestDispatcher loginDispatcher = request.getRequestDispatcher("login.jsp");
-                    loginDispatcher.forward(request, response);
+                    forward(request, response, "login.jsp");
                     return;
 
                 case "reset-password":
@@ -86,19 +81,16 @@ public class HomeServlet extends HttpServlet {
                     if (resetSession.getAttribute("resetStep") == null) {
                         resetSession.setAttribute("resetStep", "email");
                     }
-                    RequestDispatcher resetPasswordDispatcher = request.getRequestDispatcher("reset-password.jsp");
-                    resetPasswordDispatcher.forward(request, response);
+                    forward(request, response, "reset-password.jsp");
                     return;
-                    
+
                 case "home":
-                    // Only allow access to home if logged in
                     if (!isLoggedIn) {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
                     }
                     prepareHomePage(request);
-                    RequestDispatcher homeDispatcher = request.getRequestDispatcher("home.jsp");
-                    homeDispatcher.forward(request, response);
+                    forward(request, response, "home.jsp");
                     return;
 
                 case "vehicle-options":
@@ -107,8 +99,7 @@ public class HomeServlet extends HttpServlet {
                         return;
                     }
                     prepareVehicleOptionsPage(request);
-                    RequestDispatcher vehicleOptionsDispatcher = request.getRequestDispatcher("vehicle-options.jsp");
-                    vehicleOptionsDispatcher.forward(request, response);
+                    forward(request, response, "vehicle-options.jsp");
                     return;
 
                 case "vehicle-detail":
@@ -117,8 +108,7 @@ public class HomeServlet extends HttpServlet {
                         return;
                     }
                     prepareVehicleDetailPage(request);
-                    RequestDispatcher vehicleDetailDispatcher = request.getRequestDispatcher("vehicle-detail.jsp");
-                    vehicleDetailDispatcher.forward(request, response);
+                    forward(request, response, "vehicle-detail.jsp");
                     return;
 
                 case "booking":
@@ -127,34 +117,37 @@ public class HomeServlet extends HttpServlet {
                         return;
                     }
                     prepareBookingPage(request);
-                    RequestDispatcher bookingDispatcher = request.getRequestDispatcher("booking.jsp");
-                    bookingDispatcher.forward(request, response);
+                    forward(request, response, "booking.jsp");
                     return;
-                    
+
+                case "booking-detail":
+                    if (!isLoggedIn) {
+                        response.sendRedirect(request.getContextPath() + "?page=login");
+                        return;
+                    }
+                    prepareBookingDetailPage(request, session);
+                    forward(request, response, "booking-detail.jsp");
+                    return;
+
                 case "wallet":
-                    // Only allow access to wallet if logged in
                     if (!isLoggedIn) {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
                     }
                     prepareWalletPage(request, session);
-                    RequestDispatcher walletDispatcher = request.getRequestDispatcher("wallet.jsp");
-                    walletDispatcher.forward(request, response);
+                    forward(request, response, "wallet.jsp");
                     return;
 
                 case "profile":
-                    // Only allow access to profile if logged in
                     if (!isLoggedIn) {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
                     }
                     prepareProfilePage(request, session);
-                    RequestDispatcher profileDispatcher = request.getRequestDispatcher("profile.jsp");
-                    profileDispatcher.forward(request, response);
+                    forward(request, response, "profile.jsp");
                     return;
-                    
+
                 case "dashboard":
-                    // Only allow access to dashboard if logged in
                     if (!isLoggedIn) {
                         response.sendRedirect(request.getContextPath() + "?page=login");
                         return;
@@ -164,21 +157,18 @@ public class HomeServlet extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "?page=home");
                         return;
                     }
-                    RequestDispatcher dashboardDispatcher = request.getRequestDispatcher("dashboard.jsp");
-                    dashboardDispatcher.forward(request, response);
+                    forward(request, response, "dashboard.jsp");
                     return;
-                    
+
                 default:
                     break;
             }
         }
 
-        // Default routing
         if (isLoggedIn) {
             Account user = (Account) session.getAttribute("user");
             response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
         } else {
-            // User is not logged in, show login page
             response.sendRedirect(request.getContextPath() + "?page=login");
         }
     }
@@ -186,6 +176,12 @@ public class HomeServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Home Servlet for main navigation routing";
+    }
+
+    private void forward(HttpServletRequest request, HttpServletResponse response, String jsp)
+            throws ServletException, IOException {
+        RequestDispatcher dispatcher = request.getRequestDispatcher(jsp);
+        dispatcher.forward(request, response);
     }
 
     private String getRedirectPageByRole(Account account) {
@@ -207,35 +203,15 @@ public class HomeServlet extends HttpServlet {
 
         String stationId = request.getParameter("stationId");
         String categoryId = request.getParameter("categoryId");
-        String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
+
+        if (isBlank(stationId) && isBlank(categoryId)) {
+            return;
+        }
 
         request.setAttribute("selectedStationId", stationId);
         request.setAttribute("selectedCategoryId", categoryId);
-        request.setAttribute("selectedStartDate", startDateStr);
-        request.setAttribute("selectedEndDate", endDateStr);
         request.setAttribute("searchPerformed", true);
-
-        try {
-            if (isBlank(stationId) || isBlank(categoryId) || isBlank(startDateStr) || isBlank(endDateStr)) {
-                request.setAttribute("searchError", "Vui lòng chọn đầy đủ trạm, loại xe, ngày bắt đầu và ngày kết thúc.");
-                return;
-            }
-
-            Date startDate = Date.valueOf(startDateStr);
-            Date endDate = Date.valueOf(endDateStr);
-
-            if (!endDate.after(startDate)) {
-                request.setAttribute("searchError", "Ngày kết thúc phải sau ngày bắt đầu.");
-                return;
-            }
-
-            List<VehicleSearchResult> searchResults =
-                vehicleSearchDAO.searchAvailableVehicleModels(stationId, categoryId, startDate, endDate);
-            request.setAttribute("vehicleSearchResults", searchResults);
-        } catch (IllegalArgumentException ex) {
-            request.setAttribute("searchError", "Ngày thuê không hợp lệ.");
-        }
+        request.setAttribute("vehicleSearchResults", vehicleSearchDAO.searchAvailableVehicleModels(stationId, categoryId));
     }
 
     private void prepareVehicleOptionsPage(HttpServletRequest request) {
@@ -253,7 +229,7 @@ public class HomeServlet extends HttpServlet {
 
         try {
             if (isBlank(stationId) || isBlank(modelId) || isBlank(startDateStr) || isBlank(endDateStr)) {
-                request.setAttribute("vehicleOptionsError", "Thiếu thông tin tìm kiếm xe.");
+                request.setAttribute("vehicleOptionsError", "Thiáº¿u thÃ´ng tin tÃ¬m kiáº¿m xe.");
                 return;
             }
 
@@ -261,14 +237,14 @@ public class HomeServlet extends HttpServlet {
             Date endDate = Date.valueOf(endDateStr);
 
             if (!endDate.after(startDate)) {
-                request.setAttribute("vehicleOptionsError", "Ngày kết thúc phải sau ngày bắt đầu.");
+                request.setAttribute("vehicleOptionsError", "NgÃ y káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u.");
                 return;
             }
 
             List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
             request.setAttribute("availableVehicles", vehicles);
         } catch (IllegalArgumentException ex) {
-            request.setAttribute("vehicleOptionsError", "Ngày thuê không hợp lệ.");
+            request.setAttribute("vehicleOptionsError", "NgÃ y thuÃª khÃ´ng há»£p lá»‡.");
         }
     }
 
@@ -285,14 +261,14 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("endDate", endDateStr);
 
         if (isBlank(stationId) || isBlank(modelId)) {
-            request.setAttribute("vehicleDetailError", "Thiếu thông tin mẫu xe hoặc trạm.");
+            request.setAttribute("vehicleDetailError", "Thiáº¿u thÃ´ng tin máº«u xe hoáº·c tráº¡m.");
             return;
         }
 
         VehicleSearchResult vehicleInfo = vehicleSearchDAO.getAvailableVehicleModelAtStation(modelId, stationId);
         request.setAttribute("vehicleInfo", vehicleInfo);
         if (vehicleInfo == null) {
-            request.setAttribute("vehicleDetailError", "Mẫu xe này hiện không còn sẵn tại trạm đã chọn.");
+            request.setAttribute("vehicleDetailError", "Máº«u xe nÃ y hiá»‡n khÃ´ng cÃ²n sáºµn táº¡i tráº¡m Ä‘Ã£ chá»n.");
             return;
         }
 
@@ -303,7 +279,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("detailSearchPerformed", true);
         try {
             if (isBlank(startDateStr) || isBlank(endDateStr)) {
-                request.setAttribute("vehicleDetailError", "Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
+                request.setAttribute("vehicleDetailError", "Vui lÃ²ng chá»n ngÃ y báº¯t Ä‘áº§u vÃ  ngÃ y káº¿t thÃºc.");
                 return;
             }
 
@@ -311,22 +287,78 @@ public class HomeServlet extends HttpServlet {
             Date endDate = Date.valueOf(endDateStr);
 
             if (!endDate.after(startDate)) {
-                request.setAttribute("vehicleDetailError", "Ngày kết thúc phải sau ngày bắt đầu.");
+                request.setAttribute("vehicleDetailError", "NgÃ y káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u.");
                 return;
             }
 
             List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
             request.setAttribute("availableVehicles", vehicles);
         } catch (IllegalArgumentException ex) {
-            request.setAttribute("vehicleDetailError", "Ngày thuê không hợp lệ.");
+            request.setAttribute("vehicleDetailError", "NgÃ y thuÃª khÃ´ng há»£p lá»‡.");
         }
     }
 
     private void prepareBookingPage(HttpServletRequest request) {
-        request.setAttribute("vehicleId", request.getParameter("vehicleId"));
-        request.setAttribute("stationId", request.getParameter("stationId"));
-        request.setAttribute("startDate", request.getParameter("startDate"));
-        request.setAttribute("endDate", request.getParameter("endDate"));
+        String vehicleId = request.getParameter("vehicleId");
+        String stationId = request.getParameter("stationId");
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
+        String discountCode = request.getParameter("discountCode");
+
+        request.setAttribute("vehicleId", vehicleId);
+        request.setAttribute("stationId", stationId);
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
+        request.setAttribute("discountCode", discountCode);
+        HttpSession session = request.getSession(false);
+        String paymentError = null;
+        if (session != null && session.getAttribute("bookingError") != null) {
+            paymentError = (String) session.getAttribute("bookingError");
+            session.removeAttribute("bookingError");
+        }
+
+        try {
+            Account user = (Account) session.getAttribute("user");
+            BookingQuote quote = bookingService.createQuote(
+                    user.getAccountId(),
+                    vehicleId,
+                    Date.valueOf(startDate),
+                    Date.valueOf(endDate),
+                    discountCode);
+            request.setAttribute("bookingQuote", quote);
+            request.setAttribute("bookingError", paymentError);
+        } catch (Exception ex) {
+            if (!isBlank(discountCode) && BookingService.INVALID_DISCOUNT_MESSAGE.equals(ex.getMessage())) {
+                prepareBookingPageWithoutDiscount(request, vehicleId, stationId, startDate, endDate, discountCode);
+                request.setAttribute("bookingError", paymentError);
+                return;
+            }
+            request.setAttribute("bookingError", firstNonBlank(paymentError, ex.getMessage()));
+        }
+    }
+
+    private void prepareBookingPageWithoutDiscount(HttpServletRequest request, String vehicleId, String stationId,
+            String startDate, String endDate, String discountCode) {
+        try {
+            HttpSession session = request.getSession(false);
+            Account user = (Account) session.getAttribute("user");
+            BookingQuote quote = bookingService.createQuote(
+                    user.getAccountId(),
+                    vehicleId,
+                    Date.valueOf(startDate),
+                    Date.valueOf(endDate),
+                    null);
+            quote.setDiscountCode(discountCode);
+            request.setAttribute("bookingQuote", quote);
+            request.setAttribute("discountError", BookingService.INVALID_DISCOUNT_MESSAGE);
+        } catch (Exception fallbackEx) {
+            request.setAttribute("bookingError", fallbackEx.getMessage());
+        }
+    }
+
+    private void prepareBookingDetailPage(HttpServletRequest request, HttpSession session) {
+        BookingDetail detail = (BookingDetail) session.getAttribute("bookingDetail");
+        request.setAttribute("bookingDetail", detail);
     }
 
     private void prepareProfilePage(HttpServletRequest request, HttpSession session) {

@@ -5,7 +5,7 @@ import daos.IAccountDAO;
 import daos.IWalletDAO;
 import daos.WalletDAO;
 import models.Account;
-import models.Role;
+import enums.Role;
 import models.Wallet;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,50 +41,50 @@ public class RegistrationService {
 
         if (fullName == null || fullName.trim().isEmpty()) {
             result.put("valid", false);
-            result.put("message", "Họ và tên không được để trống");
+            result.put("message", "Há» vÃ  tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
             return result;
         }
 
         if (fullName.trim().length() < 3) {
             result.put("valid", false);
-            result.put("message", "Họ và tên phải có ít nhất 3 ký tự");
+            result.put("message", "Há» vÃ  tÃªn pháº£i cÃ³ Ã­t nháº¥t 3 kÃ½ tá»±");
             return result;
         }
 
         if (email == null || email.trim().isEmpty()) {
             result.put("valid", false);
-            result.put("message", "Email không được để trống");
+            result.put("message", "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
             return result;
         }
 
         if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
             result.put("valid", false);
-            result.put("message", "Email không hợp lệ");
+            result.put("message", "Email khÃ´ng há»£p lá»‡");
             return result;
         }
 
         if (accountDAO.isEmailExists(email.trim())) {
             result.put("valid", false);
-            result.put("message", "Email này đã được đăng ký");
+            result.put("message", "Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½");
             return result;
         }
 
         if (password == null || password.isEmpty()) {
             result.put("valid", false);
-            result.put("message", "Mật khẩu không được để trống");
+            result.put("message", "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
             return result;
         }
 
         if (password.length() < PASSWORD_MIN_LENGTH) {
             result.put("valid", false);
-            result.put("message", "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự");
+            result.put("message", "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t " + PASSWORD_MIN_LENGTH + " kÃ½ tá»±");
             return result;
         }
 
         if (phone != null && !phone.trim().isEmpty()) {
             if (!phone.matches("\\d{10,11}")) {
                 result.put("valid", false);
-                result.put("message", "Số điện thoại không hợp lệ");
+                result.put("message", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡");
                 return result;
             }
         }
@@ -117,13 +117,13 @@ public class RegistrationService {
             account.setStatus("ACTIVE");
 
             if (!accountDAO.createAccount(account)) {
-                result.put("message", "Lỗi khi tạo tài khoản. Vui lòng thử lại.");
+                result.put("message", "Lá»—i khi táº¡o tÃ i khoáº£n. Vui lÃ²ng thá»­ láº¡i.");
                 return result;
             }
 
             Account createdAccount = accountDAO.getAccountByEmail(email.trim());
             if (createdAccount == null) {
-                result.put("message", "Lỗi khi lấy thông tin tài khoản.");
+                result.put("message", "Lá»—i khi láº¥y thÃ´ng tin tÃ i khoáº£n.");
                 return result;
             }
 
@@ -133,15 +133,16 @@ public class RegistrationService {
             }
 
             result.put("success", true);
-            result.put("message", "Đăng ký thành công!");
+            result.put("message", "ÄÄƒng kÃ½ thÃ nh cÃ´ng!");
             result.put("accountId", createdAccount.getAccountId());
 
             LOGGER.log(Level.INFO, "Account registered successfully: " + email);
         } catch (Exception ex) {
-            result.put("message", "Có lỗi xảy ra: " + ex.getMessage());
+            result.put("message", "CÃ³ lá»—i xáº£y ra: " + ex.getMessage());
             LOGGER.log(Level.SEVERE, "Error registering account: " + ex.getMessage(), ex);
         }
 
         return result;
     }
 }
+

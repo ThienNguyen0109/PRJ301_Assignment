@@ -106,3 +106,4 @@ public class VehicleModel implements Serializable {
                 '}';
     }
 }
+

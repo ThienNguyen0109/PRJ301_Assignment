@@ -30,3 +30,4 @@ public interface IWalletDAO {
      */
     boolean updateWalletBalance(String walletId, Double newBalance);
 }
+

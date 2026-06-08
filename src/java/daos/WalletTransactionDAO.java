@@ -1,7 +1,7 @@
 package daos;
 
 import models.WalletTransaction;
-import models.TransactionType;
+import enums.TransactionType;
 import utils.DBUtils;
 import java.sql.*;
 import java.util.ArrayList;
@@ -136,3 +136,4 @@ public class WalletTransactionDAO {
         }
     }
 }
+

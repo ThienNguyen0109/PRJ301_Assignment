@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for vehicle model image types
@@ -35,3 +35,4 @@ public enum VehicleModelImageType {
         return value;
     }
 }
+

@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for Account roles
@@ -38,3 +38,4 @@ public enum Role {
         return value;
     }
 }
+

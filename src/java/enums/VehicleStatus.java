@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for vehicle statuses
@@ -35,3 +35,4 @@ public enum VehicleStatus {
         return value;
     }
 }
+

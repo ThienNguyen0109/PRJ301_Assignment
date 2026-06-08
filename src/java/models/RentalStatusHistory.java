@@ -1,5 +1,6 @@
 package models;
 
+import enums.RentalStatus;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -71,3 +72,5 @@ public class RentalStatusHistory implements Serializable {
                 '}';
     }
 }
+
+

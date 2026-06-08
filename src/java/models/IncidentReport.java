@@ -1,5 +1,6 @@
 package models;
 
+import enums.IncidentSeverity;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -95,3 +96,5 @@ public class IncidentReport implements Serializable {
                 '}';
     }
 }
+
+

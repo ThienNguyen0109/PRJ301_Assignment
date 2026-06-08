@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for payment methods
@@ -34,3 +34,4 @@ public enum PaymentMethod {
         return value;
     }
 }
+

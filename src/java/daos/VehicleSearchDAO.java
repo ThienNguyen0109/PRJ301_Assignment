@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import models.Vehicle;
-import models.VehicleSearchResult;
-import models.VehicleStatus;
+import dto.VehicleSearchResult;
+import enums.VehicleStatus;
 import utils.DBUtils;
 
 /**
@@ -30,7 +30,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
         try {
             conn = DBUtils.getConnection();
             String sql =
-                "SELECT TOP (?) vm.model_id, vm.name AS model_name, vm.brand, vm.price_per_day, vm.seat_count, " +
+                "SELECT TOP (?) vm.model_id, vm.name AS model_name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, " +
                 "       s.station_id, s.name AS station_name, s.address AS station_address, " +
                 "       COUNT(v.vehicle_id) AS remaining, " +
                 "       img.image_url AS thumbnail_image " +
@@ -44,7 +44,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 "    ORDER BY CASE image_type WHEN 'FRONT' THEN 0 WHEN 'BACK' THEN 1 ELSE 2 END " +
                 ") img " +
                 "WHERE v.status = 'AVAILABLE' " +
-                "GROUP BY vm.model_id, vm.name, vm.brand, vm.price_per_day, vm.seat_count, " +
+                "GROUP BY vm.model_id, vm.name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, " +
                 "         s.station_id, s.name, s.address, img.image_url " +
                 "ORDER BY remaining DESC, vm.name, s.name";
 
@@ -57,6 +57,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 result.setModelId(rs.getString("model_id"));
                 result.setModelName(rs.getString("model_name"));
                 result.setBrand(rs.getString("brand"));
+                result.setDescription(rs.getString("description"));
                 result.setPricePerDay(rs.getDouble("price_per_day"));
                 result.setSeatCount(rs.getInt("seat_count"));
                 result.setRemaining(rs.getInt("remaining"));
@@ -87,7 +88,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
         try {
             conn = DBUtils.getConnection();
             String sql =
-                "SELECT vm.model_id, vm.name AS model_name, vm.brand, vm.price_per_day, vm.seat_count, " +
+                "SELECT vm.model_id, vm.name AS model_name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, " +
                 "       s.station_id, s.name AS station_name, s.address AS station_address, " +
                 "       COUNT(v.vehicle_id) AS remaining, " +
                 "       img.image_url AS thumbnail_image " +
@@ -103,7 +104,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 "WHERE v.status = 'AVAILABLE' " +
                 "  AND vm.model_id = ? " +
                 "  AND s.station_id = ? " +
-                "GROUP BY vm.model_id, vm.name, vm.brand, vm.price_per_day, vm.seat_count, " +
+                "GROUP BY vm.model_id, vm.name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, " +
                 "         s.station_id, s.name, s.address, img.image_url";
 
             stmt = conn.prepareStatement(sql);
@@ -116,6 +117,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 result.setModelId(rs.getString("model_id"));
                 result.setModelName(rs.getString("model_name"));
                 result.setBrand(rs.getString("brand"));
+                result.setDescription(rs.getString("description"));
                 result.setPricePerDay(rs.getDouble("price_per_day"));
                 result.setSeatCount(rs.getInt("seat_count"));
                 result.setRemaining(rs.getInt("remaining"));
@@ -136,6 +138,78 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
     }
 
     @Override
+    public List<VehicleSearchResult> searchAvailableVehicleModels(String stationId, String categoryId) {
+        List<VehicleSearchResult> results = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtils.getConnection();
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT vm.model_id, vm.name AS model_name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, ");
+            sql.append("       s.station_id, s.name AS station_name, s.address AS station_address, ");
+            sql.append("       COUNT(v.vehicle_id) AS remaining, ");
+            sql.append("       img.image_url AS thumbnail_image ");
+            sql.append("FROM Vehicle v ");
+            sql.append("INNER JOIN Vehicle_Model vm ON v.model_id = vm.model_id ");
+            sql.append("INNER JOIN Station s ON v.station_id = s.station_id ");
+            sql.append("OUTER APPLY ( ");
+            sql.append("    SELECT TOP 1 image_url ");
+            sql.append("    FROM Vehicle_Model_Image ");
+            sql.append("    WHERE model_id = vm.model_id ");
+            sql.append("    ORDER BY CASE image_type WHEN 'FRONT' THEN 0 WHEN 'BACK' THEN 1 ELSE 2 END ");
+            sql.append(") img ");
+            sql.append("WHERE v.status = 'AVAILABLE' ");
+
+            if (stationId != null && !stationId.trim().isEmpty()) {
+                sql.append("AND v.station_id = ? ");
+            }
+            if (categoryId != null && !categoryId.trim().isEmpty()) {
+                sql.append("AND vm.category_id = ? ");
+            }
+
+            sql.append("GROUP BY vm.model_id, vm.name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, ");
+            sql.append("         s.station_id, s.name, s.address, img.image_url ");
+            sql.append("ORDER BY s.name, vm.name");
+
+            stmt = conn.prepareStatement(sql.toString());
+            int index = 1;
+            if (stationId != null && !stationId.trim().isEmpty()) {
+                stmt.setString(index++, stationId);
+            }
+            if (categoryId != null && !categoryId.trim().isEmpty()) {
+                stmt.setString(index++, categoryId);
+            }
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                VehicleSearchResult result = new VehicleSearchResult();
+                result.setModelId(rs.getString("model_id"));
+                result.setModelName(rs.getString("model_name"));
+                result.setBrand(rs.getString("brand"));
+                result.setDescription(rs.getString("description"));
+                result.setPricePerDay(rs.getDouble("price_per_day"));
+                result.setSeatCount(rs.getInt("seat_count"));
+                result.setRemaining(rs.getInt("remaining"));
+                result.setThumbnailImage(rs.getString("thumbnail_image"));
+                result.setStationId(rs.getString("station_id"));
+                result.setStationName(rs.getString("station_name"));
+                result.setStationAddress(rs.getString("station_address"));
+                results.add(result);
+            }
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+
+        return results;
+    }
+
+    @Override
     public List<VehicleSearchResult> searchAvailableVehicleModels(String stationId, String categoryId, Date startDate, Date endDate) {
         List<VehicleSearchResult> results = new ArrayList<>();
         Connection conn = null;
@@ -145,7 +219,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
         try {
             conn = DBUtils.getConnection();
             String sql =
-                "SELECT vm.model_id, vm.name AS model_name, vm.brand, vm.price_per_day, vm.seat_count, " +
+                "SELECT vm.model_id, vm.name AS model_name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, " +
                 "       COUNT(v.vehicle_id) AS remaining, " +
                 "       img.image_url AS thumbnail_image " +
                 "FROM Vehicle v " +
@@ -166,7 +240,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 "        AND r.start_date < ? " +
                 "        AND r.end_date > ? " +
                 "  ) " +
-                "GROUP BY vm.model_id, vm.name, vm.brand, vm.price_per_day, vm.seat_count, img.image_url " +
+                "GROUP BY vm.model_id, vm.name, vm.brand, vm.description, vm.price_per_day, vm.seat_count, img.image_url " +
                 "ORDER BY vm.name";
 
             stmt = conn.prepareStatement(sql);
@@ -181,6 +255,7 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
                 result.setModelId(rs.getString("model_id"));
                 result.setModelName(rs.getString("model_name"));
                 result.setBrand(rs.getString("brand"));
+                result.setDescription(rs.getString("description"));
                 result.setPricePerDay(rs.getDouble("price_per_day"));
                 result.setSeatCount(rs.getInt("seat_count"));
                 result.setRemaining(rs.getInt("remaining"));
@@ -262,3 +337,4 @@ public class VehicleSearchDAO implements IVehicleSearchDAO {
         }
     }
 }
+

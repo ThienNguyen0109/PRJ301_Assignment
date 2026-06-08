@@ -41,3 +41,4 @@ public class LogoutServlet extends HttpServlet {
         return "Logout Servlet for handling user logout";
     }
 }
+

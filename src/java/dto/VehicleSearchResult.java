@@ -1,4 +1,4 @@
-package models;
+package dto;
 
 import java.io.Serializable;
 
@@ -11,6 +11,7 @@ public class VehicleSearchResult implements Serializable {
     private String modelId;
     private String modelName;
     private String brand;
+    private String description;
     private Integer remaining;
     private Double pricePerDay;
     private Integer seatCount;
@@ -55,6 +56,14 @@ public class VehicleSearchResult implements Serializable {
 
     public void setBrand(String brand) {
         this.brand = brand;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Integer getRemaining() {
@@ -113,3 +122,4 @@ public class VehicleSearchResult implements Serializable {
         this.stationAddress = stationAddress;
     }
 }
+

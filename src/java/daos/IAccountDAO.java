@@ -45,3 +45,4 @@ public interface IAccountDAO {
      */
     boolean updatePasswordByEmail(String email, String newPassword);
 }
+

@@ -1,7 +1,7 @@
 package daos;
 
 import models.Account;
-import models.Role;
+import enums.Role;
 import utils.DBUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -215,3 +215,4 @@ public class AccountDAO implements IAccountDAO {
         }
     }
 }
+

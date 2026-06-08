@@ -1,4 +1,4 @@
-package models;
+package enums;
 
 /**
  * Enum for Wallet Transaction types
@@ -35,3 +35,4 @@ public enum TransactionType {
         return value;
     }
 }
+

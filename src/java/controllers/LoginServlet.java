@@ -3,7 +3,7 @@ package controllers;
 import daos.AccountDAO;
 import daos.IAccountDAO;
 import models.Account;
-import models.Role;
+import enums.Role;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,9 +65,9 @@ public class LoginServlet extends HttpServlet {
         try {
             // Validate input
             if (email == null || email.trim().isEmpty()) {
-                error = "Email không được để trống";
+                error = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else if (password == null || password.trim().isEmpty()) {
-                error = "Mật khẩu không được để trống";
+                error = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
             } else {
                 // Attempt to authenticate user
                 Account account = accountDAO.getAccountByEmailAndPassword(email.trim(), password);
@@ -89,16 +89,16 @@ public class LoginServlet extends HttpServlet {
                         return;
                     } else {
                         // Account is inactive
-                        error = "Tài khoản của bạn đã bị vô hiệu hóa";
+                        error = "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a";
                     }
                 } else {
                     // Invalid credentials
-                    error = "Email hoặc mật khẩu không chính xác";
+                    error = "Email hoáº·c máº­t kháº©u khÃ´ng chÃ­nh xÃ¡c";
                     LOGGER.log(Level.WARNING, "Failed login attempt for email: " + email);
                 }
             }
         } catch (Exception ex) {
-            error = "Có lỗi xảy ra trong quá trình đăng nhập";
+            error = "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh Ä‘Äƒng nháº­p";
             LOGGER.log(Level.SEVERE, "Error during login: " + ex.getMessage(), ex);
         }
 
@@ -120,3 +120,4 @@ public class LoginServlet extends HttpServlet {
         return "?page=home";
     }
 }
+

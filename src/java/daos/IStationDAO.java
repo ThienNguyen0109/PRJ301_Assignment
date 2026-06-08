@@ -9,3 +9,4 @@ import models.Station;
 public interface IStationDAO {
     List<Station> getAllStations();
 }
+

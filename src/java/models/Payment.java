@@ -1,5 +1,7 @@
 package models;
 
+import enums.PaymentMethod;
+import enums.PaymentStatus;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -107,3 +109,5 @@ public class Payment implements Serializable {
                 '}';
     }
 }
+
+

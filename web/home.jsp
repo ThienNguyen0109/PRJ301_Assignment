@@ -63,7 +63,7 @@
                 border-bottom: 1px solid rgba(17,24,39,0.12); font-size: 27px; font-weight: 800;
             }
             .welcome-copy { color: #566070; margin-bottom: 30px; font-size: 16px; line-height: 1.7; }
-            .search-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: end; }
+            .search-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: end; }
             .form-group label {
                 display: block; color: #111827; font-weight: 700; margin-bottom: 8px; font-size: 14px;
             }
@@ -85,6 +85,26 @@
                 transition: transform 0.25s, box-shadow 0.25s;
             }
             .search-btn:hover, .choose-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(180,122,31,0.28); }
+            .filter-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+            .clear-filter-btn {
+                display: inline-block; padding: 12px 16px; color: #172033;
+                border: 1px solid rgba(17,24,39,0.12); border-radius: 7px;
+                background: rgba(255,255,255,0.78); font-weight: 800; text-decoration: none;
+                box-shadow: 0 10px 24px rgba(8,17,31,0.08);
+                transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+            }
+            .clear-filter-btn:hover {
+                background: #ffffff; transform: translateY(-2px); box-shadow: 0 14px 30px rgba(8,17,31,0.14);
+            }
+            .filter-summary {
+                display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+                color: #566070; font-size: 14px;
+            }
+            .filter-chip {
+                display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 7px;
+                color: #0f1c31; background: rgba(248,223,157,0.55);
+                border: 1px solid rgba(218,183,99,0.42); font-weight: 800;
+            }
             .error-message {
                 color: #7f1d1d; background-color: #fee2e2; border: 1px solid #fecaca;
                 border-radius: 7px; padding: 12px 14px; margin-bottom: 18px; line-height: 1.5;
@@ -108,6 +128,11 @@
             .vehicle-body { padding: 18px; }
             .vehicle-body h3 { color: #172033; margin-bottom: 10px; font-size: 21px; }
             .meta-line { color: #566070; font-size: 14px; margin-bottom: 8px; }
+            .availability-note {
+                color: #7d8794; font-size: 13px; line-height: 1.45; margin: 10px 0 12px;
+                padding: 10px 12px; border-radius: 7px; background: rgba(248,250,252,0.78);
+                border: 1px solid rgba(17,24,39,0.08);
+            }
             .price { color: #b47a1f; font-size: 20px; font-weight: 800; margin: 12px 0; }
             .station-badge {
                 display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px;
@@ -117,6 +142,10 @@
             }
             .station-address {
                 min-height: 38px; color: #7d8794; font-size: 13px; line-height: 1.45; margin-bottom: 10px;
+            }
+            .model-description {
+                color: #566070; font-size: 13px; line-height: 1.55; margin-bottom: 10px;
+                display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
             }
             .empty-state { color: #566070; text-align: center; padding: 28px; }
             @media (max-width: 980px) { .search-grid, .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -143,7 +172,7 @@
             <div class="panel">
                 <h2 class="section-title">🏠 Tìm xe điện</h2>
                 <p class="welcome-copy">
-                    Chọn trạm, loại xe và thời gian thuê để xem các mẫu xe còn trống.
+                    Chọn trạm hoặc loại xe để xem các mẫu xe đang có tại trạm. Tình trạng trống theo lịch thuê sẽ được kiểm tra ở bước chọn ngày.
                 </p>
 
                 <c:if test="${not empty searchError}">
@@ -156,8 +185,8 @@
                     <div class="search-grid">
                         <div class="form-group">
                             <label for="stationId">Station</label>
-                            <select id="stationId" name="stationId" required>
-                                <option value="">Chọn trạm</option>
+                            <select id="stationId" name="stationId">
+                                <option value="">Tất cả trạm</option>
                                 <c:forEach var="station" items="${stations}">
                                     <c:choose>
                                         <c:when test="${station.stationId eq selectedStationId}">
@@ -173,8 +202,8 @@
 
                         <div class="form-group">
                             <label for="categoryId">Category</label>
-                            <select id="categoryId" name="categoryId" required>
-                                <option value="">Chọn loại xe</option>
+                            <select id="categoryId" name="categoryId">
+                                <option value="">Tất cả loại xe</option>
                                 <c:forEach var="category" items="${categories}">
                                     <c:choose>
                                         <c:when test="${category.categoryId eq selectedCategoryId}">
@@ -188,27 +217,21 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="startDate">Start Date</label>
-                            <input type="date" id="startDate" name="startDate" value="${selectedStartDate}" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="endDate">End Date</label>
-                            <input type="date" id="endDate" name="endDate" value="${selectedEndDate}" required>
-                        </div>
                     </div>
-                    <div style="margin-top: 16px;">
+                    <div class="filter-actions">
                         <button type="submit" class="search-btn">Search</button>
+                        <c:if test="${searchPerformed}">
+                            <a class="clear-filter-btn" href="${pageContext.request.contextPath}?page=home">Xóa bộ lọc</a>
+                        </c:if>
                     </div>
                 </form>
             </div>
 
-            <c:if test="${not empty featuredVehicles}">
+            <c:if test="${not searchPerformed and not empty featuredVehicles}">
                 <div class="panel">
-                    <h2 class="section-title">🚘 Xe đang có tại các trạm</h2>
+                    <h2 class="section-title">🚘 Mẫu xe tại các trạm</h2>
                     <p class="welcome-copy">
-                        Một số mẫu xe hiện sẵn sàng cho thuê. Bạn có thể xem nhanh trạm đang có xe trước khi chọn ngày thuê.
+                        Đây là danh sách mẫu xe theo trạm và loại xe. Hãy chọn mẫu xe rồi nhập ngày thuê để hệ thống kiểm tra xe trống chính xác.
                     </p>
 
                     <div class="result-grid">
@@ -225,16 +248,20 @@
                                 <div class="vehicle-body">
                                     <span class="station-badge">📍 ${vehicle.stationName}</span>
                                     <h3>${vehicle.modelName}</h3>
+                                    <c:if test="${not empty vehicle.description}">
+                                        <div class="model-description">${vehicle.description}</div>
+                                    </c:if>
                                     <div class="station-address">${empty vehicle.stationAddress ? 'Chưa cập nhật địa chỉ trạm' : vehicle.stationAddress}</div>
-                                    <div class="meta-line">Remaining: <strong>${vehicle.remaining}</strong></div>
-                                    <div class="meta-line">Seat Count: <strong>${empty vehicle.seatCount ? 0 : vehicle.seatCount}</strong></div>
-                                    <div class="price">Price/day: <fmt:formatNumber value="${vehicle.pricePerDay}" pattern="#,##0" /> VND</div>
+                                    <div class="meta-line">Số xe tại trạm: <strong>${vehicle.remaining}</strong></div>
+                                    <div class="meta-line">Số ghế: <strong>${empty vehicle.seatCount ? 0 : vehicle.seatCount}</strong></div>
+                                    <div class="availability-note">Chưa kiểm tra theo ngày thuê. Chọn ngày ở bước tiếp theo để xem xe thật sự còn trống.</div>
+                                    <div class="price"><fmt:formatNumber value="${vehicle.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
                                     <c:url var="vehicleDetailUrl" value="/">
                                         <c:param name="page" value="vehicle-detail" />
                                         <c:param name="modelId" value="${vehicle.modelId}" />
                                         <c:param name="stationId" value="${vehicle.stationId}" />
                                     </c:url>
-                                    <a class="choose-btn" href="${vehicleDetailUrl}">Xem và đặt</a>
+                                    <a class="choose-btn" href="${vehicleDetailUrl}">Chọn ngày thuê</a>
                                 </div>
                             </div>
                         </c:forEach>
@@ -244,7 +271,31 @@
 
             <c:if test="${searchPerformed}">
                 <div class="panel">
-                    <h2 class="section-title">📋 Kết quả tìm kiếm</h2>
+                    <div class="filter-summary">
+                        <span>Đang hiển thị:</span>
+                        <c:choose>
+                            <c:when test="${empty selectedStationId and empty selectedCategoryId}">
+                                <span class="filter-chip">Tất cả xe có sẵn</span>
+                            </c:when>
+                            <c:otherwise>
+                                <c:if test="${not empty selectedStationId}">
+                                    <c:forEach var="station" items="${stations}">
+                                        <c:if test="${station.stationId eq selectedStationId}">
+                                            <span class="filter-chip">${station.name}</span>
+                                        </c:if>
+                                    </c:forEach>
+                                </c:if>
+                                <c:if test="${not empty selectedCategoryId}">
+                                    <c:forEach var="category" items="${categories}">
+                                        <c:if test="${category.categoryId eq selectedCategoryId}">
+                                            <span class="filter-chip">${category.name}</span>
+                                        </c:if>
+                                    </c:forEach>
+                                </c:if>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <h2 class="section-title">📋 Kết quả tìm kiếm mẫu xe</h2>
 
                     <c:choose>
                         <c:when test="${not empty vehicleSearchResults}">
@@ -260,26 +311,29 @@
                                             </c:choose>
                                         </div>
                                         <div class="vehicle-body">
+                                            <span class="station-badge">📍 ${result.stationName}</span>
                                             <h3>${result.modelName}</h3>
-                                            <div class="meta-line">Remaining: <strong>${result.remaining}</strong></div>
-                                            <div class="meta-line">Seat Count: <strong>${empty result.seatCount ? 0 : result.seatCount}</strong></div>
-                                            <div class="price">Price/day: <fmt:formatNumber value="${result.pricePerDay}" pattern="#,##0" /> VND</div>
-                                            <c:url var="vehicleOptionsUrl" value="/">
-                                                <c:param name="page" value="vehicle-options" />
+                                            <c:if test="${not empty result.description}">
+                                                <div class="model-description">${result.description}</div>
+                                            </c:if>
+                                            <div class="station-address">${empty result.stationAddress ? 'Chưa cập nhật địa chỉ trạm' : result.stationAddress}</div>
+                                            <div class="meta-line">Số xe tại trạm: <strong>${result.remaining}</strong></div>
+                                            <div class="meta-line">Số ghế: <strong>${empty result.seatCount ? 0 : result.seatCount}</strong></div>
+                                            <div class="availability-note">Chưa kiểm tra theo ngày thuê. Chọn ngày ở bước tiếp theo để xem xe thật sự còn trống.</div>
+                                            <div class="price"><fmt:formatNumber value="${result.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
+                                            <c:url var="vehicleDetailUrl" value="/">
+                                                <c:param name="page" value="vehicle-detail" />
                                                 <c:param name="modelId" value="${result.modelId}" />
-                                                <c:param name="stationId" value="${selectedStationId}" />
-                                                <c:param name="categoryId" value="${selectedCategoryId}" />
-                                                <c:param name="startDate" value="${selectedStartDate}" />
-                                                <c:param name="endDate" value="${selectedEndDate}" />
+                                                <c:param name="stationId" value="${result.stationId}" />
                                             </c:url>
-                                            <a class="choose-btn" href="${vehicleOptionsUrl}">Chọn mẫu xe</a>
+                                            <a class="choose-btn" href="${vehicleDetailUrl}">Chọn ngày thuê</a>
                                         </div>
                                     </div>
                                 </c:forEach>
                             </div>
                         </c:when>
                         <c:when test="${empty searchError}">
-                            <div class="empty-state">Không tìm thấy xe phù hợp trong khoảng thời gian đã chọn.</div>
+                            <div class="empty-state">Không tìm thấy mẫu xe phù hợp với bộ lọc đã chọn.</div>
                         </c:when>
                     </c:choose>
                 </div>
