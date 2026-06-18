@@ -298,14 +298,14 @@
                     </div>
 
                     <div class="helper-row">
-                        <a href="<%= request.getContextPath() %>?page=reset-password">Quên mật khẩu?</a>
+                        <a href="<%= request.getContextPath() %>?action=reset-password">Quên mật khẩu?</a>
                     </div>
 
                     <button type="submit" class="login-btn">Đăng Nhập</button>
                 </form>
 
                 <div class="footer-links">
-                    <a href="<%= request.getContextPath() %>?page=register">Đăng ký tài khoản</a>
+                    <a href="<%= request.getContextPath() %>?action=register">Đăng ký tài khoản</a>
                 </div>
             </div>
         </div>

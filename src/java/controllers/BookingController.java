@@ -21,9 +21,9 @@ import services.VNPayService;
 /**
  * Handles booking payment submissions.
  */
-@WebServlet(name = "BookingServlet", urlPatterns = {"/booking"})
-public class BookingServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(BookingServlet.class.getName());
+@WebServlet(name = "BookingController", urlPatterns = {"/booking"})
+public class BookingController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(BookingController.class.getName());
     private BookingService bookingService = new BookingService();
 
     @Override
@@ -35,7 +35,7 @@ public class BookingServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "?page=login");
+            response.sendRedirect(request.getContextPath() + "?action=login");
             return;
         }
 
@@ -60,7 +60,7 @@ public class BookingServlet extends HttpServlet {
                 BookingDetail detail = bookingService.payByWallet(customer, quote);
                 EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
                 session.setAttribute("bookingDetail", detail);
-                response.sendRedirect(request.getContextPath() + "?page=booking-detail");
+                response.sendRedirect(request.getContextPath() + "?action=booking-detail");
                 return;
             }
 
@@ -85,7 +85,7 @@ public class BookingServlet extends HttpServlet {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Booking payment failed", ex);
             session.setAttribute("bookingError", getUserMessage(ex));
-            String redirect = request.getContextPath() + "?page=booking"
+            String redirect = request.getContextPath() + "?action=booking"
                     + "&vehicleId=" + encode(vehicleId)
                     + "&stationId=" + encode(stationId)
                     + "&startDate=" + encode(startDate)

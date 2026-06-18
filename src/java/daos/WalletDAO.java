@@ -1,128 +1,75 @@
 package daos;
 
-import models.Wallet;
-import utils.DBUtils;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import models.Wallet;
+import utils.JPAUtil;
 
 /**
- * Data Access Object for Wallet entity
- * Handles all database operations related to Wallet
+ * Data Access Object for Wallet entity using JPA.
  */
 public class WalletDAO implements IWalletDAO {
     private static final Logger LOGGER = Logger.getLogger(WalletDAO.class.getName());
 
-    /**
-     * Create new wallet for account
-     * @param wallet Wallet object
-     * @return true if created successfully, false otherwise
-     */
     @Override
     public boolean createWallet(Wallet wallet) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
         try {
-            conn = DBUtils.getConnection();
-            String sql = "INSERT INTO Wallet (account_id, balance) VALUES (?, ?)";
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, wallet.getAccountId());
-            stmt.setDouble(2, wallet.getBalance());
-
-            int result = stmt.executeUpdate();
-            return result > 0;
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
-        } finally {
-            closeResources(null, stmt, conn);
+            return JPAUtil.executeInTransaction(em -> {
+                applyWalletDefaults(wallet);
+                em.persist(wallet);
+                return true;
+            });
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Could not create wallet with JPA", ex);
+            return false;
         }
-
-        return false;
     }
 
-    /**
-     * Get wallet by account ID
-     * @param accountId Account ID
-     * @return Wallet object if found, null otherwise
-     */
     @Override
     public Wallet getWalletByAccountId(String accountId) {
-        Wallet wallet = null;
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
         try {
-            conn = DBUtils.getConnection();
-            String sql = "SELECT wallet_id, account_id, balance, updated_at FROM Wallet WHERE account_id = ?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, accountId);
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                wallet = new Wallet();
-                wallet.setWalletId(rs.getString("wallet_id"));
-                wallet.setAccountId(rs.getString("account_id"));
-                wallet.setBalance(rs.getDouble("balance"));
-                wallet.setUpdatedAt(rs.getTimestamp("updated_at"));
-            }
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
-        } finally {
-            closeResources(rs, stmt, conn);
+            List<Wallet> wallets = JPAUtil.execute(em -> em.createQuery(
+                    "SELECT w FROM Wallet w WHERE w.account.accountId = :accountId",
+                    Wallet.class)
+                    .setParameter("accountId", accountId)
+                    .setMaxResults(1)
+                    .getResultList());
+            return wallets.isEmpty() ? null : wallets.get(0);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Could not find wallet by account id with JPA", ex);
+            return null;
         }
-
-        return wallet;
     }
 
-    /**
-     * Update wallet balance
-     * @param walletId Wallet ID
-     * @param newBalance New balance amount
-     * @return true if updated successfully, false otherwise
-     */
     @Override
     public boolean updateWalletBalance(String walletId, Double newBalance) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
         try {
-            conn = DBUtils.getConnection();
-            String sql = "UPDATE Wallet SET balance = ?, updated_at = GETDATE() WHERE wallet_id = ?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setDouble(1, newBalance);
-            stmt.setString(2, walletId);
-
-            int result = stmt.executeUpdate();
-            return result > 0;
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "Database driver not found", ex);
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "SQL error: " + ex.getMessage(), ex);
-        } finally {
-            closeResources(null, stmt, conn);
-        }
-
-        return false;
-    }
-     
-    private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-            if (conn != null) conn.close();
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error closing resources", ex);
+            int updated = JPAUtil.executeInTransaction(em -> em.createQuery(
+                    "UPDATE Wallet w SET w.balance = :balance, w.updatedAt = :updatedAt WHERE w.walletId = :walletId")
+                    .setParameter("balance", newBalance)
+                    .setParameter("updatedAt", new Timestamp(System.currentTimeMillis()))
+                    .setParameter("walletId", walletId)
+                    .executeUpdate());
+            return updated > 0;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Could not update wallet balance with JPA", ex);
+            return false;
         }
     }
+
+    private void applyWalletDefaults(Wallet wallet) {
+        if (wallet.getWalletId() == null || wallet.getWalletId().trim().isEmpty()) {
+            wallet.setWalletId(UUID.randomUUID().toString());
+        }
+        if (wallet.getBalance() == null) {
+            wallet.setBalance(0.0);
+        }
+        if (wallet.getUpdatedAt() == null) {
+            wallet.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        }
+    }
+
 }
-

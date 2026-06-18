@@ -5,23 +5,55 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Entity class representing a Rental
  */
+@Entity
+@Table(name = "Rental")
 public class Rental implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "rental_id", columnDefinition = "uniqueidentifier")
     private String rentalId;
+    @Column(name = "customer_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String customerId;
+    @Column(name = "vehicle_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String vehicleId;
+    @Column(name = "pickup_station_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String pickupStationId;
+    @Column(name = "start_date")
     private Date startDate;
+    @Column(name = "end_date")
     private Date endDate;
+    @Column(name = "total_days")
     private Integer totalDays;
+    @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
     private RentalStatus status;
+    @Column(name = "created_at")
     private Timestamp createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", referencedColumnName = "account_id", insertable = false, updatable = false)
+    private Account customer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicle_id", insertable = false, updatable = false)
+    private Vehicle vehicle;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pickup_station_id", referencedColumnName = "station_id", insertable = false, updatable = false)
+    private Station pickupStation;
 
     public Rental() {
     }
@@ -130,6 +162,30 @@ public class Rental implements Serializable {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Account getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Account customer) {
+        this.customer = customer;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public Station getPickupStation() {
+        return pickupStation;
+    }
+
+    public void setPickupStation(Station pickupStation) {
+        this.pickupStation = pickupStation;
     }
 
     @Override

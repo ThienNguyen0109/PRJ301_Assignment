@@ -98,8 +98,8 @@
                 <br/>Easily book and manage your vehicle rentals with us.</p>
             
             <div class="button-group">
-                <a href="<%= request.getContextPath() %>?page=login" class="btn btn-login">Login</a>
-                <a href="<%= request.getContextPath() %>?page=register" class="btn btn-register">Sign Up</a>
+                <a href="<%= request.getContextPath() %>?action=login" class="btn btn-login">Login</a>
+                <a href="<%= request.getContextPath() %>?action=register" class="btn btn-register">Sign Up</a>
             </div>
         </div>
     </body>

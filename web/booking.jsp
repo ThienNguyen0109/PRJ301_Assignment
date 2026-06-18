@@ -100,8 +100,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -127,7 +127,7 @@
 
                         <div>
                             <form action="${pageContext.request.contextPath}/" method="GET">
-                                <input type="hidden" name="page" value="booking">
+                                <input type="hidden" name="action" value="booking">
                                 <input type="hidden" name="vehicleId" value="${vehicleId}">
                                 <input type="hidden" name="stationId" value="${stationId}">
                                 <input type="hidden" name="startDate" value="${startDate}">
@@ -165,7 +165,7 @@
 
                                 <div class="actions">
                                     <button class="primary-btn" type="submit">Xác nhận thanh toán</button>
-                                    <a class="secondary-btn" href="${pageContext.request.contextPath}?page=home">Quay lại</a>
+                                    <a class="secondary-btn" href="${pageContext.request.contextPath}?action=home">Quay lại</a>
                                 </div>
                             </form>
                         </div>

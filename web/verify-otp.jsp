@@ -326,7 +326,7 @@
                 </form>
 
                 <div class="back-link">
-                    <a href="<%= request.getContextPath() %>?page=register">← Quay lại Đăng Ký</a>
+                    <a href="<%= request.getContextPath() %>?action=register">← Quay lại Đăng Ký</a>
                 </div>
             </div>
         </div>

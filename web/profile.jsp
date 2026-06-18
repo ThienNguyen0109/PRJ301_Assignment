@@ -105,8 +105,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile" class="active">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile" class="active">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -135,8 +135,8 @@
                     </c:choose>
                 </div>
                 <div class="wallet-actions">
-                    <a class="primary-btn" href="${pageContext.request.contextPath}?page=wallet">Nạp tiền</a>
-                    <a class="secondary-btn" href="${pageContext.request.contextPath}?page=wallet">Quản lý ví</a>
+                    <a class="primary-btn" href="${pageContext.request.contextPath}?action=wallet">Nạp tiền</a>
+                    <a class="secondary-btn" href="${pageContext.request.contextPath}?action=wallet">Quản lý ví</a>
                 </div>
             </div>
         </div>

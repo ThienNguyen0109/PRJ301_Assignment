@@ -3,19 +3,46 @@ package models;
 import enums.IncidentSeverity;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Entity class representing an Incident_Report
  */
+@Entity
+@Table(name = "Incident_Report")
 public class IncidentReport implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "incident_id", columnDefinition = "uniqueidentifier")
     private String incidentId;
+    @Column(name = "rental_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String rentalId;
+    @Column(name = "vehicle_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String vehicleId;
+    @Lob
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "severity", nullable = false, length = 20)
     private IncidentSeverity severity;
+    @Column(name = "created_at")
     private Timestamp createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rental_id", referencedColumnName = "rental_id", insertable = false, updatable = false)
+    private Rental rental;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicle_id", insertable = false, updatable = false)
+    private Vehicle vehicle;
 
     public IncidentReport() {
     }
@@ -83,6 +110,22 @@ public class IncidentReport implements Serializable {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Rental getRental() {
+        return rental;
+    }
+
+    public void setRental(Rental rental) {
+        this.rental = rental;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     @Override

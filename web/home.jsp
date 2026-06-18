@@ -148,6 +148,27 @@
                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
             }
             .empty-state { color: #566070; text-align: center; padding: 28px; }
+            .pagination-bar {
+                display: flex; justify-content: space-between; align-items: center; gap: 14px;
+                margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(17,24,39,0.1);
+                color: #566070; font-size: 14px; flex-wrap: wrap;
+            }
+            .pagination-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+            .page-link, .page-current {
+                min-width: 40px; min-height: 38px; padding: 9px 12px; border-radius: 7px;
+                display: inline-flex; align-items: center; justify-content: center;
+                font-weight: 800; text-decoration: none;
+            }
+            .page-link {
+                color: #172033; background: rgba(255,255,255,0.78);
+                border: 1px solid rgba(17,24,39,0.12);
+                box-shadow: 0 8px 18px rgba(8,17,31,0.07);
+            }
+            .page-link:hover { background: #ffffff; border-color: rgba(218,183,99,0.5); }
+            .page-current {
+                color: #09111f; border: 1px solid rgba(218,183,99,0.55);
+                background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%);
+            }
             @media (max-width: 980px) { .search-grid, .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
             @media (max-width: 640px) {
                 .navbar { padding: 14px 18px; align-items: flex-start; gap: 12px; flex-direction: column; }
@@ -162,8 +183,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home" class="active">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home" class="active">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -180,7 +201,6 @@
                 </c:if>
 
                 <form action="${pageContext.request.contextPath}/" method="GET">
-                    <input type="hidden" name="page" value="home">
                     <input type="hidden" name="action" value="search">
                     <div class="search-grid">
                         <div class="form-group">
@@ -221,7 +241,7 @@
                     <div class="filter-actions">
                         <button type="submit" class="search-btn">Search</button>
                         <c:if test="${searchPerformed}">
-                            <a class="clear-filter-btn" href="${pageContext.request.contextPath}?page=home">Xóa bộ lọc</a>
+                            <a class="clear-filter-btn" href="${pageContext.request.contextPath}?action=home">Xóa bộ lọc</a>
                         </c:if>
                     </div>
                 </form>
@@ -257,7 +277,7 @@
                                     <div class="availability-note">Chưa kiểm tra theo ngày thuê. Chọn ngày ở bước tiếp theo để xem xe thật sự còn trống.</div>
                                     <div class="price"><fmt:formatNumber value="${vehicle.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
                                     <c:url var="vehicleDetailUrl" value="/">
-                                        <c:param name="page" value="vehicle-detail" />
+                                        <c:param name="action" value="vehicle-detail" />
                                         <c:param name="modelId" value="${vehicle.modelId}" />
                                         <c:param name="stationId" value="${vehicle.stationId}" />
                                     </c:url>
@@ -266,6 +286,8 @@
                             </div>
                         </c:forEach>
                     </div>
+                    <c:set var="paginationMode" value="featured" />
+                    <%@ include file="WEB-INF/jspf/home-pagination.jspf" %>
                 </div>
             </c:if>
 
@@ -322,7 +344,7 @@
                                             <div class="availability-note">Chưa kiểm tra theo ngày thuê. Chọn ngày ở bước tiếp theo để xem xe thật sự còn trống.</div>
                                             <div class="price"><fmt:formatNumber value="${result.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
                                             <c:url var="vehicleDetailUrl" value="/">
-                                                <c:param name="page" value="vehicle-detail" />
+                                                <c:param name="action" value="vehicle-detail" />
                                                 <c:param name="modelId" value="${result.modelId}" />
                                                 <c:param name="stationId" value="${result.stationId}" />
                                             </c:url>
@@ -331,6 +353,8 @@
                                     </div>
                                 </c:forEach>
                             </div>
+                            <c:set var="paginationMode" value="search" />
+                            <%@ include file="WEB-INF/jspf/home-pagination.jspf" %>
                         </c:when>
                         <c:when test="${empty searchError}">
                             <div class="empty-state">Không tìm thấy mẫu xe phù hợp với bộ lọc đã chọn.</div>

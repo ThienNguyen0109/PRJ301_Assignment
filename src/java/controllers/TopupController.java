@@ -20,9 +20,9 @@ import java.util.logging.Logger;
  * Servlet for handling wallet top-up form submission
  * URL Pattern: /topup
  */
-@WebServlet(name = "TopupServlet", urlPatterns = {"/topup"})
-public class TopupServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(TopupServlet.class.getName());
+@WebServlet(name = "TopupController", urlPatterns = {"/topup"})
+public class TopupController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(TopupController.class.getName());
     private IWalletDAO walletDAO = new WalletDAO();
 
     @Override
@@ -41,7 +41,7 @@ public class TopupServlet extends HttpServlet {
             if (session == null || session.getAttribute("user") == null) {
                 error = "Vui lÃ²ng Ä‘Äƒng nháº­p trÆ°á»›c";
                 request.setAttribute("error", error);
-                response.sendRedirect(request.getContextPath() + "?page=login");
+                response.sendRedirect(request.getContextPath() + "?action=login");
                 return;
             }
 

@@ -14,9 +14,9 @@ import java.util.logging.Logger;
  * Servlet for handling user logout
  * URL Pattern: /logout
  */
-@WebServlet(name = "LogoutServlet", urlPatterns = {"/logout"})
-public class LogoutServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(LogoutServlet.class.getName());
+@WebServlet(name = "LogoutController", urlPatterns = {"/logout"})
+public class LogoutController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(LogoutController.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,8 +32,8 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
         
-        // Redirect to login page through HomeServlet routing
-        response.sendRedirect(request.getContextPath() + "?page=login");
+        // Redirect to login page through MainController routing
+        response.sendRedirect(request.getContextPath() + "?action=login");
     }
 
     @Override

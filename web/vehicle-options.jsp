@@ -100,8 +100,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home" class="active">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home" class="active">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -129,7 +129,7 @@
                                     <div class="meta-line">Battery Level: <strong>${empty vehicle.batteryLevel ? 0 : vehicle.batteryLevel}%</strong></div>
                                     <div class="meta-line">Color: <strong>${empty vehicle.color ? 'N/A' : vehicle.color}</strong></div>
                                     <c:url var="bookingUrl" value="/">
-                                        <c:param name="page" value="booking" />
+                                        <c:param name="action" value="booking" />
                                         <c:param name="vehicleId" value="${vehicle.vehicleId}" />
                                         <c:param name="stationId" value="${stationId}" />
                                         <c:param name="startDate" value="${startDate}" />
@@ -146,7 +146,7 @@
                 </c:choose>
 
                 <c:url var="backToSearchUrl" value="/">
-                    <c:param name="page" value="home" />
+                    <c:param name="action" value="home" />
                     <c:param name="action" value="search" />
                     <c:param name="stationId" value="${stationId}" />
                     <c:param name="categoryId" value="${categoryId}" />

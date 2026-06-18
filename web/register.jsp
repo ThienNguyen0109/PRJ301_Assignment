@@ -319,7 +319,7 @@
                 </form>
 
                 <div class="login-link">
-                    Đã có tài khoản? <a href="<%= request.getContextPath() %>?page=login">Đăng Nhập</a>
+                    Đã có tài khoản? <a href="<%= request.getContextPath() %>?action=login">Đăng Nhập</a>
                 </div>
             </div>
         </div>

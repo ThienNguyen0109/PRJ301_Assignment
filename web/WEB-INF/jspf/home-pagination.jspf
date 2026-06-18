@@ -1,0 +1,36 @@
+<c:if test="${listTotalPages gt 1}">
+    <div class="pagination-bar">
+        <div>
+            Hi&#7875;n th&#7883; ${listStartItem}-${listEndItem} / ${listTotalItems} m&#7851;u xe
+        </div>
+        <div class="pagination-actions">
+            <c:if test="${hasPreviousPage}">
+                <c:url var="previousPageUrl" value="/">
+                    <c:param name="action" value="home" />
+                    <c:param name="listPage" value="${previousPage}" />
+                    <c:if test="${paginationMode eq 'search'}">
+                        <c:param name="searchAction" value="search" />
+                        <c:param name="stationId" value="${selectedStationId}" />
+                        <c:param name="categoryId" value="${selectedCategoryId}" />
+                    </c:if>
+                </c:url>
+                <a class="page-link" href="${previousPageUrl}">Tr&#432;&#7899;c</a>
+            </c:if>
+
+            <span class="page-current">${listCurrentPage} / ${listTotalPages}</span>
+
+            <c:if test="${hasNextPage}">
+                <c:url var="nextPageUrl" value="/">
+                    <c:param name="action" value="home" />
+                    <c:param name="listPage" value="${nextPage}" />
+                    <c:if test="${paginationMode eq 'search'}">
+                        <c:param name="searchAction" value="search" />
+                        <c:param name="stationId" value="${selectedStationId}" />
+                        <c:param name="categoryId" value="${selectedCategoryId}" />
+                    </c:if>
+                </c:url>
+                <a class="page-link" href="${nextPageUrl}">Sau</a>
+            </c:if>
+        </div>
+    </div>
+</c:if>

@@ -19,9 +19,9 @@ import javax.servlet.http.HttpSession;
  * Servlet for handling user login
  * URL Pattern: /login
  */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
-public class LoginServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
+@WebServlet(name = "LoginController", urlPatterns = {"/login"})
+public class LoginController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
     private IAccountDAO accountDAO = new AccountDAO();
 
     /**
@@ -43,7 +43,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         
-        response.sendRedirect(request.getContextPath() + "?page=login");
+        response.sendRedirect(request.getContextPath() + "?action=login");
     }
 
     /**
@@ -115,9 +115,9 @@ public class LoginServlet extends HttpServlet {
 
     private String getRedirectPageByRole(Account account) {
         if (account != null && account.getRole() == Role.ADMIN) {
-            return "?page=dashboard";
+            return "?action=dashboard";
         }
-        return "?page=home";
+        return "?action=home";
     }
 }
 

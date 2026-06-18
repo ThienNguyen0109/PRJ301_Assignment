@@ -62,8 +62,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -89,7 +89,7 @@
                         <div class="line"><span>Không tìm thấy thông tin booking vừa tạo.</span><strong></strong></div>
                     </c:otherwise>
                 </c:choose>
-                <a class="primary-btn" href="${pageContext.request.contextPath}?page=home">Quay về Home</a>
+                <a class="primary-btn" href="${pageContext.request.contextPath}?action=home">Quay về Home</a>
             </div>
         </div>
     </body>

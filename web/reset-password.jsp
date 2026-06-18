@@ -364,7 +364,7 @@
                 <% } %>
 
                 <div class="footer-links">
-                    <a href="<%= request.getContextPath() %>?page=login">Quay lại đăng nhập</a>
+                    <a href="<%= request.getContextPath() %>?action=login">Quay lại đăng nhập</a>
                 </div>
             </div>
         </div>

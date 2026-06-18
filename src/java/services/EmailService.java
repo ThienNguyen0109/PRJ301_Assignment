@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Authenticator;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -26,6 +25,7 @@ public class EmailService {
     private static final String SMTP_PORT = "587";
     private static final String SENDER_EMAIL = "thien.nmt1972004@gmail.com";
     private static final String SENDER_PASSWORD = "mefk ralp ymuo lcjr";
+    private static final String TIMEOUT_MS = "30000";
 
     public static boolean sendEmail(String recipientEmail, String subject, String body) {
         try {
@@ -65,7 +65,6 @@ public class EmailService {
         message.setFrom(new InternetAddress(SENDER_EMAIL, "E-Vehicle Rental", "UTF-8"));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
         message.setSubject(subject, "UTF-8");
-        message.setHeader("Content-Transfer-Encoding", "quoted-printable");
         message.setContent(body, "text/html; charset=UTF-8");
         message.saveChanges();
         return message;
@@ -78,8 +77,11 @@ public class EmailService {
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.starttls.required", "true");
-        properties.put("mail.smtp.connectiontimeout", "5000");
-        properties.put("mail.smtp.timeout", "5000");
+        properties.put("mail.smtp.ssl.trust", SMTP_HOST);
+        properties.put("mail.smtp.connectiontimeout", TIMEOUT_MS);
+        properties.put("mail.smtp.timeout", TIMEOUT_MS);
+        properties.put("mail.smtp.writetimeout", TIMEOUT_MS);
+        properties.put("mail.smtp.quitwait", "false");
         properties.put("mail.mime.charset", "UTF-8");
         return properties;
     }
@@ -161,7 +163,7 @@ public class EmailService {
                 "</style></head><body><div class=\"outer\"><div class=\"box\">" +
                 "<div class=\"header\"><p class=\"brand\">" + escapeHtml(brand) + "</p><h1 class=\"title\">" + escapeHtml(title) + "</h1><p class=\"subtitle\">" + escapeHtml(subtitle) + "</p></div>" +
                 "<div class=\"content\">" + content + "</div>" +
-                "<div class=\"footer\">© 2026 E-Vehicle Rental System. " + escapeHtml(footerNote) + "</div>" +
+                "<div class=\"footer\">&copy; 2026 E-Vehicle Rental System. " + escapeHtml(footerNote) + "</div>" +
                 "</div></div></body></html>";
     }
 

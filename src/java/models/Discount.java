@@ -2,17 +2,29 @@ package models;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Entity class representing a Discount
  */
+@Entity
+@Table(name = "Discount")
 public class Discount implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "discount_id", columnDefinition = "uniqueidentifier")
     private String discountId;
+    @Column(name = "code", nullable = false, unique = true, length = 50)
     private String code;
+    @Column(name = "discount_percent", nullable = false)
     private Integer discountPercent;
+    @Column(name = "expired_at")
     private Timestamp expiredAt;
+    @Column(name = "quantity")
     private Integer quantity;
 
     public Discount() {

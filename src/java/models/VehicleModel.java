@@ -1,20 +1,42 @@
 package models;
 
 import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Entity class representing a Vehicle_Model
  */
+@Entity
+@Table(name = "Vehicle_Model")
 public class VehicleModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "model_id", columnDefinition = "uniqueidentifier")
     private String modelId;
+    @Column(name = "category_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String categoryId;
+    @Column(name = "name", nullable = false, length = 100, columnDefinition = "NVARCHAR(100)")
     private String name;
+    @Column(name = "brand", length = 100, columnDefinition = "NVARCHAR(100)")
     private String brand;
+    @Column(name = "seat_count")
     private Integer seatCount;
+    @Column(name = "price_per_day", precision = 10, scale = 2)
     private Double pricePerDay;
+    @Lob
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", referencedColumnName = "category_id", insertable = false, updatable = false)
+    private Category category;
 
     public VehicleModel() {
     }
@@ -92,6 +114,14 @@ public class VehicleModel implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     @Override

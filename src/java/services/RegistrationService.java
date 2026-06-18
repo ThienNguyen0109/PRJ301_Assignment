@@ -4,102 +4,67 @@ import daos.AccountDAO;
 import daos.IAccountDAO;
 import daos.IWalletDAO;
 import daos.WalletDAO;
-import models.Account;
 import enums.Role;
-import models.Wallet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import models.Account;
+import models.Wallet;
 
 /**
- * Service for handling user registration with OTP verification
+ * Service for handling user registration with OTP verification.
  */
 public class RegistrationService {
     private static final Logger LOGGER = Logger.getLogger(RegistrationService.class.getName());
-
-    private IAccountDAO accountDAO = new AccountDAO();
-    private IWalletDAO walletDAO = new WalletDAO();
-
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
     private static final int PASSWORD_MIN_LENGTH = 6;
 
-    /**
-     * Validate registration input data
-     * @param fullName Full name
-     * @param email Email address
-     * @param password Password
-     * @param phone Phone number
-     * @return Map containing validation result and error message
-     */
+    private IAccountDAO accountDAO = new AccountDAO();
+    private IWalletDAO walletDAO = new WalletDAO();
+
     public Map<String, Object> validateRegistrationData(String fullName, String email, String password, String phone) {
         Map<String, Object> result = new HashMap<>();
         result.put("valid", true);
         result.put("message", "");
 
-        if (fullName == null || fullName.trim().isEmpty()) {
-            result.put("valid", false);
-            result.put("message", "Há» vÃ  tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
-            return result;
+        if (isBlank(fullName)) {
+            return invalid(result, "Họ và tên không được để trống");
         }
 
         if (fullName.trim().length() < 3) {
-            result.put("valid", false);
-            result.put("message", "Há» vÃ  tÃªn pháº£i cÃ³ Ã­t nháº¥t 3 kÃ½ tá»±");
-            return result;
+            return invalid(result, "Họ và tên phải có ít nhất 3 ký tự");
         }
 
-        if (email == null || email.trim().isEmpty()) {
-            result.put("valid", false);
-            result.put("message", "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
-            return result;
+        if (isBlank(email)) {
+            return invalid(result, "Email không được để trống");
         }
 
         if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
-            result.put("valid", false);
-            result.put("message", "Email khÃ´ng há»£p lá»‡");
-            return result;
+            return invalid(result, "Email không hợp lệ");
         }
 
         if (accountDAO.isEmailExists(email.trim())) {
-            result.put("valid", false);
-            result.put("message", "Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½");
-            return result;
+            return invalid(result, "Email này đã được đăng ký");
         }
 
         if (password == null || password.isEmpty()) {
-            result.put("valid", false);
-            result.put("message", "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
-            return result;
+            return invalid(result, "Mật khẩu không được để trống");
         }
 
         if (password.length() < PASSWORD_MIN_LENGTH) {
-            result.put("valid", false);
-            result.put("message", "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t " + PASSWORD_MIN_LENGTH + " kÃ½ tá»±");
-            return result;
+            return invalid(result, "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự");
         }
 
-        if (phone != null && !phone.trim().isEmpty()) {
-            if (!phone.matches("\\d{10,11}")) {
-                result.put("valid", false);
-                result.put("message", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡");
-                return result;
-            }
+        if (!isBlank(phone) && !phone.trim().matches("\\d{10,11}")) {
+            return invalid(result, "Số điện thoại không hợp lệ");
         }
 
         return result;
     }
 
-    /**
-     * Register account after OTP verification
-     * @param fullName Full name
-     * @param email Email address
-     * @param password Password
-     * @param phone Phone number
-     * @return Map containing registration result and message
-     */
     public Map<String, Object> registerAccount(String fullName, String email, String password, String phone) {
         Map<String, Object> result = new HashMap<>();
         result.put("success", false);
@@ -117,13 +82,13 @@ public class RegistrationService {
             account.setStatus("ACTIVE");
 
             if (!accountDAO.createAccount(account)) {
-                result.put("message", "Lá»—i khi táº¡o tÃ i khoáº£n. Vui lÃ²ng thá»­ láº¡i.");
+                result.put("message", "Lỗi khi tạo tài khoản. Vui lòng thử lại.");
                 return result;
             }
 
             Account createdAccount = accountDAO.getAccountByEmail(email.trim());
             if (createdAccount == null) {
-                result.put("message", "Lá»—i khi láº¥y thÃ´ng tin tÃ i khoáº£n.");
+                result.put("message", "Lỗi khi lấy thông tin tài khoản.");
                 return result;
             }
 
@@ -133,16 +98,25 @@ public class RegistrationService {
             }
 
             result.put("success", true);
-            result.put("message", "ÄÄƒng kÃ½ thÃ nh cÃ´ng!");
+            result.put("message", "Đăng ký thành công!");
             result.put("accountId", createdAccount.getAccountId());
 
             LOGGER.log(Level.INFO, "Account registered successfully: " + email);
         } catch (Exception ex) {
-            result.put("message", "CÃ³ lá»—i xáº£y ra: " + ex.getMessage());
+            result.put("message", "Có lỗi xảy ra: " + ex.getMessage());
             LOGGER.log(Level.SEVERE, "Error registering account: " + ex.getMessage(), ex);
         }
 
         return result;
     }
-}
 
+    private Map<String, Object> invalid(Map<String, Object> result, String message) {
+        result.put("valid", false);
+        result.put("message", message);
+        return result;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+}

@@ -3,18 +3,41 @@ package models;
 import enums.MaintenanceStatus;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Entity class representing a Vehicle_Maintenance
  */
+@Entity
+@Table(name = "Vehicle_Maintenance")
 public class VehicleMaintenance implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "maintenance_id", columnDefinition = "uniqueidentifier")
     private String maintenanceId;
+    @Column(name = "vehicle_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String vehicleId;
+    @Lob
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
+    @Column(name = "maintenance_date")
     private Timestamp maintenanceDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private MaintenanceStatus status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicle_id", insertable = false, updatable = false)
+    private Vehicle vehicle;
 
     public VehicleMaintenance() {
     }
@@ -72,6 +95,14 @@ public class VehicleMaintenance implements Serializable {
 
     public void setStatus(MaintenanceStatus status) {
         this.status = status;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     @Override

@@ -5,20 +5,34 @@ import dto.BookingQuote;
 import enums.PaymentMethod;
 import enums.PaymentStatus;
 import enums.RentalStatus;
+import enums.TransactionType;
 import enums.VehicleStatus;
-import java.sql.Connection;
+import java.math.BigDecimal;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
 import models.Account;
-import utils.DBUtils;
+import models.Discount;
+import models.Payment;
+import models.Rental;
+import models.RentalDiscount;
+import models.RentalStatusHistory;
+import models.Vehicle;
+import models.Wallet;
+import models.WalletTransaction;
+import utils.JPAUtil;
 
 /**
- * Handles booking calculation and transactional booking payment.
+ * Handles booking calculation and transactional booking payment using JPA.
  */
 public class BookingService {
     private static final Logger LOGGER = Logger.getLogger(BookingService.class.getName());
@@ -27,407 +41,404 @@ public class BookingService {
     public static final String ACTIVE_RENTAL_MESSAGE = "Bạn đang có một đơn thuê đang hoạt động. Vui lòng hoàn tất hoặc hủy đơn hiện tại trước khi đặt xe mới.";
 
     public BookingQuote createQuote(String customerId, String vehicleId, Date startDate, Date endDate, String discountCode)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException {
         validateDates(startDate, endDate);
 
-        try (Connection conn = DBUtils.getConnection()) {
-            ensureCustomerHasNoActiveRental(conn, customerId);
-            BookingQuote quote = loadVehicleQuote(conn, customerId, vehicleId, startDate, endDate);
-            applyDiscount(conn, quote, discountCode, false);
+        EntityManager em = null;
+        try {
+            em = JPAUtil.getEntityManager();
+            ensureCustomerHasNoActiveRental(em, customerId, false);
+            BookingQuote quote = loadVehicleQuote(em, customerId, vehicleId, startDate, endDate);
+            if (!isVehicleAvailable(em, vehicleId, startDate, endDate)) {
+                throw new SQLException("Xe da duoc dat trong khoang thoi gian nay.");
+            }
+            applyDiscount(em, quote, discountCode, false);
             return quote;
+        } finally {
+            close(em);
         }
     }
 
     public BookingDetail payByWallet(Account customer, BookingQuote quote)
-            throws SQLException, ClassNotFoundException {
-        Connection conn = null;
+            throws SQLException {
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            conn = DBUtils.getConnection();
-            conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            em = JPAUtil.getEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
 
             validateDates(quote.getStartDate(), quote.getEndDate());
-            ensureCustomerHasNoActiveRental(conn, customer.getAccountId());
-            if (!isVehicleAvailable(conn, quote.getVehicleId(), quote.getStartDate(), quote.getEndDate())) {
+            ensureCustomerHasNoActiveRental(em, customer.getAccountId(), true);
+            if (!isVehicleAvailable(em, quote.getVehicleId(), quote.getStartDate(), quote.getEndDate())) {
                 throw new SQLException("Xe đã được đặt trong khoảng thời gian này.");
             }
 
-            BookingQuote freshQuote = loadVehicleQuote(conn, customer.getAccountId(), quote.getVehicleId(),
+            BookingQuote freshQuote = loadVehicleQuote(em, customer.getAccountId(), quote.getVehicleId(),
                     quote.getStartDate(), quote.getEndDate());
-            applyDiscount(conn, freshQuote, quote.getDiscountCode(), true);
+            applyDiscount(em, freshQuote, quote.getDiscountCode(), true);
 
-            WalletSnapshot wallet = loadWalletForUpdate(conn, customer.getAccountId());
+            Wallet wallet = loadWalletForUpdate(em, customer.getAccountId());
             if (wallet == null) {
                 throw new SQLException("Không tìm thấy ví của bạn.");
             }
-            if (wallet.balance < freshQuote.getFinalAmount()) {
+            if (wallet.getBalance() == null || wallet.getBalance() < freshQuote.getFinalAmount()) {
                 throw new SQLException(INSUFFICIENT_WALLET_MESSAGE);
             }
 
-            String rentalId = insertRental(conn, freshQuote, RentalStatus.BOOKED);
+            Rental rental = createRental(em, freshQuote, RentalStatus.BOOKED);
             if (freshQuote.getDiscountId() != null) {
-                insertRentalDiscount(conn, rentalId, freshQuote.getDiscountId());
+                createRentalDiscount(em, rental.getRentalId(), freshQuote.getDiscountId());
             }
 
-            updateWalletBalance(conn, wallet.walletId, wallet.balance - freshQuote.getFinalAmount());
-            insertWalletTransaction(conn, wallet.walletId, freshQuote.getFinalAmount(),
-                    "Thanh toán booking " + rentalId + " - " + freshQuote.getVehicleModelName());
-            String paymentId = insertPayment(conn, rentalId, freshQuote.getFinalAmount(),
+            wallet.setBalance(wallet.getBalance() - freshQuote.getFinalAmount());
+            wallet.setUpdatedAt(now());
+            createWalletTransaction(em, wallet.getWalletId(), freshQuote.getFinalAmount(),
+                    "Thanh toán booking " + rental.getRentalId() + " - " + freshQuote.getVehicleModelName());
+            Payment payment = createPayment(em, rental.getRentalId(), freshQuote.getFinalAmount(),
                     PaymentMethod.WALLET, PaymentStatus.SUCCESS, "WALLET" + System.currentTimeMillis());
-            updateVehicleStatus(conn, freshQuote.getVehicleId(), VehicleStatus.RENTED);
-            insertRentalStatusHistory(conn, rentalId, RentalStatus.BOOKED);
+            updateVehicleStatus(em, freshQuote.getVehicleId(), VehicleStatus.RENTED);
+            createRentalStatusHistory(em, rental.getRentalId(), RentalStatus.BOOKED);
 
-            conn.commit();
-            return buildDetail(rentalId, paymentId, PaymentMethod.WALLET, PaymentStatus.SUCCESS, "WALLET", freshQuote);
-        } catch (SQLException | ClassNotFoundException ex) {
-            rollbackQuietly(conn);
+            tx.commit();
+            return buildDetail(rental.getRentalId(), payment.getPaymentId(), PaymentMethod.WALLET,
+                    PaymentStatus.SUCCESS, "WALLET", freshQuote);
+        } catch (SQLException ex) {
+            rollback(tx);
+            throw ex;
+        } catch (RuntimeException ex) {
+            rollback(tx);
             throw ex;
         } finally {
-            closeQuietly(conn);
+            close(em);
         }
     }
 
     public String createPendingVNPayPayment(BookingQuote quote, String orderId)
-            throws SQLException, ClassNotFoundException {
-        Connection conn = null;
+            throws SQLException {
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            conn = DBUtils.getConnection();
-            conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            em = JPAUtil.getEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
 
             validateDates(quote.getStartDate(), quote.getEndDate());
-            ensureCustomerHasNoActiveRental(conn, quote.getCustomerId());
-            if (!isVehicleAvailable(conn, quote.getVehicleId(), quote.getStartDate(), quote.getEndDate())) {
+            ensureCustomerHasNoActiveRental(em, quote.getCustomerId(), true);
+            if (!isVehicleAvailable(em, quote.getVehicleId(), quote.getStartDate(), quote.getEndDate())) {
                 throw new SQLException("Xe đã được đặt trong khoảng thời gian này.");
             }
 
-            BookingQuote freshQuote = loadVehicleQuote(conn, quote.getCustomerId(), quote.getVehicleId(),
+            BookingQuote freshQuote = loadVehicleQuote(em, quote.getCustomerId(), quote.getVehicleId(),
                     quote.getStartDate(), quote.getEndDate());
-            applyDiscount(conn, freshQuote, quote.getDiscountCode(), true);
+            applyDiscount(em, freshQuote, quote.getDiscountCode(), true);
 
-            String rentalId = insertRental(conn, freshQuote, RentalStatus.BOOKED);
+            Rental rental = createRental(em, freshQuote, RentalStatus.BOOKED);
             if (freshQuote.getDiscountId() != null) {
-                insertRentalDiscount(conn, rentalId, freshQuote.getDiscountId());
+                createRentalDiscount(em, rental.getRentalId(), freshQuote.getDiscountId());
             }
-            String paymentId = insertPayment(conn, rentalId, freshQuote.getFinalAmount(),
+            Payment payment = createPayment(em, rental.getRentalId(), freshQuote.getFinalAmount(),
                     PaymentMethod.VNPAY, PaymentStatus.PENDING, orderId);
-            insertRentalStatusHistory(conn, rentalId, RentalStatus.BOOKED);
+            createRentalStatusHistory(em, rental.getRentalId(), RentalStatus.BOOKED);
 
-            conn.commit();
-            return paymentId;
-        } catch (SQLException | ClassNotFoundException ex) {
-            rollbackQuietly(conn);
+            tx.commit();
+            return payment.getPaymentId();
+        } catch (SQLException ex) {
+            rollback(tx);
+            throw ex;
+        } catch (RuntimeException ex) {
+            rollback(tx);
             throw ex;
         } finally {
-            closeQuietly(conn);
+            close(em);
         }
     }
 
     public BookingDetail completeVNPayBooking(Account customer, BookingQuote quote, String orderId, String transactionNo)
-            throws SQLException, ClassNotFoundException {
-        Connection conn = null;
+            throws SQLException {
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            conn = DBUtils.getConnection();
-            conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            em = JPAUtil.getEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
 
-            String rentalId = getPendingPaymentRentalId(conn, orderId);
-            if (rentalId == null) {
+            Payment payment = getPendingPaymentForUpdate(em, orderId);
+            if (payment == null) {
                 throw new SQLException("Không tìm thấy payment pending.");
             }
 
-            String paymentId = updatePendingPayment(conn, orderId, PaymentStatus.SUCCESS, transactionNo);
-            updateVehicleStatus(conn, quote.getVehicleId(), VehicleStatus.RENTED);
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setTransactionCode(transactionNo != null && !transactionNo.isEmpty() ? transactionNo : orderId);
+            payment.setPaymentDate(now());
+            updateVehicleStatus(em, quote.getVehicleId(), VehicleStatus.RENTED);
 
-            conn.commit();
-            return buildDetail(rentalId, paymentId, PaymentMethod.VNPAY, PaymentStatus.SUCCESS, transactionNo, quote);
-        } catch (SQLException | ClassNotFoundException ex) {
-            rollbackQuietly(conn);
+            tx.commit();
+            return buildDetail(payment.getRentalId(), payment.getPaymentId(), PaymentMethod.VNPAY,
+                    PaymentStatus.SUCCESS, transactionNo, quote);
+        } catch (SQLException ex) {
+            rollback(tx);
+            throw ex;
+        } catch (RuntimeException ex) {
+            rollback(tx);
             throw ex;
         } finally {
-            closeQuietly(conn);
+            close(em);
         }
     }
 
     public void failPendingVNPayPayment(String orderId, String transactionNo) {
-        Connection conn = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            conn = DBUtils.getConnection();
-            conn.setAutoCommit(false);
+            em = JPAUtil.getEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
 
-            String rentalId = getPendingPaymentRentalId(conn, orderId);
-            updatePendingPayment(conn, orderId, PaymentStatus.FAILED, transactionNo);
-            if (rentalId != null) {
-                restoreRentalDiscounts(conn, rentalId);
-                updateRentalStatus(conn, rentalId, RentalStatus.CANCELLED);
-                insertRentalStatusHistory(conn, rentalId, RentalStatus.CANCELLED);
+            Payment payment = getPendingPaymentForUpdate(em, orderId);
+            if (payment != null) {
+                payment.setStatus(PaymentStatus.FAILED);
+                payment.setTransactionCode(transactionNo != null && !transactionNo.isEmpty() ? transactionNo : orderId);
+                payment.setPaymentDate(now());
+
+                restoreRentalDiscounts(em, payment.getRentalId());
+                updateRentalStatus(em, payment.getRentalId(), RentalStatus.CANCELLED);
+                createRentalStatusHistory(em, payment.getRentalId(), RentalStatus.CANCELLED);
             }
 
-            conn.commit();
+            tx.commit();
         } catch (Exception ex) {
-            rollbackQuietly(conn);
+            rollback(tx);
             LOGGER.log(Level.WARNING, "Could not mark VNPay booking payment failed: " + orderId, ex);
         } finally {
-            closeQuietly(conn);
+            close(em);
         }
     }
 
-    private BookingQuote loadVehicleQuote(Connection conn, String customerId, String vehicleId, Date startDate, Date endDate)
+    private BookingQuote loadVehicleQuote(EntityManager em, String customerId, String vehicleId, Date startDate, Date endDate)
             throws SQLException {
-        String sql = "SELECT v.vehicle_id, v.station_id, v.license_plate, s.name AS station_name, " +
-                "vm.name AS model_name, vm.price_per_day " +
-                "FROM Vehicle v " +
-                "INNER JOIN Vehicle_Model vm ON v.model_id = vm.model_id " +
-                "INNER JOIN Station s ON v.station_id = s.station_id " +
-                "WHERE v.vehicle_id = ? AND v.status = 'AVAILABLE'";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, vehicleId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    throw new SQLException("Không tìm thấy xe đang khả dụng.");
-                }
-
-                int totalDays = (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
-                double pricePerDay = rs.getDouble("price_per_day");
-                double originalAmount = pricePerDay * totalDays;
-
-                BookingQuote quote = new BookingQuote();
-                quote.setCustomerId(customerId);
-                quote.setVehicleId(rs.getString("vehicle_id"));
-                quote.setStationId(rs.getString("station_id"));
-                quote.setStationName(rs.getString("station_name"));
-                quote.setLicensePlate(rs.getString("license_plate"));
-                quote.setVehicleModelName(rs.getString("model_name"));
-                quote.setStartDate(startDate);
-                quote.setEndDate(endDate);
-                quote.setTotalDays(totalDays);
-                quote.setPricePerDay(pricePerDay);
-                quote.setOriginalAmount(originalAmount);
-                quote.setDiscountAmount(0.0);
-                quote.setFinalAmount(originalAmount);
-                return quote;
-            }
+        List<Vehicle> vehicles = em.createQuery(
+                "SELECT v FROM Vehicle v " +
+                "WHERE v.vehicleId = :vehicleId " +
+                "AND (v.status = :availableStatus OR v.status = :rentedStatus)",
+                Vehicle.class)
+                .setParameter("vehicleId", vehicleId)
+                .setParameter("availableStatus", VehicleStatus.AVAILABLE)
+                .setParameter("rentedStatus", VehicleStatus.RENTED)
+                .setMaxResults(1)
+                .getResultList();
+        if (vehicles.isEmpty()) {
+            throw new SQLException("Không tìm thấy xe đang khả dụng.");
         }
+
+        Vehicle vehicle = vehicles.get(0);
+        int totalDays = (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
+        double pricePerDay = vehicle.getModel() != null && vehicle.getModel().getPricePerDay() != null
+                ? vehicle.getModel().getPricePerDay()
+                : 0.0;
+        double originalAmount = pricePerDay * totalDays;
+
+        BookingQuote quote = new BookingQuote();
+        quote.setCustomerId(customerId);
+        quote.setVehicleId(vehicle.getVehicleId());
+        quote.setStationId(vehicle.getStationId());
+        quote.setLicensePlate(vehicle.getLicensePlate());
+        quote.setStationName(vehicle.getStation() != null ? vehicle.getStation().getName() : null);
+        quote.setVehicleModelName(vehicle.getModel() != null ? vehicle.getModel().getName() : null);
+        quote.setStartDate(startDate);
+        quote.setEndDate(endDate);
+        quote.setTotalDays(totalDays);
+        quote.setPricePerDay(pricePerDay);
+        quote.setOriginalAmount(originalAmount);
+        quote.setDiscountAmount(0.0);
+        quote.setFinalAmount(originalAmount);
+        return quote;
     }
 
-    private void applyDiscount(Connection conn, BookingQuote quote, String discountCode, boolean consume)
+    private void applyDiscount(EntityManager em, BookingQuote quote, String discountCode, boolean consume)
             throws SQLException {
         if (discountCode == null || discountCode.trim().isEmpty()) {
             return;
         }
 
-        String sql = "SELECT discount_id, code, discount_percent, quantity " +
-                "FROM Discount " +
-                "WHERE UPPER(code) = UPPER(?) AND expired_at >= GETDATE() AND quantity > 0";
+        javax.persistence.TypedQuery<Discount> query = em.createQuery(
+                "SELECT d FROM Discount d " +
+                "WHERE UPPER(d.code) = UPPER(:code) " +
+                "AND d.expiredAt >= :now " +
+                "AND d.quantity > 0",
+                Discount.class)
+                .setParameter("code", discountCode.trim())
+                .setParameter("now", now())
+                .setMaxResults(1);
+        if (consume) {
+            query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+        }
+        List<Discount> discounts = query.getResultList();
+
+        if (discounts.isEmpty()) {
+            throw new SQLException(INVALID_DISCOUNT_MESSAGE);
+        }
+
+        Discount discount = discounts.get(0);
+        int percent = discount.getDiscountPercent();
+        double discountAmount = quote.getOriginalAmount() * percent / 100.0;
+        quote.setDiscountCode(discount.getCode());
+        quote.setDiscountId(discount.getDiscountId());
+        quote.setDiscountPercent(percent);
+        quote.setDiscountAmount(discountAmount);
+        quote.setFinalAmount(Math.max(0.0, quote.getOriginalAmount() - discountAmount));
 
         if (consume) {
-            sql = "SELECT discount_id, code, discount_percent, quantity FROM Discount WITH (UPDLOCK) " +
-                    "WHERE UPPER(code) = UPPER(?) AND expired_at >= GETDATE() AND quantity > 0";
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, discountCode.trim());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    throw new SQLException(INVALID_DISCOUNT_MESSAGE);
-                }
-
-                int percent = rs.getInt("discount_percent");
-                double discountAmount = quote.getOriginalAmount() * percent / 100.0;
-                quote.setDiscountCode(rs.getString("code"));
-                quote.setDiscountId(rs.getString("discount_id"));
-                quote.setDiscountPercent(percent);
-                quote.setDiscountAmount(discountAmount);
-                quote.setFinalAmount(Math.max(0.0, quote.getOriginalAmount() - discountAmount));
+            if (discount.getQuantity() == null || discount.getQuantity() <= 0) {
+                throw new SQLException(INVALID_DISCOUNT_MESSAGE);
             }
-        }
-
-        if (consume) {
-            try (PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE Discount SET quantity = quantity - 1 WHERE discount_id = ? AND quantity > 0")) {
-                stmt.setString(1, quote.getDiscountId());
-                if (stmt.executeUpdate() == 0) {
-                    throw new SQLException(INVALID_DISCOUNT_MESSAGE);
-                }
-            }
+            discount.setQuantity(discount.getQuantity() - 1);
         }
     }
 
-    private boolean isVehicleAvailable(Connection conn, String vehicleId, Date startDate, Date endDate)
+    private boolean isVehicleAvailable(EntityManager em, String vehicleId, Date startDate, Date endDate) {
+        Long count = em.createQuery(
+                "SELECT COUNT(r) FROM Rental r " +
+                "WHERE r.vehicleId = :vehicleId " +
+                "AND (r.status = :booked OR r.status = :rented) " +
+                "AND r.startDate < :endDate " +
+                "AND r.endDate > :startDate",
+                Long.class)
+                .setParameter("vehicleId", vehicleId)
+                .setParameter("booked", RentalStatus.BOOKED)
+                .setParameter("rented", RentalStatus.RENTED)
+                .setParameter("endDate", endDate)
+                .setParameter("startDate", startDate)
+                .getSingleResult();
+        return count == null || count == 0;
+    }
+
+    private void ensureCustomerHasNoActiveRental(EntityManager em, String customerId, boolean lock)
             throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Rental " +
-                "WHERE vehicle_id = ? AND status IN ('BOOKED', 'RENTED') " +
-                "AND start_date < ? AND end_date > ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, vehicleId);
-            stmt.setDate(2, endDate);
-            stmt.setDate(3, startDate);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() && rs.getInt(1) == 0;
+        Query query = em.createQuery(
+                "SELECT r FROM Rental r " +
+                "WHERE r.customerId = :customerId " +
+                "AND (r.status = :booked OR r.status = :rented)")
+                .setParameter("customerId", customerId)
+                .setParameter("booked", RentalStatus.BOOKED)
+                .setParameter("rented", RentalStatus.RENTED)
+                .setMaxResults(1);
+        if (lock) {
+            query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+        }
+        if (!query.getResultList().isEmpty()) {
+            throw new SQLException(ACTIVE_RENTAL_MESSAGE);
+        }
+    }
+
+    private Wallet loadWalletForUpdate(EntityManager em, String accountId) {
+        List<Wallet> wallets = em.createQuery(
+                "SELECT w FROM Wallet w WHERE w.accountId = :accountId",
+                Wallet.class)
+                .setParameter("accountId", accountId)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setMaxResults(1)
+                .getResultList();
+        return wallets.isEmpty() ? null : wallets.get(0);
+    }
+
+    private Rental createRental(EntityManager em, BookingQuote quote, RentalStatus status) {
+        Rental rental = new Rental();
+        rental.setRentalId(newId());
+        rental.setCustomerId(quote.getCustomerId());
+        rental.setVehicleId(quote.getVehicleId());
+        rental.setPickupStationId(quote.getStationId());
+        rental.setStartDate(quote.getStartDate());
+        rental.setEndDate(quote.getEndDate());
+        rental.setTotalDays(quote.getTotalDays());
+        rental.setTotalAmount(BigDecimal.valueOf(quote.getFinalAmount()));
+        rental.setStatus(status);
+        rental.setCreatedAt(now());
+        em.persist(rental);
+        em.flush();
+        return rental;
+    }
+
+    private void createRentalDiscount(EntityManager em, String rentalId, String discountId) {
+        RentalDiscount rentalDiscount = new RentalDiscount();
+        rentalDiscount.setRentalDiscountId(newId());
+        rentalDiscount.setRentalId(rentalId);
+        rentalDiscount.setDiscountId(discountId);
+        em.persist(rentalDiscount);
+    }
+
+    private void createWalletTransaction(EntityManager em, String walletId, double amount, String description) {
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setTransactionId(newId());
+        transaction.setWalletId(walletId);
+        transaction.setAmount(amount);
+        transaction.setType(TransactionType.PAYMENT);
+        transaction.setDescription(description);
+        transaction.setCreatedAt(now());
+        em.persist(transaction);
+    }
+
+    private Payment createPayment(EntityManager em, String rentalId, double amount, PaymentMethod method,
+            PaymentStatus status, String transactionCode) {
+        Payment payment = new Payment();
+        payment.setPaymentId(newId());
+        payment.setRentalId(rentalId);
+        payment.setAmount(amount);
+        payment.setPaymentMethod(method);
+        payment.setStatus(status);
+        payment.setTransactionCode(transactionCode);
+        payment.setPaymentDate(status == PaymentStatus.PENDING ? null : now());
+        em.persist(payment);
+        return payment;
+    }
+
+    private Payment getPendingPaymentForUpdate(EntityManager em, String orderId) {
+        List<Payment> payments = em.createQuery(
+                "SELECT p FROM Payment p WHERE p.transactionCode = :orderId AND p.status = :status",
+                Payment.class)
+                .setParameter("orderId", orderId)
+                .setParameter("status", PaymentStatus.PENDING)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setMaxResults(1)
+                .getResultList();
+        return payments.isEmpty() ? null : payments.get(0);
+    }
+
+    private void updateRentalStatus(EntityManager em, String rentalId, RentalStatus status) {
+        Rental rental = em.find(Rental.class, rentalId, LockModeType.PESSIMISTIC_WRITE);
+        if (rental != null) {
+            rental.setStatus(status);
+        }
+    }
+
+    private void updateVehicleStatus(EntityManager em, String vehicleId, VehicleStatus status) {
+        Vehicle vehicle = em.find(Vehicle.class, vehicleId, LockModeType.PESSIMISTIC_WRITE);
+        if (vehicle != null) {
+            vehicle.setStatus(status);
+        }
+    }
+
+    private void restoreRentalDiscounts(EntityManager em, String rentalId) {
+        List<RentalDiscount> rentalDiscounts = em.createQuery(
+                "SELECT rd FROM RentalDiscount rd WHERE rd.rentalId = :rentalId",
+                RentalDiscount.class)
+                .setParameter("rentalId", rentalId)
+                .getResultList();
+        for (RentalDiscount rentalDiscount : rentalDiscounts) {
+            Discount discount = em.find(Discount.class, rentalDiscount.getDiscountId(), LockModeType.PESSIMISTIC_WRITE);
+            if (discount != null) {
+                discount.setQuantity((discount.getQuantity() == null ? 0 : discount.getQuantity()) + 1);
             }
         }
     }
 
-    private void ensureCustomerHasNoActiveRental(Connection conn, String customerId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Rental WITH (UPDLOCK, HOLDLOCK) " +
-                "WHERE customer_id = ? AND status IN ('BOOKED', 'RENTED')";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, customerId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    throw new SQLException(ACTIVE_RENTAL_MESSAGE);
-                }
-            }
-        }
-    }
-
-    private WalletSnapshot loadWalletForUpdate(Connection conn, String accountId) throws SQLException {
-        String sql = "SELECT wallet_id, balance FROM Wallet WITH (UPDLOCK) WHERE account_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, accountId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-                return new WalletSnapshot(rs.getString("wallet_id"), rs.getDouble("balance"));
-            }
-        }
-    }
-
-    private String insertRental(Connection conn, BookingQuote quote, RentalStatus status) throws SQLException {
-        String sql = "INSERT INTO Rental (customer_id, vehicle_id, pickup_station_id, start_date, end_date, total_days, total_amount, status) " +
-                "OUTPUT INSERTED.rental_id VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, quote.getCustomerId());
-            stmt.setString(2, quote.getVehicleId());
-            stmt.setString(3, quote.getStationId());
-            stmt.setDate(4, quote.getStartDate());
-            stmt.setDate(5, quote.getEndDate());
-            stmt.setInt(6, quote.getTotalDays());
-            stmt.setDouble(7, quote.getFinalAmount());
-            stmt.setString(8, status.getValue());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-                throw new SQLException("Không thể tạo booking.");
-            }
-        }
-    }
-
-    private void insertRentalDiscount(Connection conn, String rentalId, String discountId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO Rental_Discount (rental_id, discount_id) VALUES (?, ?)")) {
-            stmt.setString(1, rentalId);
-            stmt.setString(2, discountId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void updateWalletBalance(Connection conn, String walletId, double balance) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE Wallet SET balance = ?, updated_at = GETDATE() WHERE wallet_id = ?")) {
-            stmt.setDouble(1, balance);
-            stmt.setString(2, walletId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void insertWalletTransaction(Connection conn, String walletId, double amount, String description)
-            throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO Wallet_Transaction (wallet_id, amount, type, description) VALUES (?, ?, 'PAYMENT', ?)")) {
-            stmt.setString(1, walletId);
-            stmt.setDouble(2, amount);
-            stmt.setString(3, description);
-            stmt.executeUpdate();
-        }
-    }
-
-    private String insertPayment(Connection conn, String rentalId, double amount, PaymentMethod method,
-            PaymentStatus status, String transactionCode) throws SQLException {
-        String sql = "INSERT INTO Payment (rental_id, amount, payment_method, status, transaction_code, payment_date) " +
-                "OUTPUT INSERTED.payment_id VALUES (?, ?, ?, ?, ?, CASE WHEN ? = 'PENDING' THEN NULL ELSE GETDATE() END)";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, rentalId);
-            stmt.setDouble(2, amount);
-            stmt.setString(3, method.getValue());
-            stmt.setString(4, status.getValue());
-            stmt.setString(5, transactionCode);
-            stmt.setString(6, status.getValue());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-                throw new SQLException("Không thể tạo payment.");
-            }
-        }
-    }
-
-    private String getPendingPaymentRentalId(Connection conn, String orderId) throws SQLException {
-        String sql = "SELECT rental_id FROM Payment WHERE transaction_code = ? AND status = 'PENDING'";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, orderId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("rental_id");
-                }
-                return null;
-            }
-        }
-    }
-
-    private String updatePendingPayment(Connection conn, String orderId, PaymentStatus status, String transactionNo)
-            throws SQLException {
-        String sql = "UPDATE Payment SET status = ?, transaction_code = ?, payment_date = GETDATE() " +
-                "OUTPUT INSERTED.payment_id WHERE transaction_code = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, status.getValue());
-            stmt.setString(2, transactionNo != null && !transactionNo.isEmpty() ? transactionNo : orderId);
-            stmt.setString(3, orderId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-                throw new SQLException("Không tìm thấy payment pending.");
-            }
-        }
-    }
-
-    private void updateRentalStatus(Connection conn, String rentalId, RentalStatus status) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE Rental SET status = ? WHERE rental_id = ?")) {
-            stmt.setString(1, status.getValue());
-            stmt.setString(2, rentalId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void updateVehicleStatus(Connection conn, String vehicleId, VehicleStatus status) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE Vehicle SET status = ? WHERE vehicle_id = ?")) {
-            stmt.setString(1, status.getValue());
-            stmt.setString(2, vehicleId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void restoreRentalDiscounts(Connection conn, String rentalId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE Discount SET quantity = quantity + 1 " +
-                "WHERE discount_id IN (SELECT discount_id FROM Rental_Discount WHERE rental_id = ?)")) {
-            stmt.setString(1, rentalId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void insertRentalStatusHistory(Connection conn, String rentalId, RentalStatus status) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO Rental_Status_History (rental_id, status) VALUES (?, ?)")) {
-            stmt.setString(1, rentalId);
-            stmt.setString(2, status.getValue());
-            stmt.executeUpdate();
-        }
+    private void createRentalStatusHistory(EntityManager em, String rentalId, RentalStatus status) {
+        RentalStatusHistory history = new RentalStatusHistory();
+        history.setHistoryId(newId());
+        history.setRentalId(rentalId);
+        history.setStatus(status);
+        history.setChangedAt(now());
+        em.persist(history);
     }
 
     private BookingDetail buildDetail(String rentalId, String paymentId, PaymentMethod method,
@@ -451,34 +462,23 @@ public class BookingService {
         }
     }
 
-    private void rollbackQuietly(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                LOGGER.log(Level.WARNING, "Could not rollback booking transaction", ex);
-            }
+    private String newId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private Timestamp now() {
+        return new Timestamp(System.currentTimeMillis());
+    }
+
+    private void rollback(EntityTransaction tx) {
+        if (tx != null && tx.isActive()) {
+            tx.rollback();
         }
     }
 
-    private void closeQuietly(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.setAutoCommit(true);
-                conn.close();
-            } catch (SQLException ex) {
-                LOGGER.log(Level.WARNING, "Could not close booking connection", ex);
-            }
-        }
-    }
-
-    private static class WalletSnapshot {
-        private final String walletId;
-        private final double balance;
-
-        private WalletSnapshot(String walletId, double balance) {
-            this.walletId = walletId;
-            this.balance = balance;
+    private void close(EntityManager em) {
+        if (em != null && em.isOpen()) {
+            em.close();
         }
     }
 }

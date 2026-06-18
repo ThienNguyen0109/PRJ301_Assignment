@@ -132,7 +132,7 @@
             // Check if user is logged in
             Object userObj = session.getAttribute("user");
             if (userObj == null) {
-                response.sendRedirect(request.getContextPath() + "?page=login");
+                response.sendRedirect(request.getContextPath() + "?action=login");
                 return;
             }
             
@@ -144,8 +144,8 @@
         <div class="navbar">
             <h1>E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="<%= request.getContextPath() %>?page=dashboard">Dashboard</a>
-                <a href="<%= request.getContextPath() %>?page=profile">Profile</a>
+                <a href="<%= request.getContextPath() %>?action=dashboard">Dashboard</a>
+                <a href="<%= request.getContextPath() %>?action=profile">Profile</a>
                 <a href="<%= request.getContextPath() %>/logout" class="logout-btn">Logout</a>
             </div>
         </div>

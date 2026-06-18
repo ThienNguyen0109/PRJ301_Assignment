@@ -14,10 +14,10 @@ import java.util.logging.Logger;
 public class VNPayService {
     private static final Logger LOGGER = Logger.getLogger(VNPayService.class.getName());
     
-    // VNPay Configuration - TODO: Move these values to environment/config before production
+    
     private static final String VNP_SANDBOX_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    private static final String VNP_TMN_CODE = "DOBN8JJT"; // Replace with your TMN Code
-    private static final String VNP_HASH_SECRET = "S99H6PLLLNHIIFUURTEE6W41OHU568OT"; // Replace with your Hash Secret
+    private static final String VNP_TMN_CODE = "DOBN8JJT"; 
+    private static final String VNP_HASH_SECRET = "S99H6PLLLNHIIFUURTEE6W41OHU568OT"; 
     
     /**
      * Generate VNPay payment URL

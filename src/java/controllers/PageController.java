@@ -1,13 +1,13 @@
 package controllers;
 
-import daos.CategoryDAO;
-import daos.ICategoryDAO;
-import daos.IStationDAO;
 import daos.IVehicleSearchDAO;
-import daos.StationDAO;
 import daos.VehicleSearchDAO;
 import daos.WalletDAO;
 import daos.WalletTransactionDAO;
+import dto.BookingDetail;
+import dto.BookingQuote;
+import dto.VehicleSearchResult;
+import enums.Role;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
@@ -19,23 +19,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
-import dto.BookingDetail;
-import dto.BookingQuote;
-import enums.Role;
 import models.Vehicle;
-import dto.VehicleSearchResult;
 import models.Wallet;
 import models.WalletTransaction;
 import services.BookingService;
 
-/**
- * Servlet for handling home page and main navigation routing.
- * URL Pattern: / and /home
- */
-@WebServlet(name = "HomeServlet", urlPatterns = {"", "/home"})
-public class HomeServlet extends HttpServlet {
-    private IStationDAO stationDAO = new StationDAO();
-    private ICategoryDAO categoryDAO = new CategoryDAO();
+@WebServlet(name = "PageController", urlPatterns = {
+    "/page/verify-otp",
+    "/page/reset-password",
+    "/page/vehicle-options",
+    "/page/vehicle-detail",
+    "/page/booking",
+    "/page/booking-detail",
+    "/page/wallet",
+    "/page/profile",
+    "/page/dashboard"
+})
+public class PageController extends HttpServlet {
     private IVehicleSearchDAO vehicleSearchDAO = new VehicleSearchDAO();
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO walletTransactionDAO = new WalletTransactionDAO();
@@ -44,174 +44,71 @@ public class HomeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
+        String path = request.getServletPath();
         HttpSession session = request.getSession(false);
-        String page = request.getParameter("page");
         boolean isLoggedIn = session != null && session.getAttribute("user") != null;
 
-        if (page != null) {
-            switch (page) {
-                case "register":
-                    forward(request, response, "register.jsp");
-                    return;
-
-                case "verify-otp":
-                    if (session != null && session.getAttribute("otp") != null) {
-                        forward(request, response, "verify-otp.jsp");
-                    } else {
-                        response.sendRedirect(request.getContextPath() + "?page=register");
-                    }
-                    return;
-
-                case "login":
-                    if (isLoggedIn) {
-                        Account user = (Account) session.getAttribute("user");
-                        response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
-                        return;
-                    }
-                    forward(request, response, "login.jsp");
-                    return;
-
-                case "reset-password":
-                    HttpSession resetSession = request.getSession();
-                    if (resetSession.getAttribute("resetStep") == null) {
-                        resetSession.setAttribute("resetStep", "email");
-                    }
-                    forward(request, response, "reset-password.jsp");
-                    return;
-
-                case "home":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareHomePage(request);
-                    forward(request, response, "home.jsp");
-                    return;
-
-                case "vehicle-options":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareVehicleOptionsPage(request);
-                    forward(request, response, "vehicle-options.jsp");
-                    return;
-
-                case "vehicle-detail":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareVehicleDetailPage(request);
-                    forward(request, response, "vehicle-detail.jsp");
-                    return;
-
-                case "booking":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareBookingPage(request);
-                    forward(request, response, "booking.jsp");
-                    return;
-
-                case "booking-detail":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareBookingDetailPage(request, session);
-                    forward(request, response, "booking-detail.jsp");
-                    return;
-
-                case "wallet":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareWalletPage(request, session);
-                    forward(request, response, "wallet.jsp");
-                    return;
-
-                case "profile":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    prepareProfilePage(request, session);
-                    forward(request, response, "profile.jsp");
-                    return;
-
-                case "dashboard":
-                    if (!isLoggedIn) {
-                        response.sendRedirect(request.getContextPath() + "?page=login");
-                        return;
-                    }
-                    Account dashboardUser = (Account) session.getAttribute("user");
-                    if (dashboardUser == null || dashboardUser.getRole() != Role.ADMIN) {
-                        response.sendRedirect(request.getContextPath() + "?page=home");
-                        return;
-                    }
-                    forward(request, response, "dashboard.jsp");
-                    return;
-
-                default:
-                    break;
+        if ("/page/verify-otp".equals(path)) {
+            if (session != null && session.getAttribute("otp") != null) {
+                forward(request, response, "/verify-otp.jsp");
+            } else {
+                response.sendRedirect(request.getContextPath() + "?action=register");
             }
+            return;
         }
 
-        if (isLoggedIn) {
+        if ("/page/reset-password".equals(path)) {
+            HttpSession resetSession = request.getSession();
+            if (resetSession.getAttribute("resetStep") == null) {
+                resetSession.setAttribute("resetStep", "email");
+            }
+            forward(request, response, "/reset-password.jsp");
+            return;
+        }
+
+        if (!isLoggedIn) {
+            response.sendRedirect(request.getContextPath() + "?action=login");
+            return;
+        }
+
+        if ("/page/vehicle-options".equals(path)) {
+            prepareVehicleOptionsPage(request);
+            forward(request, response, "/vehicle-options.jsp");
+        } else if ("/page/vehicle-detail".equals(path)) {
+            prepareVehicleDetailPage(request);
+            forward(request, response, "/vehicle-detail.jsp");
+        } else if ("/page/booking".equals(path)) {
+            prepareBookingPage(request, session);
+            forward(request, response, "/booking.jsp");
+        } else if ("/page/booking-detail".equals(path)) {
+            prepareBookingDetailPage(request, session);
+            forward(request, response, "/booking-detail.jsp");
+        } else if ("/page/wallet".equals(path)) {
+            prepareWalletPage(request, session);
+            forward(request, response, "/wallet.jsp");
+        } else if ("/page/profile".equals(path)) {
+            prepareProfilePage(request, session);
+            forward(request, response, "/profile.jsp");
+        } else if ("/page/dashboard".equals(path)) {
             Account user = (Account) session.getAttribute("user");
-            response.sendRedirect(request.getContextPath() + getRedirectPageByRole(user));
+            if (user == null || user.getRole() != Role.ADMIN) {
+                response.sendRedirect(request.getContextPath() + "?action=home");
+                return;
+            }
+            forward(request, response, "/dashboard.jsp");
         } else {
-            response.sendRedirect(request.getContextPath() + "?page=login");
+            response.sendRedirect(request.getContextPath() + "?action=home");
         }
-    }
-
-    @Override
-    public String getServletInfo() {
-        return "Home Servlet for main navigation routing";
     }
 
     private void forward(HttpServletRequest request, HttpServletResponse response, String jsp)
             throws ServletException, IOException {
         RequestDispatcher dispatcher = request.getRequestDispatcher(jsp);
         dispatcher.forward(request, response);
-    }
-
-    private String getRedirectPageByRole(Account account) {
-        if (account != null && account.getRole() == Role.ADMIN) {
-            return "?page=dashboard";
-        }
-        return "?page=home";
-    }
-
-    private void prepareHomePage(HttpServletRequest request) {
-        request.setAttribute("stations", stationDAO.getAllStations());
-        request.setAttribute("categories", categoryDAO.getAllCategories());
-        request.setAttribute("featuredVehicles", vehicleSearchDAO.getFeaturedAvailableVehicleModels(6));
-
-        String action = request.getParameter("action");
-        if (!"search".equals(action)) {
-            return;
-        }
-
-        String stationId = request.getParameter("stationId");
-        String categoryId = request.getParameter("categoryId");
-
-        if (isBlank(stationId) && isBlank(categoryId)) {
-            return;
-        }
-
-        request.setAttribute("selectedStationId", stationId);
-        request.setAttribute("selectedCategoryId", categoryId);
-        request.setAttribute("searchPerformed", true);
-        request.setAttribute("vehicleSearchResults", vehicleSearchDAO.searchAvailableVehicleModels(stationId, categoryId));
     }
 
     private void prepareVehicleOptionsPage(HttpServletRequest request) {
@@ -229,22 +126,22 @@ public class HomeServlet extends HttpServlet {
 
         try {
             if (isBlank(stationId) || isBlank(modelId) || isBlank(startDateStr) || isBlank(endDateStr)) {
-                request.setAttribute("vehicleOptionsError", "Thiáº¿u thÃ´ng tin tÃ¬m kiáº¿m xe.");
+                request.setAttribute("vehicleOptionsError", "Thiếu thông tin tìm kiếm xe.");
                 return;
             }
 
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
 
-            if (!endDate.after(startDate)) {
-                request.setAttribute("vehicleOptionsError", "NgÃ y káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u.");
+            if (endDate.before(startDate)) {
+                request.setAttribute("vehicleOptionsError", "Ngày kết thúc phải sau ngày bắt đầu.");
                 return;
             }
 
             List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
             request.setAttribute("availableVehicles", vehicles);
         } catch (IllegalArgumentException ex) {
-            request.setAttribute("vehicleOptionsError", "NgÃ y thuÃª khÃ´ng há»£p lá»‡.");
+            request.setAttribute("vehicleOptionsError", "Ngày thuê không hợp lệ.");
         }
     }
 
@@ -253,7 +150,10 @@ public class HomeServlet extends HttpServlet {
         String modelId = request.getParameter("modelId");
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
-        String action = request.getParameter("action");
+        String action = request.getParameter("detailAction");
+        if (action == null) {
+            action = request.getParameter("actionType");
+        }
 
         request.setAttribute("stationId", stationId);
         request.setAttribute("modelId", modelId);
@@ -261,14 +161,14 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("endDate", endDateStr);
 
         if (isBlank(stationId) || isBlank(modelId)) {
-            request.setAttribute("vehicleDetailError", "Thiáº¿u thÃ´ng tin máº«u xe hoáº·c tráº¡m.");
+            request.setAttribute("vehicleDetailError", "Thiếu thông tin mẫu xe hoặc trạm.");
             return;
         }
 
         VehicleSearchResult vehicleInfo = vehicleSearchDAO.getAvailableVehicleModelAtStation(modelId, stationId);
         request.setAttribute("vehicleInfo", vehicleInfo);
         if (vehicleInfo == null) {
-            request.setAttribute("vehicleDetailError", "Máº«u xe nÃ y hiá»‡n khÃ´ng cÃ²n sáºµn táº¡i tráº¡m Ä‘Ã£ chá»n.");
+            request.setAttribute("vehicleDetailError", "Mẫu xe này hiện không còn sẵn tại trạm đã chọn.");
             return;
         }
 
@@ -279,26 +179,26 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("detailSearchPerformed", true);
         try {
             if (isBlank(startDateStr) || isBlank(endDateStr)) {
-                request.setAttribute("vehicleDetailError", "Vui lÃ²ng chá»n ngÃ y báº¯t Ä‘áº§u vÃ  ngÃ y káº¿t thÃºc.");
+                request.setAttribute("vehicleDetailError", "Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
                 return;
             }
 
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
 
-            if (!endDate.after(startDate)) {
-                request.setAttribute("vehicleDetailError", "NgÃ y káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u.");
+            if (endDate.before(startDate)) {
+                request.setAttribute("vehicleDetailError", "Ngày kết thúc phải sau ngày bắt đầu.");
                 return;
             }
 
             List<Vehicle> vehicles = vehicleSearchDAO.getAvailableVehiclesByModel(stationId, modelId, startDate, endDate);
             request.setAttribute("availableVehicles", vehicles);
         } catch (IllegalArgumentException ex) {
-            request.setAttribute("vehicleDetailError", "NgÃ y thuÃª khÃ´ng há»£p lá»‡.");
+            request.setAttribute("vehicleDetailError", "Ngày thuê không hợp lệ.");
         }
     }
 
-    private void prepareBookingPage(HttpServletRequest request) {
+    private void prepareBookingPage(HttpServletRequest request, HttpSession session) {
         String vehicleId = request.getParameter("vehicleId");
         String stationId = request.getParameter("stationId");
         String startDate = request.getParameter("startDate");
@@ -310,7 +210,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
         request.setAttribute("discountCode", discountCode);
-        HttpSession session = request.getSession(false);
+
         String paymentError = null;
         if (session != null && session.getAttribute("bookingError") != null) {
             paymentError = (String) session.getAttribute("bookingError");
@@ -329,7 +229,7 @@ public class HomeServlet extends HttpServlet {
             request.setAttribute("bookingError", paymentError);
         } catch (Exception ex) {
             if (!isBlank(discountCode) && BookingService.INVALID_DISCOUNT_MESSAGE.equals(ex.getMessage())) {
-                prepareBookingPageWithoutDiscount(request, vehicleId, stationId, startDate, endDate, discountCode);
+                prepareBookingPageWithoutDiscount(request, session, vehicleId, startDate, endDate, discountCode);
                 request.setAttribute("bookingError", paymentError);
                 return;
             }
@@ -337,10 +237,9 @@ public class HomeServlet extends HttpServlet {
         }
     }
 
-    private void prepareBookingPageWithoutDiscount(HttpServletRequest request, String vehicleId, String stationId,
+    private void prepareBookingPageWithoutDiscount(HttpServletRequest request, HttpSession session, String vehicleId,
             String startDate, String endDate, String discountCode) {
         try {
-            HttpSession session = request.getSession(false);
             Account user = (Account) session.getAttribute("user");
             BookingQuote quote = bookingService.createQuote(
                     user.getAccountId(),
@@ -373,7 +272,7 @@ public class HomeServlet extends HttpServlet {
         Account user = (Account) session.getAttribute("user");
         Wallet wallet = walletDAO.getWalletByAccountId(user.getAccountId());
         List<WalletTransaction> transactions = walletTransactionDAO.getTransactionsByWalletId(
-            wallet != null ? wallet.getWalletId() : "");
+                wallet != null ? wallet.getWalletId() : "");
 
         Boolean topupSuccess = (Boolean) session.getAttribute("topupSuccess");
         Long topupAmount = (Long) session.getAttribute("topupSuccessAmount");
@@ -397,4 +296,3 @@ public class HomeServlet extends HttpServlet {
         return isBlank(preferred) ? fallback : preferred;
     }
 }
-

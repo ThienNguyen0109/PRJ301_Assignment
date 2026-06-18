@@ -28,9 +28,9 @@ import services.VNPayService;
 /**
  * Servlet for handling VNPay callback.
  */
-@WebServlet(name = "VNPayCallbackServlet", urlPatterns = {"/vnpay-callback"})
-public class VNPayCallbackServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(VNPayCallbackServlet.class.getName());
+@WebServlet(name = "VNPayCallbackController", urlPatterns = {"/vnpay-callback"})
+public class VNPayCallbackController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(VNPayCallbackController.class.getName());
     private IWalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO transactionDAO = new WalletTransactionDAO();
     private BookingService bookingService = new BookingService();
@@ -61,12 +61,12 @@ public class VNPayCallbackServlet extends HttpServlet {
 
             if (!VNPayService.verifySecureHash(secureHash, vnpParams)) {
                 LOGGER.log(Level.WARNING, "Invalid secure hash from VNPay");
-                response.sendRedirect(request.getContextPath() + "?page=wallet&error=invalid_hash");
+                response.sendRedirect(request.getContextPath() + "?action=wallet&error=invalid_hash");
                 return;
             }
 
             if (session == null || session.getAttribute("user") == null) {
-                response.sendRedirect(request.getContextPath() + "?page=login");
+                response.sendRedirect(request.getContextPath() + "?action=login");
                 return;
             }
 
@@ -82,7 +82,7 @@ public class VNPayCallbackServlet extends HttpServlet {
             handleTopupCallback(request, response, session, responseCode, orderId, transactionNo);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error processing VNPay callback: " + ex.getMessage(), ex);
-            response.sendRedirect(request.getContextPath() + "?page=wallet&error=system_error");
+            response.sendRedirect(request.getContextPath() + "?action=wallet&error=system_error");
         }
     }
 
@@ -93,7 +93,7 @@ public class VNPayCallbackServlet extends HttpServlet {
         Account customer = (Account) session.getAttribute("user");
 
         if (bookingOrderId == null || quote == null || !orderId.equals(bookingOrderId)) {
-            response.sendRedirect(request.getContextPath() + "?page=home&bookingError=order_mismatch");
+            response.sendRedirect(request.getContextPath() + "?action=home&bookingError=order_mismatch");
             return;
         }
 
@@ -103,11 +103,11 @@ public class VNPayCallbackServlet extends HttpServlet {
                 EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
                 session.setAttribute("bookingDetail", detail);
                 clearBookingSession(session);
-                response.sendRedirect(request.getContextPath() + "?page=booking-detail");
+                response.sendRedirect(request.getContextPath() + "?action=booking-detail");
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, "Could not complete VNPay booking", ex);
                 clearBookingSession(session);
-                response.sendRedirect(request.getContextPath() + "?page=home&bookingError=booking_failed");
+                response.sendRedirect(request.getContextPath() + "?action=home&bookingError=booking_failed");
             }
             return;
         }
@@ -126,7 +126,7 @@ public class VNPayCallbackServlet extends HttpServlet {
 
         if (topupOrderId == null || !orderId.equals(topupOrderId)) {
             LOGGER.log(Level.WARNING, "Topup order ID mismatch: " + orderId + " vs " + topupOrderId);
-            response.sendRedirect(request.getContextPath() + "?page=wallet&error=order_mismatch");
+            response.sendRedirect(request.getContextPath() + "?action=wallet&error=order_mismatch");
             return;
         }
 
@@ -146,18 +146,18 @@ public class VNPayCallbackServlet extends HttpServlet {
                         session.setAttribute("topupSuccessAmount", topupAmount);
                         session.removeAttribute("topupOrderId");
                         session.removeAttribute("topupAmount");
-                        response.sendRedirect(request.getContextPath() + "?page=wallet&success=topup");
+                        response.sendRedirect(request.getContextPath() + "?action=wallet&success=topup");
                         return;
                     }
                 }
             }
-            response.sendRedirect(request.getContextPath() + "?page=wallet&error=update_failed");
+            response.sendRedirect(request.getContextPath() + "?action=wallet&error=update_failed");
             return;
         }
 
         session.removeAttribute("topupOrderId");
         session.removeAttribute("topupAmount");
-        response.sendRedirect(request.getContextPath() + "?page=wallet&error=payment_failed");
+        response.sendRedirect(request.getContextPath() + "?action=wallet&error=payment_failed");
     }
 
     private void clearBookingSession(HttpSession session) {
@@ -166,7 +166,7 @@ public class VNPayCallbackServlet extends HttpServlet {
     }
 
     private String buildBookingRetryUrl(HttpServletRequest request, BookingQuote quote, String error) throws IOException {
-        return request.getContextPath() + "?page=booking"
+        return request.getContextPath() + "?action=booking"
                 + "&vehicleId=" + encode(quote.getVehicleId())
                 + "&stationId=" + encode(quote.getStationId())
                 + "&startDate=" + encode(String.valueOf(quote.getStartDate()))

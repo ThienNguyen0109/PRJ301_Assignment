@@ -136,8 +136,8 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?page=home" class="active">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?page=profile">Profile</a>
+                <a href="${pageContext.request.contextPath}?action=home" class="active">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
                 <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -173,8 +173,8 @@
                             <div class="price"><fmt:formatNumber value="${vehicleInfo.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
 
                             <form action="${pageContext.request.contextPath}/" method="GET">
-                                <input type="hidden" name="page" value="vehicle-detail">
-                                <input type="hidden" name="action" value="check">
+                                <input type="hidden" name="action" value="vehicle-detail">
+                                <input type="hidden" name="detailAction" value="check">
                                 <input type="hidden" name="modelId" value="${modelId}">
                                 <input type="hidden" name="stationId" value="${stationId}">
                                 <div class="date-grid">
@@ -189,7 +189,7 @@
                                 </div>
                                 <div class="actions">
                                     <button type="submit" class="primary-btn">Kiểm tra xe trống theo ngày</button>
-                                    <a class="secondary-btn" href="${pageContext.request.contextPath}?page=home">Quay lại Home</a>
+                                    <a class="secondary-btn" href="${pageContext.request.contextPath}?action=home">Quay lại Home</a>
                                 </div>
                             </form>
                         </div>
@@ -209,7 +209,7 @@
                                         <div class="meta-line">Battery Level: <strong>${empty vehicle.batteryLevel ? 0 : vehicle.batteryLevel}%</strong></div>
                                         <div class="meta-line">Color: <strong>${empty vehicle.color ? 'N/A' : vehicle.color}</strong></div>
                                         <c:url var="bookingUrl" value="/">
-                                            <c:param name="page" value="booking" />
+                                            <c:param name="action" value="booking" />
                                             <c:param name="vehicleId" value="${vehicle.vehicleId}" />
                                             <c:param name="stationId" value="${stationId}" />
                                             <c:param name="startDate" value="${startDate}" />

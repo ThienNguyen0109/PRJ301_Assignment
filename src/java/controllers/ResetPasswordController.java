@@ -20,15 +20,15 @@ import java.util.logging.Logger;
  * Servlet for handling password reset form submissions
  * URL Pattern: /reset-password
  */
-@WebServlet(name = "ResetPasswordServlet", urlPatterns = {"/reset-password"})
-public class ResetPasswordServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(ResetPasswordServlet.class.getName());
+@WebServlet(name = "ResetPasswordController", urlPatterns = {"/reset-password"})
+public class ResetPasswordController extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(ResetPasswordController.class.getName());
     private IAccountDAO accountDAO = new AccountDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect(request.getContextPath() + "?page=reset-password");
+        response.sendRedirect(request.getContextPath() + "?action=reset-password");
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ResetPasswordServlet extends HttpServlet {
             }
 
             session.setAttribute("resetStep", "email");
-            response.sendRedirect(request.getContextPath() + "?page=reset-password");
+            response.sendRedirect(request.getContextPath() + "?action=reset-password");
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error during password reset: " + ex.getMessage(), ex);
             request.setAttribute("error", "CÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá»­ láº¡i.");
@@ -189,7 +189,7 @@ public class ResetPasswordServlet extends HttpServlet {
 
         clearResetSession(session);
         session.setAttribute("registrationSuccess", "Äáº·t láº¡i máº­t kháº©u thÃ nh cÃ´ng! Vui lÃ²ng Ä‘Äƒng nháº­p.");
-        response.sendRedirect(request.getContextPath() + "?page=login");
+        response.sendRedirect(request.getContextPath() + "?action=login");
     }
 
     private void clearResetSession(HttpSession session) {
