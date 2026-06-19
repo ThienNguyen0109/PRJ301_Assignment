@@ -184,42 +184,39 @@ public final class DataSeeder {
     }
 
     private static void seedVehicleModelImages(EntityManager em) {
-        persistIfMissing(em, VehicleModelImage.class, "00000000-0000-0000-0000-000000000601",
-                new VehicleModelImage("00000000-0000-0000-0000-000000000601", "00000000-0000-0000-0000-000000000501", "https://placehold.co/900x520/0f172a/f8d77b?text=VinFast+Evo200", VehicleModelImageType.FRONT));
-        persistIfMissing(em, VehicleModelImage.class, "00000000-0000-0000-0000-000000000602",
-                new VehicleModelImage("00000000-0000-0000-0000-000000000602", "00000000-0000-0000-0000-000000000502", "https://placehold.co/900x520/0f172a/f8d77b?text=Yadea+iGo", VehicleModelImageType.FRONT));
-        persistIfMissing(em, VehicleModelImage.class, "00000000-0000-0000-0000-000000000603",
-                new VehicleModelImage("00000000-0000-0000-0000-000000000603", "00000000-0000-0000-0000-000000000503", "https://placehold.co/900x520/0f172a/f8d77b?text=Wuling+Mini+EV", VehicleModelImageType.FRONT));
-        persistIfMissing(em, VehicleModelImage.class, "00000000-0000-0000-0000-000000000604",
-                new VehicleModelImage("00000000-0000-0000-0000-000000000604", "00000000-0000-0000-0000-000000000504", "https://placehold.co/900x520/0f172a/f8d77b?text=VinFast+VF+e34", VehicleModelImageType.FRONT));
-        persistIfMissing(em, VehicleModelImage.class, "00000000-0000-0000-0000-000000000605",
-                new VehicleModelImage("00000000-0000-0000-0000-000000000605", "00000000-0000-0000-0000-000000000505", "https://placehold.co/900x520/0f172a/f8d77b?text=Tesla+Model+3", VehicleModelImageType.FRONT));
+        upsertVehicleModelImage(em, "00000000-0000-0000-0000-000000000601", "00000000-0000-0000-0000-000000000501",
+                "assets/images/vehicles/vinfast-evo200.png");
+        upsertVehicleModelImage(em, "00000000-0000-0000-0000-000000000602", "00000000-0000-0000-0000-000000000502",
+                "assets/images/vehicles/yadea-igo.jpg");
+        upsertVehicleModelImage(em, "00000000-0000-0000-0000-000000000603", "00000000-0000-0000-0000-000000000503",
+                "assets/images/vehicles/wuling-mini-ev.png");
+        upsertVehicleModelImage(em, "00000000-0000-0000-0000-000000000604", "00000000-0000-0000-0000-000000000504",
+                "assets/images/vehicles/vinfast-vf6.png");
+        upsertVehicleModelImage(em, "00000000-0000-0000-0000-000000000605", "00000000-0000-0000-0000-000000000505",
+                "assets/images/vehicles/tesla-model-3.png");
     }
 
     private static void seedAdditionalVehicleModelImages(EntityManager em) {
         String[][] images = {
-            {"00000000-0000-0000-0000-000000000606", "00000000-0000-0000-0000-000000000506", "VinFast+Feliz+S"},
-            {"00000000-0000-0000-0000-000000000607", "00000000-0000-0000-0000-000000000507", "VinFast+Klara+S"},
-            {"00000000-0000-0000-0000-000000000608", "00000000-0000-0000-0000-000000000508", "Dat+Bike+Weaver+200"},
-            {"00000000-0000-0000-0000-000000000609", "00000000-0000-0000-0000-000000000509", "Selex+Camel"},
-            {"00000000-0000-0000-0000-000000000610", "00000000-0000-0000-0000-000000000510", "Giant+Momentum+E+"},
-            {"00000000-0000-0000-0000-000000000611", "00000000-0000-0000-0000-000000000511", "Himo+C26"},
-            {"00000000-0000-0000-0000-000000000612", "00000000-0000-0000-0000-000000000512", "VinFast+VF+3"},
-            {"00000000-0000-0000-0000-000000000613", "00000000-0000-0000-0000-000000000513", "VinFast+VF+5"},
-            {"00000000-0000-0000-0000-000000000614", "00000000-0000-0000-0000-000000000514", "VinFast+VF+6"},
-            {"00000000-0000-0000-0000-000000000615", "00000000-0000-0000-0000-000000000515", "BYD+Dolphin"},
-            {"00000000-0000-0000-0000-000000000616", "00000000-0000-0000-0000-000000000516", "BYD+Atto+3"},
-            {"00000000-0000-0000-0000-000000000617", "00000000-0000-0000-0000-000000000517", "Hyundai+Ioniq+5"},
-            {"00000000-0000-0000-0000-000000000618", "00000000-0000-0000-0000-000000000518", "Kia+EV6"},
-            {"00000000-0000-0000-0000-000000000619", "00000000-0000-0000-0000-000000000519", "Tesla+Model+Y"},
-            {"00000000-0000-0000-0000-000000000620", "00000000-0000-0000-0000-000000000520", "VinFast+VF+8"}
+            {"00000000-0000-0000-0000-000000000606", "00000000-0000-0000-0000-000000000506", "assets/images/vehicles/vinfast-feliz-s.png"},
+            {"00000000-0000-0000-0000-000000000607", "00000000-0000-0000-0000-000000000507", "assets/images/vehicles/vinfast-klara-s.png"},
+            {"00000000-0000-0000-0000-000000000608", "00000000-0000-0000-0000-000000000508", "assets/images/vehicles/vinfast-evo200-white.png"},
+            {"00000000-0000-0000-0000-000000000609", "00000000-0000-0000-0000-000000000509", "assets/images/vehicles/vinfast-evo200-white.png"},
+            {"00000000-0000-0000-0000-000000000610", "00000000-0000-0000-0000-000000000510", "assets/images/vehicles/yadea-igo.jpg"},
+            {"00000000-0000-0000-0000-000000000611", "00000000-0000-0000-0000-000000000511", "assets/images/vehicles/yadea-igo.jpg"},
+            {"00000000-0000-0000-0000-000000000612", "00000000-0000-0000-0000-000000000512", "assets/images/vehicles/vinfast-vf3.png"},
+            {"00000000-0000-0000-0000-000000000613", "00000000-0000-0000-0000-000000000513", "assets/images/vehicles/vinfast-vf5.png"},
+            {"00000000-0000-0000-0000-000000000614", "00000000-0000-0000-0000-000000000514", "assets/images/vehicles/vinfast-vf6.png"},
+            {"00000000-0000-0000-0000-000000000615", "00000000-0000-0000-0000-000000000515", "assets/images/vehicles/byd-dolphin.png"},
+            {"00000000-0000-0000-0000-000000000616", "00000000-0000-0000-0000-000000000516", "assets/images/vehicles/byd-dolphin-surf.png"},
+            {"00000000-0000-0000-0000-000000000617", "00000000-0000-0000-0000-000000000517", "assets/images/vehicles/hyundai-ioniq-5.png"},
+            {"00000000-0000-0000-0000-000000000618", "00000000-0000-0000-0000-000000000518", "assets/images/vehicles/kia-ev6.png"},
+            {"00000000-0000-0000-0000-000000000619", "00000000-0000-0000-0000-000000000519", "assets/images/vehicles/tesla-model-3.png"},
+            {"00000000-0000-0000-0000-000000000620", "00000000-0000-0000-0000-000000000520", "assets/images/vehicles/vinfast-vf8.png"}
         };
 
         for (String[] image : images) {
-            persistIfMissing(em, VehicleModelImage.class, image[0],
-                    new VehicleModelImage(image[0], image[1],
-                            "https://placehold.co/900x520/0f172a/f8d77b?text=" + image[2],
-                            VehicleModelImageType.FRONT));
+            upsertVehicleModelImage(em, image[0], image[1], image[2]);
         }
     }
 
@@ -418,6 +415,18 @@ public final class DataSeeder {
         if (findAccountByEmail(em, account.getEmail()) == null) {
             em.persist(account);
         }
+    }
+
+    private static void upsertVehicleModelImage(EntityManager em, String imageId, String modelId, String imageUrl) {
+        VehicleModelImage existing = em.find(VehicleModelImage.class, imageId);
+        if (existing == null) {
+            em.persist(new VehicleModelImage(imageId, modelId, imageUrl, VehicleModelImageType.FRONT));
+            return;
+        }
+
+        existing.setModelId(modelId);
+        existing.setImageUrl(imageUrl);
+        existing.setImageType(VehicleModelImageType.FRONT);
     }
 
     private static <T> void persistIfMissing(EntityManager em, Class<T> type, String id, T entity) {

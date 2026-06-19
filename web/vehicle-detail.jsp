@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -60,12 +61,12 @@
             .panel > * { position: relative; }
             .detail-layout { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 28px; align-items: stretch; }
             .vehicle-photo {
-                min-height: 280px; border-radius: 8px; overflow: hidden; background: #111a2c;
+                min-height: 280px; border-radius: 8px; overflow: hidden; background: #ffffff;
                 display: flex; align-items: center; justify-content: center;
                 color: #f8df9d; font-size: 56px; font-weight: 800;
                 box-shadow: inset 0 0 0 1px rgba(218,183,99,0.18);
             }
-            .vehicle-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            .vehicle-photo img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 16px; }
             .section-title {
                 color: #111827; margin-bottom: 18px; padding-bottom: 13px;
                 border-bottom: 1px solid rgba(17,24,39,0.12); font-size: 27px; font-weight: 800;
@@ -153,7 +154,11 @@
                         <div class="vehicle-photo">
                             <c:choose>
                                 <c:when test="${not empty vehicleInfo.thumbnailImage}">
-                                    <img src="${vehicleInfo.thumbnailImage}" alt="${vehicleInfo.modelName}">
+                                    <c:set var="vehicleImageUrl" value="${vehicleInfo.thumbnailImage}" />
+                                    <c:if test="${not fn:startsWith(vehicleImageUrl, 'http://') and not fn:startsWith(vehicleImageUrl, 'https://')}">
+                                        <c:set var="vehicleImageUrl" value="${pageContext.request.contextPath}/${vehicleImageUrl}" />
+                                    </c:if>
+                                    <img src="${vehicleImageUrl}" alt="${vehicleInfo.modelName}">
                                 </c:when>
                                 <c:otherwise>EV</c:otherwise>
                             </c:choose>

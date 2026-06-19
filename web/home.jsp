@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -121,10 +122,10 @@
                 box-shadow: 0 18px 38px rgba(8,17,31,0.16);
             }
             .vehicle-thumb {
-                height: 160px; background: #111a2c; display: flex; align-items: center; justify-content: center;
+                height: 160px; background: #ffffff; display: flex; align-items: center; justify-content: center;
                 color: #f8df9d; font-size: 42px; font-weight: 800;
             }
-            .vehicle-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            .vehicle-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 12px; }
             .vehicle-body { padding: 18px; }
             .vehicle-body h3 { color: #172033; margin-bottom: 10px; font-size: 21px; }
             .meta-line { color: #566070; font-size: 14px; margin-bottom: 8px; }
@@ -260,7 +261,11 @@
                                 <div class="vehicle-thumb">
                                     <c:choose>
                                         <c:when test="${not empty vehicle.thumbnailImage}">
-                                            <img src="${vehicle.thumbnailImage}" alt="${vehicle.modelName}">
+                                            <c:set var="vehicleImageUrl" value="${vehicle.thumbnailImage}" />
+                                            <c:if test="${not fn:startsWith(vehicleImageUrl, 'http://') and not fn:startsWith(vehicleImageUrl, 'https://')}">
+                                                <c:set var="vehicleImageUrl" value="${pageContext.request.contextPath}/${vehicleImageUrl}" />
+                                            </c:if>
+                                            <img src="${vehicleImageUrl}" alt="${vehicle.modelName}">
                                         </c:when>
                                         <c:otherwise>EV</c:otherwise>
                                     </c:choose>
@@ -327,7 +332,11 @@
                                         <div class="vehicle-thumb">
                                             <c:choose>
                                                 <c:when test="${not empty result.thumbnailImage}">
-                                                    <img src="${result.thumbnailImage}" alt="${result.modelName}">
+                                                    <c:set var="resultImageUrl" value="${result.thumbnailImage}" />
+                                                    <c:if test="${not fn:startsWith(resultImageUrl, 'http://') and not fn:startsWith(resultImageUrl, 'https://')}">
+                                                        <c:set var="resultImageUrl" value="${pageContext.request.contextPath}/${resultImageUrl}" />
+                                                    </c:if>
+                                                    <img src="${resultImageUrl}" alt="${result.modelName}">
                                                 </c:when>
                                                 <c:otherwise>EV</c:otherwise>
                                             </c:choose>
