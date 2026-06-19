@@ -17,14 +17,33 @@
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #172033;
+                position: relative; overflow-x: hidden;
                 background:
-                    radial-gradient(circle at 12% 8%, rgba(205,164,82,0.16), transparent 28%),
-                    radial-gradient(circle at 88% 18%, rgba(58,191,184,0.14), transparent 30%),
-                    linear-gradient(135deg, #08111f 0%, #111a2c 38%, #f4f0e8 38%, #f8f6f2 100%);
+                    radial-gradient(circle at 14% 10%, rgba(248,223,157,0.26), transparent 27%),
+                    radial-gradient(circle at 86% 12%, rgba(58,191,184,0.13), transparent 28%),
+                    linear-gradient(180deg, #f7f2e8 0%, #fbfaf5 48%, #eef4f0 100%);
                 background-attachment: fixed;
             }
+            body::before {
+                content: ""; position: fixed; inset: 0; pointer-events: none;
+                background:
+                    linear-gradient(180deg, rgba(7,16,29,0.94) 0%, rgba(7,16,29,0.74) 160px, rgba(7,16,29,0.16) 360px, transparent 62%),
+                    radial-gradient(ellipse at 24% 2%, rgba(248,223,157,0.18), transparent 35%),
+                    radial-gradient(ellipse at 84% 0%, rgba(58,191,184,0.14), transparent 32%);
+                z-index: 0;
+            }
+            body::after {
+                content: ""; position: fixed; inset: -20%; pointer-events: none;
+                background:
+                    linear-gradient(115deg, transparent 0%, transparent 38%, rgba(255,255,255,0.28) 46%, rgba(248,223,157,0.18) 50%, transparent 58%, transparent 100%),
+                    radial-gradient(circle at 76% 24%, rgba(58,191,184,0.13), transparent 18%);
+                opacity: 0.48; mix-blend-mode: screen;
+                transform: translateX(-18%) rotate(0.001deg);
+                animation: pageLightFlow 12s ease-in-out infinite;
+                z-index: 1;
+            }
             .navbar {
-                position: sticky; top: 0; z-index: 10; color: white; padding: 18px 38px;
+                position: sticky; top: 0; z-index: 20; color: white; padding: 18px 38px;
                 display: flex; justify-content: space-between; align-items: center;
                 background: rgba(9,17,31,0.9); border-bottom: 1px solid rgba(218,183,99,0.32);
                 box-shadow: 0 18px 45px rgba(5,10,18,0.24); backdrop-filter: blur(18px);
@@ -40,7 +59,7 @@
                 background: linear-gradient(135deg, #d14f54 0%, #f28b61 100%);
                 box-shadow: 0 12px 28px rgba(209,79,84,0.28);
             }
-            .container { max-width: 1080px; margin: 34px auto; padding: 0 28px; }
+            .container { max-width: 1080px; margin: 34px auto 56px; padding: 0 28px; position: relative; z-index: 2; }
             .balance-card, .section {
                 border-radius: 8px; border: 1px solid rgba(218,183,99,0.2);
                 box-shadow: 0 22px 60px rgba(8,17,31,0.14);
@@ -67,8 +86,9 @@
             .topup-btn { padding: 11px 20px; }
             .topup-btn:hover, .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(180,122,31,0.3); }
             .section {
-                position: relative; overflow: hidden; background: rgba(255,255,255,0.92);
+                position: relative; overflow: hidden; background: rgba(255,255,255,0.9);
                 padding: 24px; margin-bottom: 24px;
+                backdrop-filter: blur(16px);
             }
             .section::before {
                 content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -122,6 +142,11 @@
             }
             .amount-positive { color: #15803d; font-weight: 800; }
             .no-data { text-align: center; color: #7d8794; padding: 34px; }
+            @keyframes pageLightFlow {
+                0%, 38% { opacity: 0.32; transform: translateX(-28%) translateY(0) rotate(0.001deg); }
+                56% { opacity: 0.7; }
+                82%, 100% { opacity: 0.18; transform: translateX(24%) translateY(-18px) rotate(0.001deg); }
+            }
             @media (max-width: 760px) {
                 .navbar { padding: 14px 18px; align-items: flex-start; gap: 12px; flex-direction: column; }
                 .navbar-menu { width: 100%; justify-content: space-between; }
