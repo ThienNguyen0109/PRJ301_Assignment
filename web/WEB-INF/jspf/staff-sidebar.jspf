@@ -1,0 +1,20 @@
+<aside class="staff-sidebar" id="staffSidebar">
+    <div class="sidebar-brand"><span class="brand-icon">EV</span><span>E-Vehicle Staff</span></div>
+    <div class="sidebar-user">
+        <strong>${sessionScope.userName}</strong>
+        <span>Station Operations Staff</span>
+    </div>
+    <div class="sidebar-label">Operations</div>
+    <nav class="sidebar-nav">
+        <a class="nav-item ${activeModule eq 'dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-dashboard"><span class="nav-icon">D</span>Dashboard</a>
+        <a class="nav-item ${activeModule eq 'pickup' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-pickup"><span class="nav-icon">P</span>Pickup Management</a>
+        <a class="nav-item ${activeModule eq 'return' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-return"><span class="nav-icon">R</span>Return Management</a>
+        <a class="nav-item ${activeModule eq 'maintenance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-maintenance"><span class="nav-icon">M</span>Maintenance</a>
+        <a class="nav-item ${activeModule eq 'incident' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-incidents"><span class="nav-icon">I</span>Incident Management</a>
+    </nav>
+    <div class="sidebar-label">Account</div>
+    <nav class="sidebar-nav">
+        <a class="nav-item ${activeModule eq 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=staff-profile"><span class="nav-icon">U</span>Profile</a>
+        <a class="nav-item logout" href="${pageContext.request.contextPath}/logout"><span class="nav-icon">X</span>Logout</a>
+    </nav>
+</aside>

@@ -27,9 +27,9 @@ public class CharacterEncodingFilter implements Filter {
         // Set UTF-8 encoding for request
         request.setCharacterEncoding("UTF-8");
         
-        // Set UTF-8 encoding for response
+        // Keep the encoding global, but let JSPs, servlets and Tomcat's default
+        // servlet choose the correct MIME type (text/html, text/css, image/png...).
         response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
         
         // Continue the filter chain
         chain.doFilter(request, response);

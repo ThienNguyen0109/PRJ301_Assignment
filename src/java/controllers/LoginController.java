@@ -117,6 +117,9 @@ public class LoginController extends HttpServlet {
         if (account != null && account.getRole() == Role.ADMIN) {
             return "?action=dashboard";
         }
+        if (account != null && account.getRole() == Role.STAFF) {
+            return "?action=staff-dashboard";
+        }
         return "?action=home";
     }
 }

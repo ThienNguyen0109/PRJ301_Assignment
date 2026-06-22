@@ -1,5 +1,7 @@
 package filters;
 
+import enums.Role;
+import models.Account;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -18,7 +20,7 @@ import java.util.logging.Logger;
  * Filter to check user session
  * Redirects to login if session is not valid
  */
-@WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/dashboard/*", "/profile/*", "/admin/*"})
+@WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/dashboard/*", "/profile/*", "/admin/*", "/staff/*"})
 public class AuthenticationFilter implements Filter {
     private static final Logger LOGGER = Logger.getLogger(AuthenticationFilter.class.getName());
     
@@ -40,6 +42,16 @@ public class AuthenticationFilter implements Filter {
             LOGGER.log(Level.WARNING, "Unauthorized access attempt to: " + httpRequest.getRequestURI());
             httpResponse.sendRedirect(httpRequest.getContextPath() + "?action=login");
             return;
+        }
+
+        if (httpRequest.getRequestURI().startsWith(httpRequest.getContextPath() + "/staff/")) {
+            Account user = (Account) session.getAttribute("user");
+            if (user.getRole() != Role.STAFF) {
+                LOGGER.log(Level.WARNING, "Forbidden staff access attempt by: " + user.getEmail());
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        "Bạn không có quyền truy cập khu vực dành cho nhân viên.");
+                return;
+            }
         }
 
         // User is authenticated, continue

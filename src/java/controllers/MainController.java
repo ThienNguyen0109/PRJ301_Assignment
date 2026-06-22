@@ -63,6 +63,18 @@ public class MainController extends HttpServlet {
                 url = "/page/profile";
             } else if (action.equals("dashboard")) {
                 url = "/page/dashboard";
+            } else if (action.equals("staff-pickup")) {
+                url = "/staff/pickup";
+            } else if (action.equals("staff-dashboard")) {
+                url = "/staff/dashboard";
+            } else if (action.equals("staff-return")) {
+                url = "/staff/return";
+            } else if (action.equals("staff-maintenance")) {
+                url = "/staff/maintenance";
+            } else if (action.equals("staff-incidents")) {
+                url = "/staff/incidents";
+            } else if (action.equals("staff-profile")) {
+                url = "/staff/profile";
             }
         }
 
@@ -85,6 +97,9 @@ public class MainController extends HttpServlet {
     private String getRedirectActionByRole(Account account) {
         if (account != null && account.getRole() == Role.ADMIN) {
             return "?action=dashboard";
+        }
+        if (account != null && account.getRole() == Role.STAFF) {
+            return "?action=staff-dashboard";
         }
         return "?action=home";
     }

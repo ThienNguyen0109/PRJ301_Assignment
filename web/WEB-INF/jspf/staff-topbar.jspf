@@ -1,0 +1,7 @@
+<header class="staff-topbar">
+    <div class="topbar-left">
+        <button class="sidebar-toggle" type="button" aria-label="Toggle navigation" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+        <span class="page-heading">${staffPageTitle}</span>
+    </div>
+    <div class="topbar-user"><span class="topbar-role">STAFF</span><span class="topbar-name">${sessionScope.userName}</span></div>
+</header>
