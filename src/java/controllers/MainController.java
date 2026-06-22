@@ -69,6 +69,8 @@ public class MainController extends HttpServlet {
                 url = "/staff/dashboard";
             } else if (action.equals("staff-return")) {
                 url = "/staff/return";
+            } else if (action.equals("staff-return-detail")) {
+                url = "/staff/return/detail";
             } else if (action.equals("staff-maintenance")) {
                 url = "/staff/maintenance";
             } else if (action.equals("staff-incidents")) {

@@ -10,9 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
 
-@WebServlet(name = "StaffModuleController", urlPatterns = {
-    "/staff/return", "/staff/maintenance", "/staff/incidents", "/staff/profile"
-})
+@WebServlet(name = "StaffModuleController", urlPatterns = {"/staff/profile"})
 public class StaffModuleController extends HttpServlet {
 
     @Override
@@ -23,21 +21,9 @@ public class StaffModuleController extends HttpServlet {
         Account staff = requireStaff(request, response);
         if (staff == null) return;
 
-        String path = request.getServletPath();
-        if ("/staff/return".equals(path)) {
-            configure(request, "return", "Return Management",
-                    "Receive rented vehicles and record their return condition.");
-        } else if ("/staff/maintenance".equals(path)) {
-            configure(request, "maintenance", "Maintenance Management",
-                    "Track vehicles under maintenance and complete maintenance work.");
-        } else if ("/staff/incidents".equals(path)) {
-            configure(request, "incident", "Incident Management",
-                    "Review incidents reported during vehicle rental and return.");
-        } else {
-            configure(request, "profile", "Staff Profile",
-                    "Review your staff account and assigned access level.");
-            request.setAttribute("staffAccount", staff);
-        }
+        configure(request, "profile", "Staff Profile",
+                "Review your staff account and assigned access level.");
+        request.setAttribute("staffAccount", staff);
         request.getRequestDispatcher("/WEB-INF/views/staff/module.jsp").forward(request, response);
     }
 
