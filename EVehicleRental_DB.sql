@@ -189,6 +189,8 @@ BEGIN
         end_date DATE,
         total_days INT,
         total_amount DECIMAL(10,2),
+        actual_return_date DATE NULL,
+        late_fee DECIMAL(10,2) NOT NULL CONSTRAINT DF_Rental_LateFee DEFAULT 0,
         status VARCHAR(20) DEFAULT 'BOOKED',
         created_at DATETIME2 DEFAULT GETDATE(),
 
@@ -207,6 +209,31 @@ BEGIN
         CONSTRAINT CK_Rental_Status
             CHECK (status IN ('BOOKED', 'RENTED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'))
     );
+END;
+GO
+
+/* Rental late-return columns for existing databases */
+IF COL_LENGTH('dbo.Rental', 'actual_return_date') IS NULL
+BEGIN
+    ALTER TABLE dbo.Rental ADD actual_return_date DATE NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Rental', 'late_fee') IS NULL
+BEGIN
+    ALTER TABLE dbo.Rental ADD late_fee DECIMAL(10,2) NOT NULL
+        CONSTRAINT DF_Rental_LateFee DEFAULT 0;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = N'CK_Rental_LateFee'
+      AND parent_object_id = OBJECT_ID(N'dbo.Rental')
+)
+BEGIN
+    ALTER TABLE dbo.Rental ADD CONSTRAINT CK_Rental_LateFee CHECK (late_fee >= 0);
 END;
 GO
 
@@ -242,6 +269,7 @@ BEGIN
         amount DECIMAL(10,2) NOT NULL,
         payment_method VARCHAR(20) NOT NULL,
         status VARCHAR(20) NOT NULL,
+        payment_type VARCHAR(20) NOT NULL CONSTRAINT DF_Payment_Type DEFAULT 'BOOKING',
         transaction_code VARCHAR(255),
         payment_date DATETIME2 DEFAULT GETDATE(),
 
@@ -250,11 +278,49 @@ BEGIN
             REFERENCES Rental(rental_id),
 
         CONSTRAINT CK_Payment_Method
-            CHECK (payment_method IN ('WALLET', 'VNPAY')),
+            CHECK (payment_method IN ('WALLET', 'VNPAY', 'CASH')),
 
         CONSTRAINT CK_Payment_Status
-            CHECK (status IN ('PENDING', 'SUCCESS', 'FAILED'))
+            CHECK (status IN ('PENDING', 'SUCCESS', 'FAILED')),
+
+        CONSTRAINT CK_Payment_Type
+            CHECK (payment_type IN ('BOOKING', 'LATE_FEE'))
     );
+END;
+GO
+
+/* Payment late-fee support for existing databases */
+IF COL_LENGTH('dbo.Payment', 'payment_type') IS NULL
+BEGIN
+    ALTER TABLE dbo.Payment ADD payment_type VARCHAR(20) NOT NULL
+        CONSTRAINT DF_Payment_Type DEFAULT 'BOOKING';
+END;
+GO
+
+IF EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = N'CK_Payment_Method'
+      AND parent_object_id = OBJECT_ID(N'dbo.Payment')
+)
+BEGIN
+    ALTER TABLE dbo.Payment DROP CONSTRAINT CK_Payment_Method;
+END;
+GO
+
+ALTER TABLE dbo.Payment ADD CONSTRAINT CK_Payment_Method
+    CHECK (payment_method IN ('WALLET', 'VNPAY', 'CASH'));
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = N'CK_Payment_Type'
+      AND parent_object_id = OBJECT_ID(N'dbo.Payment')
+)
+BEGIN
+    ALTER TABLE dbo.Payment ADD CONSTRAINT CK_Payment_Type
+        CHECK (payment_type IN ('BOOKING', 'LATE_FEE'));
 END;
 GO
 

@@ -2,6 +2,7 @@ package models;
 
 import enums.PaymentMethod;
 import enums.PaymentStatus;
+import enums.PaymentType;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Column;
@@ -35,6 +36,9 @@ public class Payment implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private PaymentStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_type", nullable = false, length = 20)
+    private PaymentType paymentType = PaymentType.BOOKING;
     @Column(name = "transaction_code", length = 255)
     private String transactionCode;
     @Column(name = "payment_date")
@@ -51,6 +55,7 @@ public class Payment implements Serializable {
         this.amount = amount;
         this.paymentMethod = paymentMethod;
         this.status = status;
+        this.paymentType = PaymentType.BOOKING;
         this.transactionCode = transactionCode;
     }
 
@@ -61,6 +66,7 @@ public class Payment implements Serializable {
         this.amount = amount;
         this.paymentMethod = paymentMethod;
         this.status = status;
+        this.paymentType = PaymentType.BOOKING;
         this.transactionCode = transactionCode;
         this.paymentDate = paymentDate;
     }
@@ -103,6 +109,14 @@ public class Payment implements Serializable {
 
     public void setStatus(PaymentStatus status) {
         this.status = status;
+    }
+
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
     }
 
     public String getTransactionCode() {

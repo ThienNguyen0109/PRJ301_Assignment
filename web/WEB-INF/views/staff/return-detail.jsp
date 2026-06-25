@@ -34,8 +34,15 @@
                                     <div class="detail-row"><dt>Rental ID</dt><dd><c:out value="${returnRental.rentalId}"/></dd></div>
                                     <div class="detail-row"><dt>Rental Period</dt><dd><c:out value="${returnRental.startDate}"/> - <c:out value="${returnRental.endDate}"/></dd></div>
                                     <div class="detail-row"><dt>Total Amount</dt><dd><fmt:formatNumber value="${returnRental.totalAmount}" pattern="#,##0"/> VND</dd></div>
+                                    <div class="detail-row"><dt>Price Per Day</dt><dd><fmt:formatNumber value="${returnRental.pricePerDay}" pattern="#,##0"/> VND</dd></div>
                                     <div class="detail-row"><dt>Pickup Station</dt><dd><c:out value="${returnRental.stationName}"/></dd></div>
                                 </dl>
+                                <c:if test="${returnRental.late}">
+                                    <div class="message message-error" style="margin-top:18px">
+                                        Vehicle returned <strong>${returnRental.estimatedLateDays}</strong> day(s) late.
+                                        Late fee: <strong><fmt:formatNumber value="${returnRental.estimatedLateFee}" pattern="#,##0"/> VND</strong>.
+                                    </div>
+                                </c:if>
                                 <h3 style="margin:20px 0 12px">Vehicle Information</h3>
                                 <dl class="detail-list">
                                     <div class="detail-row"><dt>Model</dt><dd><c:out value="${returnRental.vehicleModel}"/></dd></div>
@@ -60,6 +67,13 @@
                                         </select>
                                         <label for="notes"><strong>Notes</strong></label>
                                         <textarea class="form-textarea" id="notes" name="notes" placeholder="Inspection notes" style="margin:8px 0 16px"></textarea>
+                                        <c:if test="${returnRental.late}">
+                                            <label for="lateFeePaymentMethod"><strong>Late Fee Payment</strong></label>
+                                            <select class="form-select" id="lateFeePaymentMethod" name="lateFeePaymentMethod" style="margin:8px 0 16px">
+                                                <option value="CASH">CASH - collected by staff</option>
+                                                <option value="VNPAY">VNPAY - pending payment</option>
+                                            </select>
+                                        </c:if>
                                         <div id="damageFields" hidden>
                                             <label for="damageDescription"><strong>Damage Description</strong></label>
                                             <textarea class="form-textarea" id="damageDescription" name="damageDescription" placeholder="Describe the damage" style="margin:8px 0 16px"></textarea>
@@ -81,7 +95,16 @@
     </div>
     <div class="modal-backdrop" id="returnModal" role="dialog" aria-modal="true">
         <div class="confirm-modal"><div class="modal-header"><h3>Confirm Vehicle Return</h3></div>
-            <div class="modal-body">Confirm the inspection details and complete this rental?</div>
+            <div class="modal-body">
+                Confirm the inspection details and complete this rental?
+                <c:if test="${not empty returnRental && returnRental.late}">
+                    <div class="message message-error" style="margin-top:14px">
+                        This return is ${returnRental.estimatedLateDays} day(s) late.
+                        Late fee to collect after return:
+                        <strong><fmt:formatNumber value="${returnRental.estimatedLateFee}" pattern="#,##0"/> VND</strong>.
+                    </div>
+                </c:if>
+            </div>
             <div class="modal-footer"><button class="btn btn-light" type="button" onclick="closeReturnModal()">Cancel</button><button class="btn btn-primary" type="button" onclick="document.getElementById('returnForm').submit()">Confirm Return</button></div>
         </div>
     </div>

@@ -2,6 +2,7 @@ package controllers;
 
 import daos.IVehicleSearchDAO;
 import daos.VehicleSearchDAO;
+import daos.CustomerRentalHistoryDAO;
 import daos.WalletDAO;
 import daos.WalletTransactionDAO;
 import dto.BookingDetail;
@@ -36,9 +37,11 @@ import services.BookingService;
     "/page/dashboard"
 })
 public class PageController extends HttpServlet {
+    private static final int RENTAL_HISTORY_PAGE_SIZE = 5;
     private IVehicleSearchDAO vehicleSearchDAO = new VehicleSearchDAO();
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO walletTransactionDAO = new WalletTransactionDAO();
+    private CustomerRentalHistoryDAO customerRentalHistoryDAO = new CustomerRentalHistoryDAO();
     private BookingService bookingService = new BookingService();
 
     @Override
@@ -262,10 +265,29 @@ public class PageController extends HttpServlet {
 
     private void prepareProfilePage(HttpServletRequest request, HttpSession session) {
         Account user = (Account) session.getAttribute("user");
+        long totalRentalHistories = customerRentalHistoryDAO.countByCustomerId(user.getAccountId());
+        int totalRentalPages = (int) Math.ceil(totalRentalHistories / (double) RENTAL_HISTORY_PAGE_SIZE);
+        if (totalRentalPages < 1) {
+            totalRentalPages = 1;
+        }
+        int rentalPage = parsePositiveInt(request.getParameter("rentalPage"), 1);
+        if (rentalPage > totalRentalPages) {
+            rentalPage = totalRentalPages;
+        }
+        int offset = (rentalPage - 1) * RENTAL_HISTORY_PAGE_SIZE;
+
         request.setAttribute("profileUser", user);
         request.setAttribute("displayName", firstNonBlank((String) session.getAttribute("userName"), user.getFullName()));
         request.setAttribute("displayEmail", firstNonBlank((String) session.getAttribute("userEmail"), user.getEmail()));
         request.setAttribute("wallet", walletDAO.getWalletByAccountId(user.getAccountId()));
+        request.setAttribute("rentalHistories", customerRentalHistoryDAO.findByCustomerId(
+                user.getAccountId(), offset, RENTAL_HISTORY_PAGE_SIZE));
+        request.setAttribute("rentalPage", rentalPage);
+        request.setAttribute("rentalPageSize", RENTAL_HISTORY_PAGE_SIZE);
+        request.setAttribute("totalRentalPages", totalRentalPages);
+        request.setAttribute("totalRentalHistories", totalRentalHistories);
+        request.setAttribute("rentalStartItem", totalRentalHistories == 0 ? 0 : offset + 1);
+        request.setAttribute("rentalEndItem", Math.min(offset + RENTAL_HISTORY_PAGE_SIZE, totalRentalHistories));
     }
 
     private void prepareWalletPage(HttpServletRequest request, HttpSession session) {
@@ -294,5 +316,14 @@ public class PageController extends HttpServlet {
 
     private String firstNonBlank(String preferred, String fallback) {
         return isBlank(preferred) ? fallback : preferred;
+    }
+
+    private int parsePositiveInt(String value, int fallback) {
+        try {
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : fallback;
+        } catch (Exception ex) {
+            return fallback;
+        }
     }
 }

@@ -2,7 +2,11 @@ package daos;
 
 import dto.ReturnRentalDTO;
 import enums.RentalStatus;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -71,14 +75,28 @@ public class ReturnDAO implements IReturnDAO {
     private ReturnRentalDTO map(Object[] row) {
         Rental rental = (Rental) row[0]; Account customer = (Account) row[1];
         Vehicle vehicle = (Vehicle) row[2]; VehicleModel model = (VehicleModel) row[3]; Station station = (Station) row[4];
+        BigDecimal pricePerDay = toMoney(model.getPricePerDay());
+        int lateDays = calculateLateDays(rental.getEndDate());
+        BigDecimal lateFee = pricePerDay.multiply(BigDecimal.valueOf(lateDays));
         return new ReturnRentalDTO(rental.getRentalId(), customer.getFullName(), customer.getEmail(), customer.getPhone(),
                 model.getName(), vehicle.getLicensePlate(), vehicle.getBatteryLevel(), rental.getStartDate(), rental.getEndDate(),
-                rental.getTotalAmount(), station.getName(), rental.getStatus(), vehicle.getStatus());
+                rental.getTotalAmount(), pricePerDay, lateDays, lateFee, station.getName(), rental.getStatus(), vehicle.getStatus());
     }
 
     private String normalize(String value) { return value == null ? "" : value.trim().toLowerCase(Locale.ROOT); }
     private boolean isUuid(String value) {
         try { java.util.UUID.fromString(value); return true; }
         catch (IllegalArgumentException ex) { return false; }
+    }
+
+    private int calculateLateDays(Date endDate) {
+        if (endDate == null) return 0;
+        long days = ChronoUnit.DAYS.between(endDate.toLocalDate(), LocalDate.now());
+        return days > 0 ? (int) days : 0;
+    }
+
+    private BigDecimal toMoney(Double value) {
+        if (value == null) return BigDecimal.ZERO;
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
 }

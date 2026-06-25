@@ -40,6 +40,10 @@ public class Rental implements Serializable {
     private Integer totalDays;
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
+    @Column(name = "actual_return_date")
+    private Date actualReturnDate;
+    @Column(name = "late_fee", precision = 10, scale = 2)
+    private BigDecimal lateFee = BigDecimal.ZERO;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     private RentalStatus status;
@@ -146,6 +150,22 @@ public class Rental implements Serializable {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public Date getActualReturnDate() {
+        return actualReturnDate;
+    }
+
+    public void setActualReturnDate(Date actualReturnDate) {
+        this.actualReturnDate = actualReturnDate;
+    }
+
+    public BigDecimal getLateFee() {
+        return lateFee;
+    }
+
+    public void setLateFee(BigDecimal lateFee) {
+        this.lateFee = lateFee;
     }
 
     public RentalStatus getStatus() {

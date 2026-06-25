@@ -5,7 +5,8 @@ package enums;
  */
 public enum PaymentMethod {
     WALLET("WALLET"),
-    VNPAY("VNPAY");
+    VNPAY("VNPAY"),
+    CASH("CASH");
 
     private final String value;
 

@@ -142,6 +142,50 @@
                 margin-top: 24px; padding: 26px; background: rgba(255,255,255,0.92);
                 backdrop-filter: blur(16px);
             }
+            .history-card {
+                margin-top: 24px; padding: 26px; overflow: hidden;
+                background: rgba(255,255,255,0.94); backdrop-filter: blur(16px);
+                border-radius: 8px; border: 1px solid rgba(218,183,99,0.2);
+                box-shadow: 0 22px 60px rgba(8,17,31,0.14);
+            }
+            .history-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid rgba(17,24,39,0.08); }
+            .history-table { width: 100%; min-width: 860px; border-collapse: collapse; background: rgba(255,255,255,0.72); }
+            .history-table th {
+                text-align: left; padding: 14px 16px; color: #475569; font-size: 13px;
+                background: rgba(248,250,252,0.95); border-bottom: 1px solid rgba(17,24,39,0.08);
+            }
+            .history-table td { padding: 15px 16px; border-bottom: 1px solid rgba(17,24,39,0.07); vertical-align: top; }
+            .history-table tr:last-child td { border-bottom: none; }
+            .rental-code { font-family: Consolas, monospace; font-size: 12px; color: #475569; }
+            .vehicle-title { font-weight: 800; color: #111827; }
+            .muted-text { color: #64748b; font-size: 13px; margin-top: 4px; }
+            .status-badge {
+                display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px;
+                font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
+            }
+            .status-booked { color: #1d4ed8; background: #dbeafe; }
+            .status-rented { color: #c2410c; background: #ffedd5; }
+            .status-completed { color: #15803d; background: #dcfce7; }
+            .status-cancelled { color: #b91c1c; background: #fee2e2; }
+            .status-no-show { color: #4b5563; background: #e5e7eb; }
+            .history-footer {
+                display: flex; justify-content: space-between; align-items: center; gap: 14px;
+                padding-top: 18px; color: #64748b; font-size: 14px; flex-wrap: wrap;
+            }
+            .pagination { display: flex; align-items: center; gap: 8px; }
+            .page-link {
+                min-width: 42px; height: 38px; padding: 0 13px; border-radius: 8px;
+                display: inline-flex; align-items: center; justify-content: center;
+                text-decoration: none; color: #111827; font-weight: 800;
+                background: #ffffff; border: 1px solid rgba(17,24,39,0.12);
+                box-shadow: 0 8px 18px rgba(8,17,31,0.08);
+            }
+            .page-link.active { color: #09111f; background: linear-gradient(135deg, #f8df9d, #d6a94e); border-color: rgba(218,183,99,0.55); }
+            .page-link.disabled { color: #94a3b8; background: #f1f5f9; pointer-events: none; box-shadow: none; }
+            .empty-history {
+                padding: 32px; text-align: center; color: #64748b;
+                background: rgba(248,250,252,0.76); border-radius: 8px;
+            }
             .quick-actions { display: grid; gap: 12px; }
             .primary-btn, .secondary-btn {
                 display: inline-block; padding: 11px 18px; border-radius: 7px;
@@ -232,6 +276,107 @@
                     </div>
                 </div>
             </div>
+
+            <section class="history-card">
+                <h2 class="card-title">📋 Lịch sử đặt xe</h2>
+                <c:choose>
+                    <c:when test="${not empty rentalHistories}">
+                        <div class="history-table-wrap">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Xe</th>
+                                        <th>Thời gian thuê</th>
+                                        <th>Ngày trả thực tế</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Phí trễ</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="rental" items="${rentalHistories}">
+                                        <tr>
+                                            <td>
+                                                <div class="rental-code"><c:out value="${rental.rentalId}"/></div>
+                                                <div class="muted-text">
+                                                    <fmt:formatDate value="${rental.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="vehicle-title"><c:out value="${rental.vehicleModel}"/></div>
+                                                <div class="muted-text">
+                                                    <c:out value="${rental.licensePlate}"/> • <c:out value="${rental.stationName}"/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <c:out value="${rental.startDate}"/> - <c:out value="${rental.endDate}"/>
+                                                <div class="muted-text">${rental.totalDays} ngày</div>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty rental.actualReturnDate}">
+                                                        <c:out value="${rental.actualReturnDate}"/>
+                                                    </c:when>
+                                                    <c:otherwise>Chưa trả xe</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td><fmt:formatNumber value="${rental.totalAmount}" pattern="#,##0"/> VND</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${rental.lateFee gt 0}">
+                                                        <fmt:formatNumber value="${rental.lateFee}" pattern="#,##0"/> VND
+                                                    </c:when>
+                                                    <c:otherwise>0 VND</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:set var="statusClass" value="status-booked"/>
+                                                <c:if test="${rental.status.value eq 'RENTED'}"><c:set var="statusClass" value="status-rented"/></c:if>
+                                                <c:if test="${rental.status.value eq 'COMPLETED'}"><c:set var="statusClass" value="status-completed"/></c:if>
+                                                <c:if test="${rental.status.value eq 'CANCELLED'}"><c:set var="statusClass" value="status-cancelled"/></c:if>
+                                                <c:if test="${rental.status.value eq 'NO_SHOW'}"><c:set var="statusClass" value="status-no-show"/></c:if>
+                                                <span class="status-badge ${statusClass}"><c:out value="${rental.status.value}"/></span>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="history-footer">
+                            <div>
+                                Hiển thị ${rentalStartItem} - ${rentalEndItem} / ${totalRentalHistories} đơn đặt xe
+                            </div>
+                            <div class="pagination">
+                                <c:url var="prevRentalPageUrl" value="/">
+                                    <c:param name="action" value="profile"/>
+                                    <c:param name="rentalPage" value="${rentalPage - 1}"/>
+                                </c:url>
+                                <a class="page-link ${rentalPage le 1 ? 'disabled' : ''}" href="${prevRentalPageUrl}">Trước</a>
+
+                                <c:forEach var="pageNo" begin="1" end="${totalRentalPages}">
+                                    <c:url var="rentalPageUrl" value="/">
+                                        <c:param name="action" value="profile"/>
+                                        <c:param name="rentalPage" value="${pageNo}"/>
+                                    </c:url>
+                                    <a class="page-link ${pageNo eq rentalPage ? 'active' : ''}" href="${rentalPageUrl}">${pageNo}</a>
+                                </c:forEach>
+
+                                <c:url var="nextRentalPageUrl" value="/">
+                                    <c:param name="action" value="profile"/>
+                                    <c:param name="rentalPage" value="${rentalPage + 1}"/>
+                                </c:url>
+                                <a class="page-link ${rentalPage ge totalRentalPages ? 'disabled' : ''}" href="${nextRentalPageUrl}">Sau</a>
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="empty-history">
+                            Bạn chưa có đơn đặt xe nào. Hãy chọn một mẫu xe phù hợp và bắt đầu chuyến đi đầu tiên.
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </section>
         </div>
     </body>
 </html>

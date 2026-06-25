@@ -23,6 +23,7 @@ import models.Wallet;
 import models.WalletTransaction;
 import services.BookingService;
 import services.EmailService;
+import services.ReturnService;
 import services.VNPayService;
 
 /**
@@ -34,6 +35,7 @@ public class VNPayCallbackController extends HttpServlet {
     private IWalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO transactionDAO = new WalletTransactionDAO();
     private BookingService bookingService = new BookingService();
+    private ReturnService returnService = new ReturnService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -79,11 +81,35 @@ public class VNPayCallbackController extends HttpServlet {
                 return;
             }
 
+            if (orderId != null && orderId.startsWith("VNPAY_LATE_")) {
+                handleLateFeeCallback(request, response, session, responseCode, orderId, transactionNo);
+                return;
+            }
+
             handleTopupCallback(request, response, session, responseCode, orderId, transactionNo);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error processing VNPay callback: " + ex.getMessage(), ex);
             response.sendRedirect(request.getContextPath() + "?action=wallet&error=system_error");
         }
+    }
+
+    private void handleLateFeeCallback(HttpServletRequest request, HttpServletResponse response, HttpSession session,
+            String responseCode, String orderId, String transactionNo) throws IOException {
+        String sessionOrderId = (String) session.getAttribute("lateFeeOrderId");
+        if (sessionOrderId != null && !orderId.equals(sessionOrderId)) {
+            response.sendRedirect(request.getContextPath() + "?action=staff-return&returnError=late_fee_order_mismatch");
+            return;
+        }
+
+        if ("00".equals(responseCode)) {
+            returnService.completeLateFeeVNPayPayment(orderId, transactionNo);
+            session.setAttribute("returnSuccess", "Vehicle returned successfully. Late fee has been paid via VNPay.");
+        } else {
+            returnService.failLateFeeVNPayPayment(orderId, transactionNo);
+            session.setAttribute("returnError", "Vehicle returned, but late fee VNPay payment failed.");
+        }
+        session.removeAttribute("lateFeeOrderId");
+        response.sendRedirect(request.getContextPath() + "?action=staff-return");
     }
 
     private void handleBookingCallback(HttpServletRequest request, HttpServletResponse response, HttpSession session,

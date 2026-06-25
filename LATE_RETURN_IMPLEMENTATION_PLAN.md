@@ -20,6 +20,8 @@ END;
 
 Nếu nghiệp vụ cần tính trễ theo giờ, đổi `actual_return_date` thành `DATETIME2` và bổ sung giờ nhận/trả dự kiến. Với quy tắc tính theo ngày hiện tại, kiểu `DATE` là đủ.
 
+-> Chỉ cần tính theo ngày, trễ 1 ngày mới bắt đầu tính tiền trễ hạn không tính theo giờ.
+
 ## 2. Cập nhật JPA Entity
 
 Thêm vào `Rental`:
@@ -56,9 +58,10 @@ Trong cùng transaction:
 Trước khi code cần thống nhất cách thu `lateFee`:
 
 - Trừ trực tiếp Wallet hay tạo Payment mới.
-- Xử lý khi số dư ví không đủ.
+->Tạo payment mới bằng VNPay hoặc cho thanh toán bằng tiền mặt nếu khách hàng không chuyển khoản
+
 - Cho phép Staff xác nhận trả xe trước rồi ghi nhận công nợ hay không.
-- VNPay có được dùng để thanh toán phí phát sinh hay không.
+-> Cho staff xác nhận trả xe trước rồi sau đó thanh toán phần phí trả trễ sau
 
 Không nên chỉ lưu `late_fee` mà không có trạng thái thanh toán của khoản phí này.
 

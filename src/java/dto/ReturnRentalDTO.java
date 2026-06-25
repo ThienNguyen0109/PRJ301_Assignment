@@ -16,14 +16,17 @@ public class ReturnRentalDTO {
     private final Date startDate;
     private final Date endDate;
     private final BigDecimal totalAmount;
+    private final BigDecimal pricePerDay;
+    private final int estimatedLateDays;
+    private final BigDecimal estimatedLateFee;
     private final String stationName;
     private final RentalStatus rentalStatus;
     private final VehicleStatus vehicleStatus;
 
     public ReturnRentalDTO(String rentalId, String customerName, String email, String phone,
             String vehicleModel, String licensePlate, Integer batteryLevel, Date startDate,
-            Date endDate, BigDecimal totalAmount, String stationName, RentalStatus rentalStatus,
-            VehicleStatus vehicleStatus) {
+            Date endDate, BigDecimal totalAmount, BigDecimal pricePerDay, int estimatedLateDays,
+            BigDecimal estimatedLateFee, String stationName, RentalStatus rentalStatus, VehicleStatus vehicleStatus) {
         this.rentalId = rentalId;
         this.customerName = customerName;
         this.email = email;
@@ -34,6 +37,9 @@ public class ReturnRentalDTO {
         this.startDate = startDate;
         this.endDate = endDate;
         this.totalAmount = totalAmount;
+        this.pricePerDay = pricePerDay;
+        this.estimatedLateDays = estimatedLateDays;
+        this.estimatedLateFee = estimatedLateFee;
         this.stationName = stationName;
         this.rentalStatus = rentalStatus;
         this.vehicleStatus = vehicleStatus;
@@ -49,6 +55,10 @@ public class ReturnRentalDTO {
     public Date getStartDate() { return startDate; }
     public Date getEndDate() { return endDate; }
     public BigDecimal getTotalAmount() { return totalAmount; }
+    public BigDecimal getPricePerDay() { return pricePerDay; }
+    public int getEstimatedLateDays() { return estimatedLateDays; }
+    public BigDecimal getEstimatedLateFee() { return estimatedLateFee; }
+    public boolean isLate() { return estimatedLateDays > 0; }
     public String getStationName() { return stationName; }
     public RentalStatus getRentalStatus() { return rentalStatus; }
     public VehicleStatus getVehicleStatus() { return vehicleStatus; }
