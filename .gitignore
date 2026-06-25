@@ -12,6 +12,7 @@ nbproject/private/
 
 # Package files
 *.jar
+!web/lib/*.jar
 *.war
 *.ear
 
