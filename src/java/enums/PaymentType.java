@@ -2,7 +2,11 @@ package enums;
 
 public enum PaymentType {
     BOOKING("BOOKING"),
-    LATE_FEE("LATE_FEE");
+    LATE_FEE("LATE_FEE"),
+    DAMAGE_FEE("DAMAGE_FEE"),
+    CLEANING_FEE("CLEANING_FEE"),
+    LOST_ACCESSORY("LOST_ACCESSORY"),
+    OTHER("OTHER");
 
     private final String value;
 

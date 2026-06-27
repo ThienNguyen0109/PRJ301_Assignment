@@ -16,12 +16,13 @@ public class CustomerRentalHistoryDTO {
     private final Integer totalDays;
     private final BigDecimal totalAmount;
     private final BigDecimal lateFee;
+    private final BigDecimal extraChargeTotal;
     private final RentalStatus status;
     private final Timestamp createdAt;
 
     public CustomerRentalHistoryDTO(String rentalId, String vehicleModel, String licensePlate,
             String stationName, Date startDate, Date endDate, Date actualReturnDate,
-            Integer totalDays, BigDecimal totalAmount, BigDecimal lateFee,
+            Integer totalDays, BigDecimal totalAmount, BigDecimal lateFee, BigDecimal extraChargeTotal,
             RentalStatus status, Timestamp createdAt) {
         this.rentalId = rentalId;
         this.vehicleModel = vehicleModel;
@@ -33,6 +34,7 @@ public class CustomerRentalHistoryDTO {
         this.totalDays = totalDays;
         this.totalAmount = totalAmount;
         this.lateFee = lateFee;
+        this.extraChargeTotal = extraChargeTotal;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -47,6 +49,7 @@ public class CustomerRentalHistoryDTO {
     public Integer getTotalDays() { return totalDays; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public BigDecimal getLateFee() { return lateFee; }
+    public BigDecimal getExtraChargeTotal() { return extraChargeTotal; }
     public RentalStatus getStatus() { return status; }
     public Timestamp getCreatedAt() { return createdAt; }
 }

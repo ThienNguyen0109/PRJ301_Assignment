@@ -67,13 +67,6 @@
                                         </select>
                                         <label for="notes"><strong>Notes</strong></label>
                                         <textarea class="form-textarea" id="notes" name="notes" placeholder="Inspection notes" style="margin:8px 0 16px"></textarea>
-                                        <c:if test="${returnRental.late}">
-                                            <label for="lateFeePaymentMethod"><strong>Late Fee Payment</strong></label>
-                                            <select class="form-select" id="lateFeePaymentMethod" name="lateFeePaymentMethod" style="margin:8px 0 16px">
-                                                <option value="CASH">CASH - collected by staff</option>
-                                                <option value="VNPAY">VNPAY - pending payment</option>
-                                            </select>
-                                        </c:if>
                                         <div id="damageFields" hidden>
                                             <label for="damageDescription"><strong>Damage Description</strong></label>
                                             <textarea class="form-textarea" id="damageDescription" name="damageDescription" placeholder="Describe the damage" style="margin:8px 0 16px"></textarea>
@@ -81,6 +74,16 @@
                                             <select class="form-select" id="severity" name="severity" style="margin:8px 0 16px">
                                                 <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option>
                                             </select>
+                                            <label for="damageFee"><strong>Damage Fee (VND)</strong></label>
+                                            <input class="form-control" id="damageFee" name="damageFee" type="number" min="0" step="1000" value="0" style="margin:8px 0 16px">
+                                        </div>
+                                        <div id="extraChargePaymentBlock" style="margin-bottom:16px">
+                                            <label for="extraChargePaymentMethod"><strong>Extra Charge Payment</strong></label>
+                                            <select class="form-select" id="extraChargePaymentMethod" name="extraChargePaymentMethod" style="margin:8px 0 8px">
+                                                <option value="CASH">CASH - collected by staff</option>
+                                                <option value="VNPAY">VNPAY - customer pays online</option>
+                                            </select>
+                                            <div class="muted-text">Applies to late fee and damage fee if any.</div>
                                         </div>
                                         <button class="btn btn-primary" type="button" onclick="openReturnModal()">Confirm Return</button>
                                     </form>
@@ -104,6 +107,9 @@
                         <strong><fmt:formatNumber value="${returnRental.estimatedLateFee}" pattern="#,##0"/> VND</strong>.
                     </div>
                 </c:if>
+                <div class="message message-info" style="margin-top:14px">
+                    If the vehicle is damaged, the damage fee will be stored as an extra charge and paid by the selected payment method.
+                </div>
             </div>
             <div class="modal-footer"><button class="btn btn-light" type="button" onclick="closeReturnModal()">Cancel</button><button class="btn btn-primary" type="button" onclick="document.getElementById('returnForm').submit()">Confirm Return</button></div>
         </div>
@@ -115,6 +121,7 @@
             fields.hidden = !damaged;
             document.getElementById('damageDescription').required = damaged;
             document.getElementById('severity').required = damaged;
+            document.getElementById('damageFee').required = damaged;
         }
         function openReturnModal() {
             var form = document.getElementById('returnForm');

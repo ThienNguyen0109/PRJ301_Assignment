@@ -1,6 +1,7 @@
 package daos;
 
 import dto.CustomerRentalHistoryDTO;
+import enums.ExtraChargeStatus;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +13,10 @@ import utils.JPAUtil;
 
 public class CustomerRentalHistoryDAO {
     private static final String HISTORY_QUERY =
-            "SELECT r, v, m, s FROM Rental r "
+            "SELECT r, v, m, s, "
+            + "(SELECT COALESCE(SUM(c.amount), 0) FROM ExtraCharge c "
+            + "WHERE c.rentalId = r.rentalId AND c.status <> :cancelledStatus) "
+            + "FROM Rental r "
             + "JOIN r.vehicle v "
             + "JOIN v.model m "
             + "JOIN r.pickupStation s "
@@ -27,6 +31,7 @@ public class CustomerRentalHistoryDAO {
         return JPAUtil.execute(em -> em.createQuery(
                 HISTORY_QUERY, Object[].class)
                 .setParameter("customerId", customerId)
+                .setParameter("cancelledStatus", ExtraChargeStatus.CANCELLED)
                 .setFirstResult(Math.max(0, offset))
                 .setMaxResults(Math.max(1, limit))
                 .getResultList()
@@ -47,6 +52,7 @@ public class CustomerRentalHistoryDAO {
         Vehicle vehicle = (Vehicle) row[1];
         VehicleModel model = (VehicleModel) row[2];
         Station station = (Station) row[3];
+        BigDecimal extraChargeTotal = toBigDecimal(row[4]);
         return new CustomerRentalHistoryDTO(
                 rental.getRentalId(),
                 model.getName(),
@@ -58,7 +64,21 @@ public class CustomerRentalHistoryDAO {
                 rental.getTotalDays(),
                 rental.getTotalAmount(),
                 rental.getLateFee() == null ? BigDecimal.ZERO : rental.getLateFee(),
+                extraChargeTotal,
                 rental.getStatus(),
                 rental.getCreatedAt());
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
+        if (value instanceof Number) {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        }
+        return BigDecimal.ZERO;
     }
 }

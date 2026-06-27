@@ -81,7 +81,7 @@ public class VNPayCallbackController extends HttpServlet {
                 return;
             }
 
-            if (orderId != null && orderId.startsWith("VNPAY_LATE_")) {
+            if (orderId != null && (orderId.startsWith("CHARGE_") || orderId.startsWith("VNPAY_LATE_"))) {
                 handleLateFeeCallback(request, response, session, responseCode, orderId, transactionNo);
                 return;
             }
@@ -95,7 +95,10 @@ public class VNPayCallbackController extends HttpServlet {
 
     private void handleLateFeeCallback(HttpServletRequest request, HttpServletResponse response, HttpSession session,
             String responseCode, String orderId, String transactionNo) throws IOException {
-        String sessionOrderId = (String) session.getAttribute("lateFeeOrderId");
+        String sessionOrderId = (String) session.getAttribute("chargeOrderId");
+        if (sessionOrderId == null) {
+            sessionOrderId = (String) session.getAttribute("lateFeeOrderId");
+        }
         if (sessionOrderId != null && !orderId.equals(sessionOrderId)) {
             response.sendRedirect(request.getContextPath() + "?action=staff-return&returnError=late_fee_order_mismatch");
             return;
@@ -103,11 +106,12 @@ public class VNPayCallbackController extends HttpServlet {
 
         if ("00".equals(responseCode)) {
             returnService.completeLateFeeVNPayPayment(orderId, transactionNo);
-            session.setAttribute("returnSuccess", "Vehicle returned successfully. Late fee has been paid via VNPay.");
+            session.setAttribute("returnSuccess", "Vehicle returned successfully. Extra charge has been paid via VNPay.");
         } else {
             returnService.failLateFeeVNPayPayment(orderId, transactionNo);
-            session.setAttribute("returnError", "Vehicle returned, but late fee VNPay payment failed.");
+            session.setAttribute("returnError", "Vehicle returned, but extra charge VNPay payment failed.");
         }
+        session.removeAttribute("chargeOrderId");
         session.removeAttribute("lateFeeOrderId");
         response.sendRedirect(request.getContextPath() + "?action=staff-return");
     }

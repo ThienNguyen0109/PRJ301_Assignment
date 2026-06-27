@@ -149,6 +149,8 @@ button, input, select, textarea { font: inherit; }
 .message { margin-bottom: 18px; padding: 12px 14px; border-radius: 7px; font-size: 14px; font-weight: 700; }
 .message-success { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; }
 .message-error { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
+.message-info { color: #1e3a8a; background: #dbeafe; border: 1px solid #bfdbfe; }
+.muted-text { color: var(--staff-muted); font-size: 12px; line-height: 1.5; }
 .empty-state { padding: 42px 20px; color: var(--staff-muted); text-align: center; }
 .two-column { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(340px,.8fr); gap: 20px; align-items: start; }
 .sticky-card { position: sticky; top: 88px; }

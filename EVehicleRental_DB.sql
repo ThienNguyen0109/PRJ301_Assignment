@@ -270,6 +270,7 @@ BEGIN
         payment_method VARCHAR(20) NOT NULL,
         status VARCHAR(20) NOT NULL,
         payment_type VARCHAR(20) NOT NULL CONSTRAINT DF_Payment_Type DEFAULT 'BOOKING',
+        charge_id UNIQUEIDENTIFIER NULL,
         transaction_code VARCHAR(255),
         payment_date DATETIME2 DEFAULT GETDATE(),
 
@@ -284,7 +285,7 @@ BEGIN
             CHECK (status IN ('PENDING', 'SUCCESS', 'FAILED')),
 
         CONSTRAINT CK_Payment_Type
-            CHECK (payment_type IN ('BOOKING', 'LATE_FEE'))
+            CHECK (payment_type IN ('BOOKING', 'LATE_FEE', 'DAMAGE_FEE', 'CLEANING_FEE', 'LOST_ACCESSORY', 'OTHER'))
     );
 END;
 GO
@@ -294,6 +295,12 @@ IF COL_LENGTH('dbo.Payment', 'payment_type') IS NULL
 BEGIN
     ALTER TABLE dbo.Payment ADD payment_type VARCHAR(20) NOT NULL
         CONSTRAINT DF_Payment_Type DEFAULT 'BOOKING';
+END;
+GO
+
+IF COL_LENGTH('dbo.Payment', 'charge_id') IS NULL
+BEGIN
+    ALTER TABLE dbo.Payment ADD charge_id UNIQUEIDENTIFIER NULL;
 END;
 GO
 
@@ -312,16 +319,19 @@ ALTER TABLE dbo.Payment ADD CONSTRAINT CK_Payment_Method
     CHECK (payment_method IN ('WALLET', 'VNPAY', 'CASH'));
 GO
 
-IF NOT EXISTS (
+IF EXISTS (
     SELECT 1
     FROM sys.check_constraints
     WHERE name = N'CK_Payment_Type'
       AND parent_object_id = OBJECT_ID(N'dbo.Payment')
 )
 BEGIN
-    ALTER TABLE dbo.Payment ADD CONSTRAINT CK_Payment_Type
-        CHECK (payment_type IN ('BOOKING', 'LATE_FEE'));
+    ALTER TABLE dbo.Payment DROP CONSTRAINT CK_Payment_Type;
 END;
+GO
+
+ALTER TABLE dbo.Payment ADD CONSTRAINT CK_Payment_Type
+    CHECK (payment_type IN ('BOOKING', 'LATE_FEE', 'DAMAGE_FEE', 'CLEANING_FEE', 'LOST_ACCESSORY', 'OTHER'));
 GO
 
 /* =========================
@@ -441,6 +451,60 @@ BEGIN
         CONSTRAINT CK_IncidentReport_Severity
             CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH'))
     );
+END;
+GO
+
+/* =========================
+   EXTRA CHARGE
+   ========================= */
+IF OBJECT_ID(N'Extra_Charge', N'U') IS NULL
+BEGIN
+    CREATE TABLE Extra_Charge (
+        charge_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        rental_id UNIQUEIDENTIFIER NOT NULL,
+        incident_id UNIQUEIDENTIFIER NULL,
+        charge_type VARCHAR(30) NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        description NVARCHAR(MAX),
+        status VARCHAR(20) NOT NULL DEFAULT 'UNPAID',
+        created_at DATETIME2 DEFAULT GETDATE(),
+        paid_at DATETIME2 NULL,
+
+        CONSTRAINT FK_ExtraCharge_Rental
+            FOREIGN KEY (rental_id)
+            REFERENCES Rental(rental_id),
+
+        CONSTRAINT FK_ExtraCharge_IncidentReport
+            FOREIGN KEY (incident_id)
+            REFERENCES Incident_Report(incident_id),
+
+        CONSTRAINT CK_ExtraCharge_Type
+            CHECK (charge_type IN ('LATE_FEE', 'DAMAGE_FEE', 'CLEANING_FEE', 'LOST_ACCESSORY', 'OTHER')),
+
+        CONSTRAINT CK_ExtraCharge_Status
+            CHECK (status IN ('UNPAID', 'PENDING', 'PAID', 'CANCELLED')),
+
+        CONSTRAINT CK_ExtraCharge_Amount
+            CHECK (amount >= 0)
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.Extra_Charge', 'incident_id') IS NULL
+BEGIN
+    ALTER TABLE dbo.Extra_Charge ADD incident_id UNIQUEIDENTIFIER NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.foreign_keys
+    WHERE name = N'FK_Payment_ExtraCharge'
+)
+BEGIN
+    ALTER TABLE dbo.Payment ADD CONSTRAINT FK_Payment_ExtraCharge
+        FOREIGN KEY (charge_id)
+        REFERENCES Extra_Charge(charge_id);
 END;
 GO
 
@@ -737,5 +801,6 @@ UNION ALL SELECT 'Discount', COUNT(*) FROM Discount
 UNION ALL SELECT 'Rental_Discount', COUNT(*) FROM Rental_Discount
 UNION ALL SELECT 'Review', COUNT(*) FROM Review
 UNION ALL SELECT 'Vehicle_Maintenance', COUNT(*) FROM Vehicle_Maintenance
-UNION ALL SELECT 'Incident_Report', COUNT(*) FROM Incident_Report;
+UNION ALL SELECT 'Incident_Report', COUNT(*) FROM Incident_Report
+UNION ALL SELECT 'Extra_Charge', COUNT(*) FROM Extra_Charge;
 GO

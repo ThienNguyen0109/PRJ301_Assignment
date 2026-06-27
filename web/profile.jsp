@@ -324,8 +324,8 @@
                                             <td><fmt:formatNumber value="${rental.totalAmount}" pattern="#,##0"/> VND</td>
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${rental.lateFee gt 0}">
-                                                        <fmt:formatNumber value="${rental.lateFee}" pattern="#,##0"/> VND
+                                                    <c:when test="${rental.extraChargeTotal gt 0}">
+                                                        <fmt:formatNumber value="${rental.extraChargeTotal}" pattern="#,##0"/> VND
                                                     </c:when>
                                                     <c:otherwise>0 VND</c:otherwise>
                                                 </c:choose>

@@ -39,6 +39,8 @@ public class Payment implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_type", nullable = false, length = 20)
     private PaymentType paymentType = PaymentType.BOOKING;
+    @Column(name = "charge_id", columnDefinition = "uniqueidentifier")
+    private String chargeId;
     @Column(name = "transaction_code", length = 255)
     private String transactionCode;
     @Column(name = "payment_date")
@@ -46,6 +48,9 @@ public class Payment implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rental_id", referencedColumnName = "rental_id", insertable = false, updatable = false)
     private Rental rental;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "charge_id", referencedColumnName = "charge_id", insertable = false, updatable = false)
+    private ExtraCharge extraCharge;
 
     public Payment() {
     }
@@ -119,6 +124,14 @@ public class Payment implements Serializable {
         this.paymentType = paymentType;
     }
 
+    public String getChargeId() {
+        return chargeId;
+    }
+
+    public void setChargeId(String chargeId) {
+        this.chargeId = chargeId;
+    }
+
     public String getTransactionCode() {
         return transactionCode;
     }
@@ -141,6 +154,14 @@ public class Payment implements Serializable {
 
     public void setRental(Rental rental) {
         this.rental = rental;
+    }
+
+    public ExtraCharge getExtraCharge() {
+        return extraCharge;
+    }
+
+    public void setExtraCharge(ExtraCharge extraCharge) {
+        this.extraCharge = extraCharge;
     }
 
     @Override
