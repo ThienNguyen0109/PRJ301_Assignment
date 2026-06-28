@@ -115,7 +115,7 @@ public class LoginController extends HttpServlet {
 
     private String getRedirectPageByRole(Account account) {
         if (account != null && account.getRole() == Role.ADMIN) {
-            return "?action=dashboard";
+            return "?action=admin-dashboard";
         }
         if (account != null && account.getRole() == Role.STAFF) {
             return "?action=staff-dashboard";

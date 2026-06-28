@@ -33,8 +33,7 @@ import services.BookingService;
     "/page/booking",
     "/page/booking-detail",
     "/page/wallet",
-    "/page/profile",
-    "/page/dashboard"
+    "/page/profile"
 })
 public class PageController extends HttpServlet {
     private static final int RENTAL_HISTORY_PAGE_SIZE = 5;
@@ -96,13 +95,6 @@ public class PageController extends HttpServlet {
         } else if ("/page/profile".equals(path)) {
             prepareProfilePage(request, session);
             forward(request, response, "/profile.jsp");
-        } else if ("/page/dashboard".equals(path)) {
-            Account user = (Account) session.getAttribute("user");
-            if (user == null || user.getRole() != Role.ADMIN) {
-                response.sendRedirect(request.getContextPath() + "?action=home");
-                return;
-            }
-            forward(request, response, "/dashboard.jsp");
         } else {
             response.sendRedirect(request.getContextPath() + "?action=home");
         }

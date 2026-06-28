@@ -1,0 +1,14 @@
+<header class="admin-topbar">
+    <div class="admin-topbar-left">
+        <div class="admin-page-kicker"><c:out value="${adminPageBadge}"/></div>
+        <div class="admin-page-title"><c:out value="${adminPageTitle}"/></div>
+    </div>
+    <div class="admin-topbar-actions">
+        <input class="admin-search" type="search" placeholder="${adminSearchPlaceholder}" aria-label="Search">
+        <a class="admin-button light" href="${pageContext.request.contextPath}?action=admin-financial-reports">Reports</a>
+        <div class="admin-profile-pill">
+            <span class="admin-avatar">A</span>
+            <span><c:out value="${adminAccount.fullName}"/></span>
+        </div>
+    </div>
+</header>

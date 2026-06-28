@@ -62,7 +62,49 @@ public class MainController extends HttpServlet {
             } else if (action.equals("profile")) {
                 url = "/page/profile";
             } else if (action.equals("dashboard")) {
-                url = "/page/dashboard";
+                url = "/admin/dashboard";
+            } else if (action.equals("admin-dashboard")) {
+                url = "/admin/dashboard";
+            } else if (action.equals("admin-financial-reports")) {
+                url = "/admin/financial-reports";
+            } else if (action.equals("admin-station-performance")) {
+                url = "/admin/station-performance";
+            } else if (action.equals("admin-model-performance")) {
+                url = "/admin/model-performance";
+            } else if (action.equals("admin-accounts")) {
+                url = "/admin/accounts";
+            } else if (action.equals("admin-stations")) {
+                url = "/admin/stations";
+            } else if (action.equals("admin-categories")) {
+                url = "/admin/categories";
+            } else if (action.equals("admin-vehicle-models")) {
+                url = "/admin/vehicle-models";
+            } else if (action.equals("admin-vehicle-model-images")) {
+                url = "/admin/vehicle-model-images";
+            } else if (action.equals("admin-vehicles")) {
+                url = "/admin/vehicles";
+            } else if (action.equals("admin-discounts")) {
+                url = "/admin/discounts";
+            } else if (action.equals("admin-rental-discounts")) {
+                url = "/admin/rental-discounts";
+            } else if (action.equals("admin-rentals")) {
+                url = "/admin/rentals";
+            } else if (action.equals("admin-rental-status-history")) {
+                url = "/admin/rental-status-history";
+            } else if (action.equals("admin-payments")) {
+                url = "/admin/payments";
+            } else if (action.equals("admin-extra-charges")) {
+                url = "/admin/extra-charges";
+            } else if (action.equals("admin-incidents")) {
+                url = "/admin/incidents";
+            } else if (action.equals("admin-maintenance")) {
+                url = "/admin/maintenance";
+            } else if (action.equals("admin-wallets")) {
+                url = "/admin/wallets";
+            } else if (action.equals("admin-reviews")) {
+                url = "/admin/reviews";
+            } else if (action.equals("admin-profile")) {
+                url = "/admin/profile";
             } else if (action.equals("staff-pickup")) {
                 url = "/staff/pickup";
             } else if (action.equals("staff-dashboard")) {
@@ -98,7 +140,7 @@ public class MainController extends HttpServlet {
 
     private String getRedirectActionByRole(Account account) {
         if (account != null && account.getRole() == Role.ADMIN) {
-            return "?action=dashboard";
+            return "?action=admin-dashboard";
         }
         if (account != null && account.getRole() == Role.STAFF) {
             return "?action=staff-dashboard";
