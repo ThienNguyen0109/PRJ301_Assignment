@@ -1,6 +1,7 @@
 package controllers;
 
 import enums.Role;
+import enums.VehicleModelImageType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
+import services.AdminAccountService;
+import services.AdminVehicleModelImageService;
+import services.AdminVehicleModelService;
 
 @WebServlet(name = "AdminController", urlPatterns = {
     "/admin/dashboard",
@@ -18,10 +22,16 @@ import models.Account;
     "/admin/station-performance",
     "/admin/model-performance",
     "/admin/accounts",
+    "/admin/accounts/form",
+    "/admin/accounts/detail",
     "/admin/stations",
     "/admin/categories",
     "/admin/vehicle-models",
+    "/admin/vehicle-models/form",
+    "/admin/vehicle-models/detail",
     "/admin/vehicle-model-images",
+    "/admin/vehicle-model-images/form",
+    "/admin/vehicle-model-images/detail",
     "/admin/vehicles",
     "/admin/discounts",
     "/admin/rental-discounts",
@@ -36,6 +46,9 @@ import models.Account;
     "/admin/profile"
 })
 public class AdminController extends HttpServlet {
+    private final AdminAccountService accountService = new AdminAccountService();
+    private final AdminVehicleModelService vehicleModelService = new AdminVehicleModelService();
+    private final AdminVehicleModelImageService vehicleModelImageService = new AdminVehicleModelImageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -45,6 +58,11 @@ public class AdminController extends HttpServlet {
 
         Account admin = requireAdmin(request, response);
         if (admin == null) {
+            return;
+        }
+
+        String path = request.getServletPath();
+        if (handleCrudGet(path, request, response, admin)) {
             return;
         }
 
@@ -74,6 +92,114 @@ public class AdminController extends HttpServlet {
         request.getRequestDispatcher(jsp).forward(request, response);
     }
 
+    private boolean handleCrudGet(String path, HttpServletRequest request, HttpServletResponse response, Account admin)
+            throws ServletException, IOException {
+        if ("/admin/accounts".equals(path)) {
+            configureAdminShell(request, admin, "accounts", "Accounts", "CRUD", "Search name, email, phone");
+            request.setAttribute("accounts", accountService.search(
+                    request.getParameter("keyword"),
+                    request.getParameter("role"),
+                    request.getParameter("status")));
+            request.setAttribute("roles", Role.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedRole", paramOrDefault(request, "role", "ALL"));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/accounts/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/accounts/form".equals(path)) {
+            configureAdminShell(request, admin, "accounts", isBlank(request.getParameter("id")) ? "Create Account" : "Edit Account", "CRUD", "Search accounts");
+            request.setAttribute("account", accountService.findById(request.getParameter("id")));
+            request.setAttribute("roles", Role.values());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/accounts/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/accounts/detail".equals(path)) {
+            configureAdminShell(request, admin, "accounts", "Account Detail", "CRUD", "Search accounts");
+            request.setAttribute("account", accountService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/accounts/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-models".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-models", "Vehicle Models", "CRUD", "Search model or category");
+            request.setAttribute("models", vehicleModelService.search(request.getParameter("keyword"), request.getParameter("categoryId")));
+            request.setAttribute("categories", vehicleModelService.findAllCategories());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedCategoryId", paramOrDefault(request, "categoryId", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-models/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-models/form".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-models", isBlank(request.getParameter("id")) ? "Create Vehicle Model" : "Edit Vehicle Model", "CRUD", "Search models");
+            request.setAttribute("model", vehicleModelService.findById(request.getParameter("id")));
+            request.setAttribute("categories", vehicleModelService.findAllCategories());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-models/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-models/detail".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-models", "Vehicle Model Detail", "CRUD", "Search models");
+            request.setAttribute("model", vehicleModelService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-models/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-model-images".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-model-images", "Vehicle Model Images", "CRUD", "Search model image");
+            request.setAttribute("images", vehicleModelImageService.search(
+                    request.getParameter("keyword"),
+                    request.getParameter("modelId"),
+                    request.getParameter("imageType")));
+            request.setAttribute("models", vehicleModelImageService.findAllModels());
+            request.setAttribute("imageTypes", VehicleModelImageType.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedModelId", paramOrDefault(request, "modelId", "ALL"));
+            request.setAttribute("selectedImageType", paramOrDefault(request, "imageType", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-model-images/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-model-images/form".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-model-images", isBlank(request.getParameter("id")) ? "Create Model Image" : "Edit Model Image", "CRUD", "Search images");
+            request.setAttribute("image", vehicleModelImageService.findById(request.getParameter("id")));
+            request.setAttribute("models", vehicleModelImageService.findAllModels());
+            request.setAttribute("imageTypes", VehicleModelImageType.values());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-model-images/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicle-model-images/detail".equals(path)) {
+            configureAdminShell(request, admin, "vehicle-model-images", "Model Image Detail", "CRUD", "Search images");
+            request.setAttribute("image", vehicleModelImageService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-model-images/detail.jsp").forward(request, response);
+            return true;
+        }
+        return false;
+    }
+
+    private void configureAdminShell(HttpServletRequest request, Account admin, String activeModule,
+            String title, String badge, String searchPlaceholder) {
+        request.setAttribute("adminAccount", admin);
+        request.setAttribute("activeModule", activeModule);
+        request.setAttribute("adminPageTitle", title);
+        request.setAttribute("adminPageBadge", badge);
+        request.setAttribute("adminSearchPlaceholder", searchPlaceholder);
+    }
+
+    private void consumeFlash(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return;
+        request.setAttribute("adminSuccess", session.getAttribute("adminSuccess"));
+        request.setAttribute("adminError", session.getAttribute("adminError"));
+        session.removeAttribute("adminSuccess");
+        session.removeAttribute("adminError");
+    }
+
     private Account requireAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null || !(session.getAttribute("user") instanceof Account)) {
@@ -91,6 +217,10 @@ public class AdminController extends HttpServlet {
     private String paramOrDefault(HttpServletRequest request, String name, String fallback) {
         String value = request.getParameter(name);
         return value == null || value.trim().isEmpty() ? fallback : value.trim();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private String actionForPath(String path) {

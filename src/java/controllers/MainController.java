@@ -73,14 +73,26 @@ public class MainController extends HttpServlet {
                 url = "/admin/model-performance";
             } else if (action.equals("admin-accounts")) {
                 url = "/admin/accounts";
+            } else if (action.equals("admin-account-form")) {
+                url = "/admin/accounts/form";
+            } else if (action.equals("admin-account-detail")) {
+                url = "/admin/accounts/detail";
             } else if (action.equals("admin-stations")) {
                 url = "/admin/stations";
             } else if (action.equals("admin-categories")) {
                 url = "/admin/categories";
             } else if (action.equals("admin-vehicle-models")) {
                 url = "/admin/vehicle-models";
+            } else if (action.equals("admin-vehicle-model-form")) {
+                url = "/admin/vehicle-models/form";
+            } else if (action.equals("admin-vehicle-model-detail")) {
+                url = "/admin/vehicle-models/detail";
             } else if (action.equals("admin-vehicle-model-images")) {
                 url = "/admin/vehicle-model-images";
+            } else if (action.equals("admin-vehicle-model-image-form")) {
+                url = "/admin/vehicle-model-images/form";
+            } else if (action.equals("admin-vehicle-model-image-detail")) {
+                url = "/admin/vehicle-model-images/detail";
             } else if (action.equals("admin-vehicles")) {
                 url = "/admin/vehicles";
             } else if (action.equals("admin-discounts")) {
