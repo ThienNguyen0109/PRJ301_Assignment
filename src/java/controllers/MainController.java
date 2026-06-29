@@ -67,10 +67,16 @@ public class MainController extends HttpServlet {
                 url = "/admin/dashboard";
             } else if (action.equals("admin-financial-reports")) {
                 url = "/admin/financial-reports";
+            } else if (action.equals("admin-financial-detail")) {
+                url = "/admin/financial-detail";
             } else if (action.equals("admin-station-performance")) {
                 url = "/admin/station-performance";
+            } else if (action.equals("admin-station-performance-detail")) {
+                url = "/admin/station-performance/detail";
             } else if (action.equals("admin-model-performance")) {
                 url = "/admin/model-performance";
+            } else if (action.equals("admin-model-performance-detail")) {
+                url = "/admin/model-performance/detail";
             } else if (action.equals("admin-accounts")) {
                 url = "/admin/accounts";
             } else if (action.equals("admin-account-form")) {

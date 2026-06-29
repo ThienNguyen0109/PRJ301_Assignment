@@ -123,6 +123,9 @@
                                     <div class="bar-chart">
                                         <c:forEach var="item" items="${adminChartPrimary}" varStatus="status">
                                             <div class="bar-item" title="${item.value}">
+                                                <c:if test="${item.percent gt 0}">
+                                                    <span class="bar-value"><c:out value="${item.value}"/></span>
+                                                </c:if>
                                                 <span class="bar ${status.index gt 8 ? 'hot' : (status.index gt 5 ? 'accent' : '')}" style="height:${item.percent}%"></span>
                                                 <strong><c:out value="${item.label}"/></strong>
                                             </div>
@@ -287,23 +290,33 @@
                                     <c:forEach var="row" items="${adminRows}">
                                         <tr>
                                             <c:forEach var="cell" items="${row}" varStatus="status">
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${status.last}">
-                                                            <span class="status-chip"><c:out value="${cell}"/></span>
-                                                        </c:when>
-                                                        <c:otherwise><c:out value="${cell}"/></c:otherwise>
-                                                    </c:choose>
-                                                </td>
+                                                <c:if test="${status.index lt 4}">
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${status.index eq 3}">
+                                                                <span class="status-chip"><c:out value="${cell}"/></span>
+                                                            </c:when>
+                                                            <c:otherwise><c:out value="${cell}"/></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                </c:if>
                                             </c:forEach>
                                             <td>
-                                                <a class="admin-button light" href="#">View</a>
+                                                <c:choose>
+                                                    <c:when test="${not empty row[4]}">
+                                                        <a class="admin-button light" href="${pageContext.request.contextPath}/${row[4]}">View</a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="admin-button light disabled-link">View</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </td>
                                         </tr>
                                     </c:forEach>
                                 </tbody>
                             </table>
                         </div>
+                        <%@ include file="/WEB-INF/jspf/admin-pagination.jspf" %>
                     </div>
 
                     <aside class="admin-tools">

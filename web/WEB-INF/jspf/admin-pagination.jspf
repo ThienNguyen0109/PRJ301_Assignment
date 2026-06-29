@@ -1,0 +1,41 @@
+<c:if test="${not empty adminPagination}">
+    <div class="admin-pagination">
+        <div class="admin-pagination-summary">
+            Showing <strong><c:out value="${adminPagination.startItem}"/></strong>
+            - <strong><c:out value="${adminPagination.endItem}"/></strong>
+            of <strong><c:out value="${adminPagination.totalItems}"/></strong> records
+        </div>
+        <nav class="admin-pagination-nav" aria-label="Admin table pagination">
+            <c:choose>
+                <c:when test="${adminPagination.hasPrevious}">
+                    <a href="${adminPagination.urlPrefix}${adminPagination.currentPage - 1}">Previous</a>
+                </c:when>
+                <c:otherwise>
+                    <span class="disabled">Previous</span>
+                </c:otherwise>
+            </c:choose>
+
+            <c:forEach var="pageNo"
+                       begin="${adminPagination.currentPage - 2 lt 1 ? 1 : adminPagination.currentPage - 2}"
+                       end="${adminPagination.currentPage + 2 gt adminPagination.totalPages ? adminPagination.totalPages : adminPagination.currentPage + 2}">
+                <c:choose>
+                    <c:when test="${pageNo eq adminPagination.currentPage}">
+                        <span class="active"><c:out value="${pageNo}"/></span>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${adminPagination.urlPrefix}${pageNo}"><c:out value="${pageNo}"/></a>
+                    </c:otherwise>
+                </c:choose>
+            </c:forEach>
+
+            <c:choose>
+                <c:when test="${adminPagination.hasNext}">
+                    <a href="${adminPagination.urlPrefix}${adminPagination.currentPage + 1}">Next</a>
+                </c:when>
+                <c:otherwise>
+                    <span class="disabled">Next</span>
+                </c:otherwise>
+            </c:choose>
+        </nav>
+    </div>
+</c:if>

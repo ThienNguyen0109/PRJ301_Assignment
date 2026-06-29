@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -23,8 +24,11 @@ import services.AdminVehicleModelService;
 @WebServlet(name = "AdminController", urlPatterns = {
     "/admin/dashboard",
     "/admin/financial-reports",
+    "/admin/financial-detail",
     "/admin/station-performance",
+    "/admin/station-performance/detail",
     "/admin/model-performance",
+    "/admin/model-performance/detail",
     "/admin/accounts",
     "/admin/accounts/form",
     "/admin/accounts/detail",
@@ -70,8 +74,11 @@ public class AdminController extends HttpServlet {
         if (handleCrudGet(path, request, response, admin)) {
             return;
         }
-
         ReportSelection reportSelection = buildReportSelection(request);
+        if (handleReportDetail(path, request, response, admin, reportSelection.period)) {
+            return;
+        }
+
         AdminPage page = resolvePage(request, reportSelection.period);
         request.setAttribute("adminAccount", admin);
         request.setAttribute("activeModule", page.activeModule);
@@ -80,7 +87,7 @@ public class AdminController extends HttpServlet {
         request.setAttribute("adminPageBadge", page.badge);
         request.setAttribute("adminStats", page.stats);
         request.setAttribute("adminColumns", page.columns);
-        request.setAttribute("adminRows", page.rows);
+        request.setAttribute("adminRows", paginate(request, page.rows));
         request.setAttribute("adminPrimaryAction", page.primaryAction);
         request.setAttribute("adminSearchPlaceholder", page.searchPlaceholder);
         request.setAttribute("adminChartMode", page.chartMode);
@@ -104,10 +111,11 @@ public class AdminController extends HttpServlet {
             throws ServletException, IOException {
         if ("/admin/accounts".equals(path)) {
             configureAdminShell(request, admin, "accounts", "Accounts", "CRUD", "Search name, email, phone");
-            request.setAttribute("accounts", accountService.search(
+            List<models.Account> accounts = accountService.search(
                     request.getParameter("keyword"),
                     request.getParameter("role"),
-                    request.getParameter("status")));
+                    request.getParameter("status"));
+            request.setAttribute("accounts", paginate(request, accounts));
             request.setAttribute("roles", Role.values());
             request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
             request.setAttribute("selectedRole", paramOrDefault(request, "role", "ALL"));
@@ -133,7 +141,8 @@ public class AdminController extends HttpServlet {
         }
         if ("/admin/vehicle-models".equals(path)) {
             configureAdminShell(request, admin, "vehicle-models", "Vehicle Models", "CRUD", "Search model or category");
-            request.setAttribute("models", vehicleModelService.search(request.getParameter("keyword"), request.getParameter("categoryId")));
+            List<dto.AdminVehicleModelRow> models = vehicleModelService.search(request.getParameter("keyword"), request.getParameter("categoryId"));
+            request.setAttribute("models", paginate(request, models));
             request.setAttribute("categories", vehicleModelService.findAllCategories());
             request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
             request.setAttribute("selectedCategoryId", paramOrDefault(request, "categoryId", "ALL"));
@@ -158,10 +167,11 @@ public class AdminController extends HttpServlet {
         }
         if ("/admin/vehicle-model-images".equals(path)) {
             configureAdminShell(request, admin, "vehicle-model-images", "Vehicle Model Images", "CRUD", "Search model image");
-            request.setAttribute("images", vehicleModelImageService.search(
+            List<dto.AdminVehicleModelImageRow> images = vehicleModelImageService.search(
                     request.getParameter("keyword"),
                     request.getParameter("modelId"),
-                    request.getParameter("imageType")));
+                    request.getParameter("imageType"));
+            request.setAttribute("images", paginate(request, images));
             request.setAttribute("models", vehicleModelImageService.findAllModels());
             request.setAttribute("imageTypes", VehicleModelImageType.values());
             request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
@@ -188,6 +198,44 @@ public class AdminController extends HttpServlet {
             return true;
         }
         return false;
+    }
+
+    private boolean handleReportDetail(String path, HttpServletRequest request, HttpServletResponse response,
+            Account admin, dto.AdminReportPeriod period) throws ServletException, IOException {
+        dto.AdminReportData data;
+        String title;
+        String activeModule;
+        String backAction;
+
+        if ("/admin/financial-detail".equals(path)) {
+            activeModule = "financial";
+            title = "Financial Detail";
+            backAction = "admin-financial-reports";
+            data = reportService.financialDetail(period,
+                    request.getParameter("paymentMethod"),
+                    request.getParameter("paymentType"),
+                    request.getParameter("status"));
+        } else if ("/admin/station-performance/detail".equals(path)) {
+            activeModule = "station-performance";
+            title = "Station Performance Detail";
+            backAction = "admin-station-performance";
+            data = reportService.stationDetail(period, request.getParameter("stationId"));
+        } else if ("/admin/model-performance/detail".equals(path)) {
+            activeModule = "model-performance";
+            title = "Model Performance Detail";
+            backAction = "admin-model-performance";
+            data = reportService.modelDetail(period, request.getParameter("modelId"));
+        } else {
+            return false;
+        }
+
+        configureAdminShell(request, admin, activeModule, title, "Detail", "Search detail");
+        request.setAttribute("adminStats", data.getStats());
+        request.setAttribute("adminColumns", data.getColumns());
+        request.setAttribute("adminRows", paginate(request, data.getRows()));
+        request.setAttribute("adminBackAction", backAction);
+        request.getRequestDispatcher("/WEB-INF/views/admin/report-detail.jsp").forward(request, response);
+        return true;
     }
 
     private void configureAdminShell(HttpServletRequest request, Account admin, String activeModule,
@@ -229,6 +277,56 @@ public class AdminController extends HttpServlet {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private <T> List<T> paginate(HttpServletRequest request, List<T> items) {
+        List<T> source = items == null ? new ArrayList<T>() : items;
+        int totalItems = source.size();
+        int pageSize = parseBoundedInt(request.getParameter("pageSize"), 10, 5, 50);
+        int totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) pageSize));
+        int currentPage = parseBoundedInt(request.getParameter("page"), 1, 1, totalPages);
+        int fromIndex = totalItems == 0 ? 0 : (currentPage - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        request.setAttribute("adminPagination", new AdminPagination(
+                currentPage,
+                totalPages,
+                totalItems,
+                pageSize,
+                totalItems == 0 ? 0 : fromIndex + 1,
+                toIndex,
+                paginationUrlPrefix(request, pageSize)));
+        return source.subList(fromIndex, toIndex);
+    }
+
+    private int parseBoundedInt(String value, int fallback, int min, int max) {
+        try {
+            int parsed = Integer.parseInt(value);
+            return Math.max(min, Math.min(max, parsed));
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
+    private String paginationUrlPrefix(HttpServletRequest request, int pageSize) {
+        StringBuilder query = new StringBuilder();
+        String queryString = request.getQueryString();
+        if (queryString != null && !queryString.trim().isEmpty()) {
+            for (String pair : queryString.split("&")) {
+                if (pair.startsWith("page=") || pair.startsWith("pageSize=") || pair.trim().isEmpty()) {
+                    continue;
+                }
+                if (query.length() > 0) {
+                    query.append("&");
+                }
+                query.append(pair);
+            }
+        }
+        if (query.length() > 0) {
+            query.append("&");
+        }
+        query.append("pageSize=").append(pageSize).append("&page=");
+        return request.getContextPath() + "/?" + query.toString();
     }
 
     private String actionForPath(String path) {
@@ -514,6 +612,37 @@ public class AdminController extends HttpServlet {
             this.primaryChartItems = primaryChartItems;
             this.secondaryChartItems = secondaryChartItems;
         }
+    }
+
+    public static class AdminPagination {
+        private final int currentPage;
+        private final int totalPages;
+        private final int totalItems;
+        private final int pageSize;
+        private final int startItem;
+        private final int endItem;
+        private final String urlPrefix;
+
+        public AdminPagination(int currentPage, int totalPages, int totalItems, int pageSize,
+                int startItem, int endItem, String urlPrefix) {
+            this.currentPage = currentPage;
+            this.totalPages = totalPages;
+            this.totalItems = totalItems;
+            this.pageSize = pageSize;
+            this.startItem = startItem;
+            this.endItem = endItem;
+            this.urlPrefix = urlPrefix;
+        }
+
+        public int getCurrentPage() { return currentPage; }
+        public int getTotalPages() { return totalPages; }
+        public int getTotalItems() { return totalItems; }
+        public int getPageSize() { return pageSize; }
+        public int getStartItem() { return startItem; }
+        public int getEndItem() { return endItem; }
+        public String getUrlPrefix() { return urlPrefix; }
+        public boolean isHasPrevious() { return currentPage > 1; }
+        public boolean isHasNext() { return currentPage < totalPages; }
     }
 
     private static class ReportSelection {

@@ -79,6 +79,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <%@ include file="/WEB-INF/jspf/admin-pagination.jspf" %>
                     </div>
 
                     <aside class="admin-tools">

@@ -7,6 +7,7 @@ import dto.AdminReportMetric;
 import dto.AdminReportPeriod;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -63,7 +64,14 @@ public class AdminReportService {
 
             List<List<String>> rows = new ArrayList<>();
             for (Object[] row : reportDAO.financialRows(em, period.getStart(), period.getEndExclusive())) {
-                rows.add(Arrays.asList(text(row[0]), text(row[1]), text(row[2]), money(decimal(row[3]))));
+                String method = text(row[0]);
+                String type = text(row[1]);
+                String status = text(row[2]);
+                rows.add(Arrays.asList(method, type, status, money(decimal(row[3])),
+                        "?action=admin-financial-detail&" + exactPeriodParams(period)
+                        + "&paymentMethod=" + encode(method)
+                        + "&paymentType=" + encode(type)
+                        + "&status=" + encode(status)));
             }
             if (rows.isEmpty()) {
                 rows.add(Arrays.asList("N/A", "No payments", "EMPTY", "0 VND"));
@@ -93,18 +101,22 @@ public class AdminReportService {
             BigDecimal totalRevenue = BigDecimal.ZERO;
             List<Object[]> stationRows = reportDAO.stationRows(em, period.getStart(), period.getEndExclusive());
             for (Object[] row : stationRows) {
-                totalRevenue = totalRevenue.add(decimal(row[4]));
+                totalRevenue = totalRevenue.add(decimal(row[5]));
             }
             for (Object[] row : stationRows) {
-                int available = integer(row[1]);
-                int rented = integer(row[2]);
-                int maintenance = integer(row[3]);
+                String stationId = text(row[0]);
+                String stationName = text(row[1]);
+                int available = integer(row[2]);
+                int rented = integer(row[3]);
+                int maintenance = integer(row[4]);
                 int total = Math.max(1, available + rented + maintenance);
-                BigDecimal revenue = decimal(row[4]);
-                rows.add(Arrays.asList(text(row[0]), number(available), number(rented), money(revenue)));
-                stacks.add(new AdminChartItem(text(row[0]), utilizationLabel(rented, total),
+                BigDecimal revenue = decimal(row[5]);
+                rows.add(Arrays.asList(stationName, number(available), number(rented), money(revenue),
+                        "?action=admin-station-performance-detail&" + exactPeriodParams(period)
+                        + "&stationId=" + encode(stationId)));
+                stacks.add(new AdminChartItem(stationName, utilizationLabel(rented, total),
                         percent(available, total), percent(rented, total), percent(maintenance, total)));
-                revenueShare.add(new AdminChartItem(text(row[0]), moneyShort(revenue),
+                revenueShare.add(new AdminChartItem(stationName, moneyShort(revenue),
                         percent(revenue, totalRevenue)));
             }
             if (rows.isEmpty()) {
@@ -130,7 +142,7 @@ public class AdminReportService {
                     metric("Avg Utilization", percentLabel(rentedVehicles, totalVehicles)));
 
             List<Object[]> modelRows = reportDAO.modelRows(em, period.getStart(), period.getEndExclusive());
-            modelRows.sort((a, b) -> Integer.compare(integer(b[1]), integer(a[1])));
+            modelRows.sort((a, b) -> Integer.compare(integer(b[2]), integer(a[2])));
 
             List<List<String>> rows = new ArrayList<>();
             List<AdminChartItem> bookingBars = new ArrayList<>();
@@ -138,13 +150,17 @@ public class AdminReportService {
             int totalBookings = 0;
             int totalIncidents = 0;
             for (Object[] row : modelRows) {
-                maxBookings = Math.max(maxBookings, integer(row[1]));
-                totalBookings += integer(row[1]);
-                totalIncidents += integer(row[3]);
+                maxBookings = Math.max(maxBookings, integer(row[2]));
+                totalBookings += integer(row[2]);
+                totalIncidents += integer(row[4]);
             }
             for (Object[] row : modelRows) {
-                rows.add(Arrays.asList(text(row[0]), number(row[1]), money(decimal(row[2])), number(row[3])));
-                bookingBars.add(new AdminChartItem(text(row[0]), number(row[1]), percent(integer(row[1]), maxBookings)));
+                String modelId = text(row[0]);
+                String modelName = text(row[1]);
+                rows.add(Arrays.asList(modelName, number(row[2]), money(decimal(row[3])), number(row[4]),
+                        "?action=admin-model-performance-detail&" + exactPeriodParams(period)
+                        + "&modelId=" + encode(modelId)));
+                bookingBars.add(new AdminChartItem(modelName, number(row[2]), percent(integer(row[2]), maxBookings)));
             }
             if (rows.isEmpty()) {
                 rows.add(Arrays.asList("N/A", "0", "0 VND", "0"));
@@ -157,6 +173,63 @@ public class AdminReportService {
             return new AdminReportData(stats,
                     Arrays.asList("Model", "Bookings", "Revenue", "Incidents"),
                     rows, bookingBars, incidentRatio);
+        });
+    }
+
+    public AdminReportData financialDetail(AdminReportPeriod period, String paymentMethod, String paymentType, String status) {
+        return JPAUtil.execute(em -> {
+            List<List<String>> rows = new ArrayList<>();
+            for (Object[] row : reportDAO.financialDetailRows(em, period.getStart(), period.getEndExclusive(),
+                    paymentMethod, paymentType, status)) {
+                rows.add(Arrays.asList(shortId(row[0]), text(row[1]), text(row[2]) + " / " + text(row[3]),
+                        text(row[4]), money(decimal(row[5])), text(row[6])));
+            }
+            if (rows.isEmpty()) {
+                rows.add(Arrays.asList("N/A", "No payment records", "-", "-", "0 VND", "-"));
+            }
+            return new AdminReportData(
+                    Arrays.asList(metric("Payment Method", safe(paymentMethod)), metric("Payment Type", safe(paymentType)),
+                            metric("Status", safe(status)), metric("Records", number(rows.size()))),
+                    Arrays.asList("Payment ID", "Customer", "Method / Type", "Status", "Amount", "Payment Date"),
+                    rows, null, null);
+        });
+    }
+
+    public AdminReportData stationDetail(AdminReportPeriod period, String stationId) {
+        return JPAUtil.execute(em -> {
+            String stationName = text(reportDAO.stationInfo(em, stationId));
+            List<List<String>> rows = new ArrayList<>();
+            for (Object[] row : reportDAO.stationDetailRows(em, stationId, period.getStart(), period.getEndExclusive())) {
+                rows.add(Arrays.asList(text(row[0]), text(row[1]), text(row[2]), number(row[3]),
+                        number(row[4]), money(decimal(row[5]))));
+            }
+            if (rows.isEmpty()) {
+                rows.add(Arrays.asList("N/A", "No vehicles", "-", "0", "0", "0 VND"));
+            }
+            return new AdminReportData(
+                    Arrays.asList(metric("Station", stationName), metric("Vehicles", number(rows.size())),
+                            metric("Period", periodLabel(period)), metric("Scope", "Fleet")),
+                    Arrays.asList("License Plate", "Model", "Status", "Battery", "Bookings", "Revenue"),
+                    rows, null, null);
+        });
+    }
+
+    public AdminReportData modelDetail(AdminReportPeriod period, String modelId) {
+        return JPAUtil.execute(em -> {
+            String modelName = text(reportDAO.modelInfo(em, modelId));
+            List<List<String>> rows = new ArrayList<>();
+            for (Object[] row : reportDAO.modelDetailRows(em, modelId, period.getStart(), period.getEndExclusive())) {
+                rows.add(Arrays.asList(text(row[0]), text(row[1]), text(row[2]), number(row[3]),
+                        number(row[4]), money(decimal(row[5]))));
+            }
+            if (rows.isEmpty()) {
+                rows.add(Arrays.asList("N/A", "No vehicles", "-", "0", "0", "0 VND"));
+            }
+            return new AdminReportData(
+                    Arrays.asList(metric("Model", modelName), metric("Vehicles", number(rows.size())),
+                            metric("Period", periodLabel(period)), metric("Scope", "Fleet")),
+                    Arrays.asList("License Plate", "Station", "Status", "Battery", "Bookings", "Revenue"),
+                    rows, null, null);
         });
     }
 
@@ -174,7 +247,7 @@ public class AdminReportService {
         List<AdminChartItem> items = new ArrayList<>();
         for (int i = 1; i <= 12; i++) {
             BigDecimal amount = amountByMonth.getOrDefault(i, BigDecimal.ZERO);
-            items.add(new AdminChartItem(MONTH_LABELS[i - 1], moneyShort(amount), percent(amount, max)));
+            items.add(new AdminChartItem(MONTH_LABELS[i - 1], moneyShort(amount), chartPercent(amount, max)));
         }
         return items;
     }
@@ -208,7 +281,7 @@ public class AdminReportService {
         while (!current.isAfter(end)) {
             BigDecimal amount = amountByDate.getOrDefault(current, BigDecimal.ZERO);
             items.add(new AdminChartItem(current.getDayOfMonth() + "/" + current.getMonthValue(),
-                    moneyShort(amount), percent(amount, max)));
+                    moneyShort(amount), chartPercent(amount, max)));
             current = current.plusDays(1);
         }
         return items;
@@ -228,7 +301,7 @@ public class AdminReportService {
         List<AdminChartItem> items = new ArrayList<>();
         for (int quarter = 1; quarter <= 4; quarter++) {
             BigDecimal amount = amountByQuarter.getOrDefault(quarter, BigDecimal.ZERO);
-            items.add(new AdminChartItem("Q" + quarter, moneyShort(amount), percent(amount, max)));
+            items.add(new AdminChartItem("Q" + quarter, moneyShort(amount), chartPercent(amount, max)));
         }
         return items;
     }
@@ -279,6 +352,11 @@ public class AdminReportService {
                 .intValue();
     }
 
+    private int chartPercent(BigDecimal value, BigDecimal total) {
+        int percent = percent(value, total);
+        return value.compareTo(BigDecimal.ZERO) > 0 ? Math.max(10, percent) : 0;
+    }
+
     private BigDecimal decimal(Object value) {
         if (value == null) {
             return BigDecimal.ZERO;
@@ -316,6 +394,10 @@ public class AdminReportService {
         return value == null ? "N/A" : String.valueOf(value);
     }
 
+    private String safe(String value) {
+        return value == null || value.trim().isEmpty() ? "N/A" : value.trim();
+    }
+
     private String number(Object value) {
         if (value instanceof Number) {
             return numberFormat.format(((Number) value).longValue());
@@ -338,5 +420,25 @@ public class AdminReportService {
     private String shortId(Object value) {
         String id = text(value);
         return id.length() <= 8 ? id : id.substring(0, 8).toUpperCase();
+    }
+
+    private String exactPeriodParams(AdminReportPeriod period) {
+        LocalDate start = toLocalDate(period.getStart());
+        LocalDate end = toLocalDate(period.getEndExclusive()).minusDays(1);
+        return "period=custom&startDate=" + start + "&endDate=" + end;
+    }
+
+    private String periodLabel(AdminReportPeriod period) {
+        LocalDate start = toLocalDate(period.getStart());
+        LocalDate end = toLocalDate(period.getEndExclusive()).minusDays(1);
+        return start + " to " + end;
+    }
+
+    private String encode(String value) {
+        try {
+            return URLEncoder.encode(value == null ? "" : value, "UTF-8");
+        } catch (Exception ex) {
+            return "";
+        }
     }
 }

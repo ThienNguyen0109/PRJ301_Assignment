@@ -115,7 +115,7 @@ public class AdminReportDAO {
     }
 
     public List<Object[]> stationRows(EntityManager em, Timestamp start, Timestamp endExclusive) {
-        String sql = "SELECT s.name, "
+        String sql = "SELECT s.station_id, s.name, "
                 + "COALESCE(SUM(CASE WHEN v.status = 'AVAILABLE' THEN 1 ELSE 0 END), 0), "
                 + "COALESCE(SUM(CASE WHEN v.status = 'RENTED' THEN 1 ELSE 0 END), 0), "
                 + "COALESCE(SUM(CASE WHEN v.status = 'MAINTENANCE' THEN 1 ELSE 0 END), 0), "
@@ -162,7 +162,7 @@ public class AdminReportDAO {
     }
 
     public List<Object[]> modelRows(EntityManager em, Timestamp start, Timestamp endExclusive) {
-        String sql = "SELECT vm.name, "
+        String sql = "SELECT vm.model_id, vm.name, "
                 + "(SELECT COUNT(*) FROM Rental r JOIN Vehicle v2 ON v2.vehicle_id = r.vehicle_id "
                 + "WHERE v2.model_id = vm.model_id AND r.created_at >= ?1 AND r.created_at < ?2), "
                 + "(SELECT COALESCE(SUM(p.amount), 0) FROM Payment p "
@@ -178,6 +178,74 @@ public class AdminReportDAO {
                 .setParameter(1, start)
                 .setParameter(2, endExclusive)
                 .getResultList();
+    }
+
+    public List<Object[]> financialDetailRows(EntityManager em, Timestamp start, Timestamp endExclusive,
+            String paymentMethod, String paymentType, String status) {
+        String sql = "SELECT p.payment_id, a.full_name, p.payment_method, p.payment_type, p.status, p.amount, p.payment_date "
+                + "FROM Payment p "
+                + "JOIN Rental r ON r.rental_id = p.rental_id "
+                + "JOIN Account a ON a.account_id = r.customer_id "
+                + "WHERE p.payment_date >= ?1 AND p.payment_date < ?2 "
+                + "AND p.payment_method = ?3 AND p.payment_type = ?4 AND p.status = ?5 "
+                + "ORDER BY p.payment_date DESC";
+        return em.createNativeQuery(sql)
+                .setParameter(1, start)
+                .setParameter(2, endExclusive)
+                .setParameter(3, paymentMethod)
+                .setParameter(4, paymentType)
+                .setParameter(5, status)
+                .getResultList();
+    }
+
+    public List<Object[]> stationDetailRows(EntityManager em, String stationId, Timestamp start, Timestamp endExclusive) {
+        String sql = "SELECT v.license_plate, vm.name, v.status, v.battery_level, "
+                + "COALESCE((SELECT COUNT(*) FROM Rental r WHERE r.vehicle_id = v.vehicle_id "
+                + "AND r.created_at >= ?2 AND r.created_at < ?3), 0), "
+                + "COALESCE((SELECT SUM(p.amount) FROM Payment p JOIN Rental r2 ON r2.rental_id = p.rental_id "
+                + "WHERE r2.vehicle_id = v.vehicle_id AND p.status = 'SUCCESS' "
+                + "AND p.payment_date >= ?2 AND p.payment_date < ?3), 0) "
+                + "FROM Vehicle v "
+                + "JOIN Vehicle_Model vm ON vm.model_id = v.model_id "
+                + "WHERE v.station_id = ?1 "
+                + "ORDER BY vm.name, v.license_plate";
+        return em.createNativeQuery(sql)
+                .setParameter(1, stationId)
+                .setParameter(2, start)
+                .setParameter(3, endExclusive)
+                .getResultList();
+    }
+
+    public Object stationInfo(EntityManager em, String stationId) {
+        List<Object> rows = em.createNativeQuery("SELECT name FROM Station WHERE station_id = ?1")
+                .setParameter(1, stationId)
+                .getResultList();
+        return rows.isEmpty() ? "Station" : rows.get(0);
+    }
+
+    public List<Object[]> modelDetailRows(EntityManager em, String modelId, Timestamp start, Timestamp endExclusive) {
+        String sql = "SELECT v.license_plate, s.name, v.status, v.battery_level, "
+                + "COALESCE((SELECT COUNT(*) FROM Rental r WHERE r.vehicle_id = v.vehicle_id "
+                + "AND r.created_at >= ?2 AND r.created_at < ?3), 0), "
+                + "COALESCE((SELECT SUM(p.amount) FROM Payment p JOIN Rental r2 ON r2.rental_id = p.rental_id "
+                + "WHERE r2.vehicle_id = v.vehicle_id AND p.status = 'SUCCESS' "
+                + "AND p.payment_date >= ?2 AND p.payment_date < ?3), 0) "
+                + "FROM Vehicle v "
+                + "JOIN Station s ON s.station_id = v.station_id "
+                + "WHERE v.model_id = ?1 "
+                + "ORDER BY s.name, v.license_plate";
+        return em.createNativeQuery(sql)
+                .setParameter(1, modelId)
+                .setParameter(2, start)
+                .setParameter(3, endExclusive)
+                .getResultList();
+    }
+
+    public Object modelInfo(EntityManager em, String modelId) {
+        List<Object> rows = em.createNativeQuery("SELECT name FROM Vehicle_Model WHERE model_id = ?1")
+                .setParameter(1, modelId)
+                .getResultList();
+        return rows.isEmpty() ? "Vehicle Model" : rows.get(0);
     }
 
     public Object[] dashboardTotals(EntityManager em) {
