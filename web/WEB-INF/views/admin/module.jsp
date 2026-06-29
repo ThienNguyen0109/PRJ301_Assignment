@@ -35,7 +35,7 @@
                         <article class="admin-card">
                             <div class="admin-card-label"><c:out value="${stat.label}"/></div>
                             <div class="admin-card-value"><c:out value="${stat.value}"/></div>
-                            <div class="admin-card-foot">UI placeholder</div>
+                            <div class="admin-card-foot">Live database metric</div>
                         </article>
                     </c:forEach>
                 </section>
@@ -93,18 +93,40 @@
                                 <div class="chart-card chart-wide">
                                     <div class="chart-head">
                                         <div>
-                                            <h2>Monthly Revenue Trend</h2>
+                                            <h2>
+                                                <c:choose>
+                                                    <c:when test="${reportPeriod eq 'custom'}">Daily Revenue Trend</c:when>
+                                                    <c:when test="${reportPeriod eq 'month'}">Daily Revenue Trend</c:when>
+                                                    <c:when test="${reportPeriod eq 'quarter'}">Quarterly Revenue Trend</c:when>
+                                                    <c:otherwise>Year Revenue Trend</c:otherwise>
+                                                </c:choose>
+                                            </h2>
                                             <p>Booking revenue, extra charges, and wallet topups.</p>
                                         </div>
-                                        <span class="status-chip">2026</span>
+                                        <span class="status-chip">
+                                            <c:choose>
+                                                <c:when test="${reportPeriod eq 'custom'}">
+                                                    <c:out value="${reportStartDate}"/> - <c:out value="${reportEndDate}"/>
+                                                </c:when>
+                                                <c:when test="${reportPeriod eq 'month'}">
+                                                    <c:out value="${reportMonth}"/>
+                                                </c:when>
+                                                <c:when test="${reportPeriod eq 'quarter'}">
+                                                    <c:out value="${reportYear}"/>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:out value="${reportYear}"/>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </span>
                                     </div>
                                     <div class="bar-chart">
-                                        <div class="bar-item"><span class="bar" style="height:48%"></span><strong>Jan</strong></div>
-                                        <div class="bar-item"><span class="bar" style="height:56%"></span><strong>Feb</strong></div>
-                                        <div class="bar-item"><span class="bar" style="height:62%"></span><strong>Mar</strong></div>
-                                        <div class="bar-item"><span class="bar accent" style="height:72%"></span><strong>Apr</strong></div>
-                                        <div class="bar-item"><span class="bar accent" style="height:84%"></span><strong>May</strong></div>
-                                        <div class="bar-item"><span class="bar hot" style="height:92%"></span><strong>Jun</strong></div>
+                                        <c:forEach var="item" items="${adminChartPrimary}" varStatus="status">
+                                            <div class="bar-item" title="${item.value}">
+                                                <span class="bar ${status.index gt 8 ? 'hot' : (status.index gt 5 ? 'accent' : '')}" style="height:${item.percent}%"></span>
+                                                <strong><c:out value="${item.label}"/></strong>
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                 </div>
                                 <div class="chart-card">
@@ -114,11 +136,18 @@
                                             <p>Current successful payment split.</p>
                                         </div>
                                     </div>
-                                    <div class="donut-chart finance-donut"><span>68%</span></div>
+                                    <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                        <c:if test="${status.first}">
+                                            <div class="donut-chart finance-donut"><span><c:out value="${item.percent}"/>%</span></div>
+                                        </c:if>
+                                    </c:forEach>
                                     <div class="chart-legend">
-                                        <div><i style="background:#2563eb"></i>VNPay</div>
-                                        <div><i style="background:#06b6d4"></i>Wallet</div>
-                                        <div><i style="background:#f59e0b"></i>Cash</div>
+                                        <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                            <div>
+                                                <i style="background:${status.index == 0 ? '#2563eb' : (status.index == 1 ? '#06b6d4' : '#f59e0b')}"></i>
+                                                <c:out value="${item.label}"/> - <c:out value="${item.percent}"/>% (<c:out value="${item.value}"/>)
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                 </div>
                             </c:when>
@@ -132,26 +161,17 @@
                                         <span class="status-chip">Live Fleet</span>
                                     </div>
                                     <div class="stack-chart">
-                                        <div class="stack-row">
-                                            <label>Quan 1</label>
-                                            <div class="stack-track"><span class="stack available" style="width:55%"></span><span class="stack rented" style="width:32%"></span><span class="stack maintenance" style="width:13%"></span></div>
-                                            <strong>87%</strong>
-                                        </div>
-                                        <div class="stack-row">
-                                            <label>Tan Binh</label>
-                                            <div class="stack-track"><span class="stack available" style="width:61%"></span><span class="stack rented" style="width:27%"></span><span class="stack maintenance" style="width:12%"></span></div>
-                                            <strong>72%</strong>
-                                        </div>
-                                        <div class="stack-row">
-                                            <label>Thu Duc</label>
-                                            <div class="stack-track"><span class="stack available" style="width:70%"></span><span class="stack rented" style="width:20%"></span><span class="stack maintenance" style="width:10%"></span></div>
-                                            <strong>64%</strong>
-                                        </div>
-                                        <div class="stack-row">
-                                            <label>Binh Thanh</label>
-                                            <div class="stack-track"><span class="stack available" style="width:50%"></span><span class="stack rented" style="width:38%"></span><span class="stack maintenance" style="width:12%"></span></div>
-                                            <strong>91%</strong>
-                                        </div>
+                                        <c:forEach var="item" items="${adminChartPrimary}">
+                                            <div class="stack-row">
+                                                <label><c:out value="${item.label}"/></label>
+                                                <div class="stack-track">
+                                                    <span class="stack available" style="width:${item.percent}%"></span>
+                                                    <span class="stack rented" style="width:${item.secondaryPercent}%"></span>
+                                                    <span class="stack maintenance" style="width:${item.tertiaryPercent}%"></span>
+                                                </div>
+                                                <strong><c:out value="${item.value}"/></strong>
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                     <div class="chart-legend horizontal">
                                         <div><i style="background:#22c55e"></i>Available</div>
@@ -166,11 +186,18 @@
                                             <p>Top station contribution.</p>
                                         </div>
                                     </div>
-                                    <div class="donut-chart station-donut"><span>42%</span></div>
+                                    <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                        <c:if test="${status.first}">
+                                            <div class="donut-chart station-donut"><span><c:out value="${item.percent}"/>%</span></div>
+                                        </c:if>
+                                    </c:forEach>
                                     <div class="chart-legend">
-                                        <div><i style="background:#2563eb"></i>Quan 1</div>
-                                        <div><i style="background:#06b6d4"></i>Tan Binh</div>
-                                        <div><i style="background:#f59e0b"></i>Others</div>
+                                        <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                            <div>
+                                                <i style="background:${status.index == 0 ? '#2563eb' : (status.index == 1 ? '#06b6d4' : '#f59e0b')}"></i>
+                                                <c:out value="${item.label}"/> - <c:out value="${item.percent}"/>% (<c:out value="${item.value}"/>)
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                 </div>
                             </c:when>
@@ -184,11 +211,13 @@
                                         <span class="status-chip">Demand</span>
                                     </div>
                                     <div class="horizontal-bars">
-                                        <div class="hbar-row"><label>VinFast VF e34</label><span><i style="width:92%"></i></span><strong>42</strong></div>
-                                        <div class="hbar-row"><label>Tesla Model 3</label><span><i style="width:76%"></i></span><strong>31</strong></div>
-                                        <div class="hbar-row"><label>Yadea iGo</label><span><i style="width:62%"></i></span><strong>26</strong></div>
-                                        <div class="hbar-row"><label>BYD Atto 3</label><span><i style="width:54%"></i></span><strong>21</strong></div>
-                                        <div class="hbar-row"><label>Wuling Mini EV</label><span><i style="width:46%"></i></span><strong>18</strong></div>
+                                        <c:forEach var="item" items="${adminChartPrimary}">
+                                            <div class="hbar-row">
+                                                <label><c:out value="${item.label}"/></label>
+                                                <span><i style="width:${item.percent}%"></i></span>
+                                                <strong><c:out value="${item.value}"/></strong>
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                 </div>
                                 <div class="chart-card">
@@ -198,10 +227,18 @@
                                             <p>Incidents against completed rentals.</p>
                                         </div>
                                     </div>
-                                    <div class="donut-chart model-donut"><span>7%</span></div>
+                                    <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                        <c:if test="${status.first}">
+                                            <div class="donut-chart model-donut"><span><c:out value="${item.percent}"/>%</span></div>
+                                        </c:if>
+                                    </c:forEach>
                                     <div class="chart-legend">
-                                        <div><i style="background:#ef4444"></i>Incidents</div>
-                                        <div><i style="background:#22c55e"></i>Healthy rentals</div>
+                                        <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
+                                            <div>
+                                                <i style="background:${status.index == 0 ? '#ef4444' : '#22c55e'}"></i>
+                                                <c:out value="${item.label}"/> - <c:out value="${item.value}"/>
+                                            </div>
+                                        </c:forEach>
                                     </div>
                                 </div>
                             </c:when>
@@ -214,7 +251,7 @@
                         <div class="admin-panel-header">
                             <div>
                                 <h2><c:out value="${adminPageTitle}"/></h2>
-                                <p>Interface scaffold only. DAO, service, validation, and actions can be added in the next phase.</p>
+                                <p>Data below is loaded from the current database for the selected period.</p>
                             </div>
                             <a class="admin-button" href="#"><c:out value="${adminPrimaryAction}"/></a>
                         </div>
@@ -271,8 +308,8 @@
 
                     <aside class="admin-tools">
                         <div class="tool-card">
-                            <h3>Next Integration</h3>
-                            <p>Create DAO methods, service validation, and POST actions for this module after the UI is approved.</p>
+                            <h3>Report Source</h3>
+                            <p>Metrics are calculated from Payment, Rental, Vehicle, Station, Vehicle Model, Incident, and Extra Charge data.</p>
                         </div>
                         <div class="tool-card">
                             <h3>Access Guard</h3>

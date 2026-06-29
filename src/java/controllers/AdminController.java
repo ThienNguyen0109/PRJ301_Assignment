@@ -3,6 +3,9 @@ package controllers;
 import enums.Role;
 import enums.VehicleModelImageType;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -13,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
 import services.AdminAccountService;
+import services.AdminReportService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
 
@@ -49,6 +53,7 @@ public class AdminController extends HttpServlet {
     private final AdminAccountService accountService = new AdminAccountService();
     private final AdminVehicleModelService vehicleModelService = new AdminVehicleModelService();
     private final AdminVehicleModelImageService vehicleModelImageService = new AdminVehicleModelImageService();
+    private final AdminReportService reportService = new AdminReportService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -66,7 +71,8 @@ public class AdminController extends HttpServlet {
             return;
         }
 
-        AdminPage page = resolvePage(request.getServletPath());
+        ReportSelection reportSelection = buildReportSelection(request);
+        AdminPage page = resolvePage(request, reportSelection.period);
         request.setAttribute("adminAccount", admin);
         request.setAttribute("activeModule", page.activeModule);
         request.setAttribute("adminPageTitle", page.title);
@@ -78,13 +84,15 @@ public class AdminController extends HttpServlet {
         request.setAttribute("adminPrimaryAction", page.primaryAction);
         request.setAttribute("adminSearchPlaceholder", page.searchPlaceholder);
         request.setAttribute("adminChartMode", page.chartMode);
+        request.setAttribute("adminChartPrimary", page.primaryChartItems);
+        request.setAttribute("adminChartSecondary", page.secondaryChartItems);
         request.setAttribute("adminCurrentAction", actionForPath(request.getServletPath()));
-        request.setAttribute("reportPeriod", paramOrDefault(request, "period", "month"));
-        request.setAttribute("reportStartDate", paramOrDefault(request, "startDate", ""));
-        request.setAttribute("reportEndDate", paramOrDefault(request, "endDate", ""));
-        request.setAttribute("reportMonth", paramOrDefault(request, "month", "2026-06"));
-        request.setAttribute("reportQuarter", paramOrDefault(request, "quarter", "2"));
-        request.setAttribute("reportYear", paramOrDefault(request, "year", "2026"));
+        request.setAttribute("reportPeriod", reportSelection.selectedPeriod);
+        request.setAttribute("reportStartDate", reportSelection.startDate);
+        request.setAttribute("reportEndDate", reportSelection.endDate);
+        request.setAttribute("reportMonth", reportSelection.month);
+        request.setAttribute("reportQuarter", reportSelection.quarter);
+        request.setAttribute("reportYear", reportSelection.year);
 
         String jsp = "dashboard".equals(page.activeModule)
                 ? "/WEB-INF/views/admin/dashboard.jsp"
@@ -247,35 +255,22 @@ public class AdminController extends HttpServlet {
         return "admin-dashboard";
     }
 
-    private AdminPage resolvePage(String path) {
+    private AdminPage resolvePage(HttpServletRequest request, dto.AdminReportPeriod reportPeriod) {
+        String path = request.getServletPath();
         if ("/admin/financial-reports".equals(path)) {
-            return page("financial", "Financial Reports", "Monitor revenue, payment health, wallet topups, and extra charges.",
+            return reportPage("financial", "Financial Reports", "Monitor revenue, payment health, wallet topups, and extra charges.",
                     "Finance", "Export Report", "Search payment, rental, or customer",
-                    stats("Total Revenue", "128.6M", "Booking Revenue", "94.2M", "Extra Charges", "8.4M", "Pending Payments", "12"),
-                    columns("Metric", "Payment Method", "Status", "Amount"),
-                    rows(
-                            row("Booking Revenue", "Wallet + VNPay", "SUCCESS", "94,200,000 VND"),
-                            row("Late Fees", "Cash + VNPay", "SUCCESS", "5,600,000 VND"),
-                            row("Damage Fees", "Cash + VNPay", "PENDING", "2,800,000 VND")
-                    ), "financial");
+                    reportService.financial(reportPeriod), "financial");
         }
         if ("/admin/station-performance".equals(path)) {
-            return page("station-performance", "Station Performance", "Compare station utilization, vehicle availability, and revenue.",
+            return reportPage("station-performance", "Station Performance", "Compare station utilization, vehicle availability, and revenue.",
                     "Performance", "View Heatmap", "Search station",
-                    stats("Top Station", "Quan 1", "Available Vehicles", "36", "Rented Vehicles", "14", "Maintenance", "5"),
-                    columns("Station", "Available", "Rented", "Revenue"),
-                    rows(row("Tram Quan 1", "12", "6", "32,400,000 VND"),
-                            row("Tram Tan Binh", "9", "4", "21,800,000 VND"),
-                            row("Tram Thu Duc", "15", "4", "18,600,000 VND")), "station");
+                    reportService.stationPerformance(reportPeriod), "station");
         }
         if ("/admin/model-performance".equals(path)) {
-            return page("model-performance", "Model Performance", "Track model demand, revenue, incidents, and maintenance frequency.",
+            return reportPage("model-performance", "Model Performance", "Track model demand, revenue, incidents, and maintenance frequency.",
                     "Performance", "Compare Models", "Search model",
-                    stats("Most Booked", "VF e34", "Model Groups", "18", "Incidents", "7", "Avg Utilization", "68%"),
-                    columns("Model", "Bookings", "Revenue", "Incidents"),
-                    rows(row("VinFast VF e34", "42", "56,200,000 VND", "2"),
-                            row("Tesla Model 3", "31", "44,500,000 VND", "1"),
-                            row("Yadea iGo", "26", "8,300,000 VND", "0")), "model");
+                    reportService.modelPerformance(reportPeriod), "model");
         }
         if ("/admin/accounts".equals(path)) {
             return crud("accounts", "Accounts", "Manage customer, staff, and admin accounts.",
@@ -370,13 +365,8 @@ public class AdminController extends HttpServlet {
     }
 
     private AdminPage dashboard() {
-        return page("dashboard", "Admin Dashboard", "Control finance, operations, inventory, and platform data from one workspace.",
-                "Overview", "New Report", "Search system data",
-                stats("Total Revenue", "128.6M", "Active Rentals", "23", "Available Vehicles", "36", "Pending Charges", "5"),
-                columns("Module", "Signal", "Priority", "Status"),
-                rows(row("Financial Reports", "Revenue and payment health", "P1", "Ready for wiring"),
-                        row("Station Performance", "Station utilization", "P1", "UI Ready"),
-                        row("Model Performance", "Fleet demand by model", "P1", "UI Ready")));
+        return reportPage("dashboard", "Admin Dashboard", "Control finance, operations, inventory, and platform data from one workspace.",
+                "Overview", "New Report", "Search system data", reportService.dashboard(), "table");
     }
 
     private AdminPage crud(String module, String title, String subtitle, String action, String search,
@@ -397,11 +387,71 @@ public class AdminController extends HttpServlet {
                 searchPlaceholder, stats, columns, rows, "table");
     }
 
+    private AdminPage reportPage(String activeModule, String title, String subtitle, String badge,
+            String primaryAction, String searchPlaceholder, dto.AdminReportData data, String chartMode) {
+        return new AdminPage(activeModule, title, subtitle, badge, primaryAction,
+                searchPlaceholder, data.getStats(), data.getColumns(), data.getRows(), chartMode,
+                data.getPrimaryChartItems(), data.getSecondaryChartItems());
+    }
+
     private AdminPage page(String activeModule, String title, String subtitle, String badge,
             String primaryAction, String searchPlaceholder, List<AdminStat> stats,
             List<String> columns, List<List<String>> rows, String chartMode) {
         return new AdminPage(activeModule, title, subtitle, badge, primaryAction,
-                searchPlaceholder, stats, columns, rows, chartMode);
+                searchPlaceholder, stats, columns, rows, chartMode, null, null);
+    }
+
+    private ReportSelection buildReportSelection(HttpServletRequest request) {
+        LocalDate today = LocalDate.now();
+        String selectedPeriod = paramOrDefault(request, "period", "month");
+        String selectedMonth = paramOrDefault(request, "month", YearMonth.from(today).toString());
+        String selectedQuarter = paramOrDefault(request, "quarter", String.valueOf(((today.getMonthValue() - 1) / 3) + 1));
+        String selectedYear = paramOrDefault(request, "year", String.valueOf(today.getYear()));
+        String selectedStartDate = paramOrDefault(request, "startDate", today.withDayOfMonth(1).toString());
+        String selectedEndDate = paramOrDefault(request, "endDate", today.toString());
+
+        LocalDate start;
+        LocalDate endExclusive;
+        int reportYear;
+        try {
+            if ("custom".equals(selectedPeriod)) {
+                start = LocalDate.parse(selectedStartDate);
+                endExclusive = LocalDate.parse(selectedEndDate).plusDays(1);
+                reportYear = start.getYear();
+            } else if ("quarter".equals(selectedPeriod)) {
+                reportYear = Integer.parseInt(selectedYear);
+                int quarter = Math.max(1, Math.min(4, Integer.parseInt(selectedQuarter)));
+                int startMonth = (quarter - 1) * 3 + 1;
+                start = LocalDate.of(reportYear, startMonth, 1);
+                endExclusive = start.plusMonths(3);
+            } else if ("year".equals(selectedPeriod)) {
+                reportYear = Integer.parseInt(selectedYear);
+                start = LocalDate.of(reportYear, 1, 1);
+                endExclusive = start.plusYears(1);
+            } else {
+                YearMonth month = YearMonth.parse(selectedMonth);
+                selectedPeriod = "month";
+                reportYear = month.getYear();
+                start = month.atDay(1);
+                endExclusive = month.plusMonths(1).atDay(1);
+            }
+        } catch (RuntimeException ex) {
+            selectedPeriod = "month";
+            YearMonth month = YearMonth.from(today);
+            selectedMonth = month.toString();
+            selectedQuarter = String.valueOf(((today.getMonthValue() - 1) / 3) + 1);
+            selectedYear = String.valueOf(today.getYear());
+            start = month.atDay(1);
+            endExclusive = month.plusMonths(1).atDay(1);
+            reportYear = today.getYear();
+        }
+
+        dto.AdminReportPeriod period = new dto.AdminReportPeriod(selectedPeriod,
+                Timestamp.valueOf(start.atStartOfDay()),
+                Timestamp.valueOf(endExclusive.atStartOfDay()),
+                reportYear);
+        return new ReportSelection(period, selectedPeriod, selectedStartDate, selectedEndDate,
+                selectedMonth, selectedQuarter, selectedYear);
     }
 
     private List<AdminStat> stats(String l1, String v1, String l2, String v2, String l3, String v3, String l4, String v4) {
@@ -440,14 +490,17 @@ public class AdminController extends HttpServlet {
         private final String badge;
         private final String primaryAction;
         private final String searchPlaceholder;
-        private final List<AdminStat> stats;
+        private final List<?> stats;
         private final List<String> columns;
         private final List<List<String>> rows;
         private final String chartMode;
+        private final List<?> primaryChartItems;
+        private final List<?> secondaryChartItems;
 
         public AdminPage(String activeModule, String title, String subtitle, String badge,
-                String primaryAction, String searchPlaceholder, List<AdminStat> stats,
-                List<String> columns, List<List<String>> rows, String chartMode) {
+                String primaryAction, String searchPlaceholder, List<?> stats,
+                List<String> columns, List<List<String>> rows, String chartMode,
+                List<?> primaryChartItems, List<?> secondaryChartItems) {
             this.activeModule = activeModule;
             this.title = title;
             this.subtitle = subtitle;
@@ -458,6 +511,29 @@ public class AdminController extends HttpServlet {
             this.columns = columns;
             this.rows = rows;
             this.chartMode = chartMode;
+            this.primaryChartItems = primaryChartItems;
+            this.secondaryChartItems = secondaryChartItems;
+        }
+    }
+
+    private static class ReportSelection {
+        private final dto.AdminReportPeriod period;
+        private final String selectedPeriod;
+        private final String startDate;
+        private final String endDate;
+        private final String month;
+        private final String quarter;
+        private final String year;
+
+        private ReportSelection(dto.AdminReportPeriod period, String selectedPeriod, String startDate,
+                String endDate, String month, String quarter, String year) {
+            this.period = period;
+            this.selectedPeriod = selectedPeriod;
+            this.startDate = startDate;
+            this.endDate = endDate;
+            this.month = month;
+            this.quarter = quarter;
+            this.year = year;
         }
     }
 }

@@ -323,8 +323,8 @@ button, input, select { font: inherit; }
     height: 250px;
     padding: 18px 10px 0;
     display: grid;
-    grid-template-columns: repeat(6, minmax(42px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+    gap: 12px;
     align-items: end;
     border-radius: 12px;
     background:

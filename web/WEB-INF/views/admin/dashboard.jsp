@@ -19,15 +19,17 @@
                         <span class="admin-badge">Executive Control</span>
                         <h1>Operate finance, stations, and fleet performance from one admin workspace.</h1>
                         <p>
-                            This interface is prepared for admin-only reporting and CRUD modules.
-                            The current screen is UI-ready and can be wired to DAO/service data module by module.
+                            Live overview from payments, rentals, vehicles, and extra charges.
+                            Use the reporting modules to inspect finance, station, and model performance.
                         </p>
                     </div>
                     <div class="admin-hero-panel">
-                        <div class="hero-metric"><span>Booking Revenue</span><strong>94.2M VND</strong></div>
-                        <div class="hero-metric"><span>Extra Charge Revenue</span><strong>8.4M VND</strong></div>
-                        <div class="hero-metric"><span>Station Utilization</span><strong>68%</strong></div>
-                        <div class="hero-metric"><span>Pending Admin Tasks</span><strong>12</strong></div>
+                        <c:forEach var="stat" items="${adminStats}">
+                            <div class="hero-metric">
+                                <span><c:out value="${stat.label}"/></span>
+                                <strong><c:out value="${stat.value}"/></strong>
+                            </div>
+                        </c:forEach>
                     </div>
                 </section>
 
@@ -36,7 +38,7 @@
                         <article class="admin-card">
                             <div class="admin-card-label"><c:out value="${stat.label}"/></div>
                             <div class="admin-card-value"><c:out value="${stat.value}"/></div>
-                            <div class="admin-card-foot">Ready for service integration</div>
+                            <div class="admin-card-foot">Live database metric</div>
                         </article>
                     </c:forEach>
                 </section>
@@ -45,8 +47,8 @@
                     <div class="admin-panel">
                         <div class="admin-panel-header">
                             <div>
-                                <h2>Admin Module Roadmap</h2>
-                                <p>Pages have been scaffolded first so each teammate can wire their CRUD module independently.</p>
+                                <h2>Recent Rentals</h2>
+                                <p>Latest rental records from the current database.</p>
                             </div>
                             <a class="admin-button" href="${pageContext.request.contextPath}?action=admin-stations">Start CRUD</a>
                         </div>
@@ -82,7 +84,7 @@
                     <aside class="admin-tools">
                         <div class="tool-card">
                             <h3>Financial Reports</h3>
-                            <p>Revenue, payment method mix, pending charges, and wallet topup monitoring.</p>
+                            <p>Revenue, payment method mix, pending charges, and extra charge monitoring.</p>
                         </div>
                         <div class="tool-card">
                             <h3>Station Performance</h3>
