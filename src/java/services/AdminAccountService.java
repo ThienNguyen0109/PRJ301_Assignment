@@ -8,6 +8,7 @@ import java.util.UUID;
 import models.Account;
 import models.Wallet;
 import utils.JPAUtil;
+import utils.PasswordUtil;
 
 public class AdminAccountService {
     private final AdminAccountDAO accountDAO = new AdminAccountDAO();
@@ -43,7 +44,7 @@ public class AdminAccountService {
             account.setFullName(fullName.trim());
             account.setEmail(email.trim().toLowerCase());
             account.setPhone(blankToNull(phone));
-            account.setPassword(password);
+            account.setPassword(PasswordUtil.hashPassword(password));
             account.setRole(role);
             account.setStatus(normalizedStatus);
             account.setIsVerified(true);

@@ -566,32 +566,44 @@ GO
 IF NOT EXISTS (SELECT 1 FROM Account WHERE email = 'nguyenvana@gmail.com')
 BEGIN
     INSERT INTO Account (email, password, full_name, phone, is_verified, role, status)
-    VALUES ('nguyenvana@gmail.com', 'hashed_password_123', N'Nguyễn Văn A', '0901234567', 1, 'CUSTOMER', 'ACTIVE');
+    VALUES ('nguyenvana@gmail.com', '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO', N'Nguyễn Văn A', '0901234567', 1, 'CUSTOMER', 'ACTIVE');
 END;
 
 IF NOT EXISTS (SELECT 1 FROM Account WHERE email = 'tranthib@gmail.com')
 BEGIN
     INSERT INTO Account (email, password, full_name, phone, is_verified, role, status)
-    VALUES ('tranthib@gmail.com', 'hashed_password_456', N'Trần Thị B', '0912345678', 1, 'CUSTOMER', 'ACTIVE');
+    VALUES ('tranthib@gmail.com', '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO', N'Trần Thị B', '0912345678', 1, 'CUSTOMER', 'ACTIVE');
 END;
 
 IF NOT EXISTS (SELECT 1 FROM Account WHERE email = 'lephuocc@company.com')
 BEGIN
     INSERT INTO Account (email, password, full_name, phone, is_verified, role, status)
-    VALUES ('lephuocc@company.com', 'staff_secure_pass', N'Lê Phước C', '0923456789', 1, 'STAFF', 'ACTIVE');
+    VALUES ('lephuocc@company.com', '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO', N'Lê Phước C', '0923456789', 1, 'STAFF', 'ACTIVE');
 END;
 
 IF NOT EXISTS (SELECT 1 FROM Account WHERE email = 'admin_system@domain.com')
 BEGIN
     INSERT INTO Account (email, password, full_name, phone, is_verified, role, status)
-    VALUES ('admin_system@domain.com', 'super_secure_admin_2026', N'Phạm Hoàng Admin', '0934567890', 1, 'ADMIN', 'ACTIVE');
+    VALUES ('admin_system@domain.com', '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO', N'Phạm Hoàng Admin', '0934567890', 1, 'ADMIN', 'ACTIVE');
 END;
 
 IF NOT EXISTS (SELECT 1 FROM Account WHERE email = 'giahuy_badluck@gmail.com')
 BEGIN
     INSERT INTO Account (email, password, full_name, phone, is_verified, role, status)
-    VALUES ('giahuy_badluck@gmail.com', 'forgot_password_xyz', N'Võ Gia Huy', '0945678901', 0, 'CUSTOMER', 'INACTIVE');
+    VALUES ('giahuy_badluck@gmail.com', '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO', N'Võ Gia Huy', '0945678901', 0, 'CUSTOMER', 'INACTIVE');
 END;
+GO
+
+UPDATE Account
+SET password = '$2a$12$.8amX/Yc6.TF/zZrd2hXS.nDXzZEJ0F63bnTmVm9mpEW8DHkDJGOO'
+WHERE email IN (
+    'nguyenvana@gmail.com',
+    'tranthib@gmail.com',
+    'lephuocc@company.com',
+    'admin_system@domain.com',
+    'giahuy_badluck@gmail.com'
+)
+AND password NOT LIKE '$2%';
 GO
 
 /* 5 Wallet */

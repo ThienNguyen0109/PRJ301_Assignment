@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import models.Account;
 import utils.JPAUtil;
+import utils.PasswordUtil;
 
 /**
  * Data Access Object for Account entity using JPA.
@@ -18,13 +19,16 @@ public class AccountDAO implements IAccountDAO {
     public Account getAccountByEmailAndPassword(String email, String password) {
         try {
             List<Account> accounts = JPAUtil.execute(em -> em.createQuery(
-                    "SELECT a FROM Account a WHERE a.email = :email AND a.password = :password",
+                    "SELECT a FROM Account a WHERE a.email = :email",
                     Account.class)
                     .setParameter("email", email)
-                    .setParameter("password", password)
                     .setMaxResults(1)
                     .getResultList());
-            return accounts.isEmpty() ? null : accounts.get(0);
+            if (accounts.isEmpty()) {
+                return null;
+            }
+            Account account = accounts.get(0);
+            return PasswordUtil.verifyPassword(password, account.getPassword()) ? account : null;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Could not find account by email and password with JPA", ex);
             return null;
@@ -67,6 +71,9 @@ public class AccountDAO implements IAccountDAO {
         try {
             return JPAUtil.executeInTransaction(em -> {
                 applyAccountDefaults(account);
+                if (!PasswordUtil.isBCryptHash(account.getPassword())) {
+                    account.setPassword(PasswordUtil.hashPassword(account.getPassword()));
+                }
                 em.persist(account);
                 return true;
             });
@@ -79,9 +86,10 @@ public class AccountDAO implements IAccountDAO {
     @Override
     public boolean updatePasswordByEmail(String email, String newPassword) {
         try {
+            String hashedPassword = PasswordUtil.hashPassword(newPassword);
             int updated = JPAUtil.executeInTransaction(em -> em.createQuery(
                     "UPDATE Account a SET a.password = :password WHERE a.email = :email")
-                    .setParameter("password", newPassword)
+                    .setParameter("password", hashedPassword)
                     .setParameter("email", email)
                     .executeUpdate());
             return updated > 0;

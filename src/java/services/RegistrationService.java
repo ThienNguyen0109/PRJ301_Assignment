@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import models.Account;
 import models.Wallet;
+import utils.PasswordUtil;
 
 /**
  * Service for handling user registration with OTP verification.
@@ -75,7 +76,7 @@ public class RegistrationService {
             Account account = new Account();
             account.setFullName(fullName.trim());
             account.setEmail(email.trim());
-            account.setPassword(password);
+            account.setPassword(PasswordUtil.hashPassword(password));
             account.setPhone(phone != null ? phone.trim() : "");
             account.setIsVerified(true);
             account.setRole(Role.CUSTOMER);

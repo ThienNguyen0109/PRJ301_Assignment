@@ -33,6 +33,7 @@ import models.VehicleModelImage;
 import models.Wallet;
 import models.WalletTransaction;
 import utils.JPAUtil;
+import utils.PasswordUtil;
 
 /**
  * Seeds baseline demo data when the application starts.
@@ -372,7 +373,7 @@ public final class DataSeeder {
 
     private static Account account(String id, String email, String password, String fullName, String phone,
             boolean verified, Role role, String status) {
-        Account account = new Account(id, email, password, fullName, phone, verified, role, status, now());
+        Account account = new Account(id, email, PasswordUtil.hashPassword(password), fullName, phone, verified, role, status, now());
         return account;
     }
 
@@ -412,8 +413,13 @@ public final class DataSeeder {
     }
 
     private static void persistAccountIfMissing(EntityManager em, Account account) {
-        if (findAccountByEmail(em, account.getEmail()) == null) {
+        Account existing = findAccountByEmail(em, account.getEmail());
+        if (existing == null) {
             em.persist(account);
+            return;
+        }
+        if (!PasswordUtil.isBCryptHash(existing.getPassword())) {
+            existing.setPassword(PasswordUtil.hashPassword("123456"));
         }
     }
 
