@@ -64,21 +64,18 @@ public class AdminReportService {
 
             List<List<String>> rows = new ArrayList<>();
             for (Object[] row : reportDAO.financialRows(em, period.getStart(), period.getEndExclusive())) {
-                String method = text(row[0]);
-                String type = text(row[1]);
-                String status = text(row[2]);
-                rows.add(Arrays.asList(method, type, status, money(decimal(row[3])),
+                String type = text(row[0]);
+                rows.add(Arrays.asList(revenueCategoryLabel(type), revenueCategoryDescription(type),
+                        money(decimal(row[1])), money(decimal(row[2])), money(decimal(row[3])),
                         "?action=admin-financial-detail&" + exactPeriodParams(period)
-                        + "&paymentMethod=" + encode(method)
-                        + "&paymentType=" + encode(type)
-                        + "&status=" + encode(status)));
+                        + "&paymentType=" + encode(type)));
             }
             if (rows.isEmpty()) {
-                rows.add(Arrays.asList("N/A", "No payments", "EMPTY", "0 VND"));
+                rows.add(Arrays.asList("No revenue yet", "No payments were created in this period.", "0 VND", "0 VND", "0 VND"));
             }
 
             return new AdminReportData(stats,
-                    Arrays.asList("Payment Method", "Payment Type", "Status", "Amount"),
+                    Arrays.asList("Revenue Category", "Meaning", "Collected", "Pending", "Failed"),
                     rows,
                     revenueBars(em, period),
                     paymentMix(reportDAO.paymentMix(em, period.getStart(), period.getEndExclusive())));
@@ -179,8 +176,11 @@ public class AdminReportService {
     public AdminReportData financialDetail(AdminReportPeriod period, String paymentMethod, String paymentType, String status) {
         return JPAUtil.execute(em -> {
             List<List<String>> rows = new ArrayList<>();
-            for (Object[] row : reportDAO.financialDetailRows(em, period.getStart(), period.getEndExclusive(),
-                    paymentMethod, paymentType, status)) {
+            List<Object[]> detailRows = safe(paymentMethod).equals("N/A") || safe(status).equals("N/A")
+                    ? reportDAO.financialDetailRowsByType(em, period.getStart(), period.getEndExclusive(), paymentType)
+                    : reportDAO.financialDetailRows(em, period.getStart(), period.getEndExclusive(),
+                            paymentMethod, paymentType, status);
+            for (Object[] row : detailRows) {
                 rows.add(Arrays.asList(shortId(row[0]), text(row[1]), text(row[2]) + " / " + text(row[3]),
                         text(row[4]), money(decimal(row[5])), text(row[6])));
             }
@@ -188,8 +188,9 @@ public class AdminReportService {
                 rows.add(Arrays.asList("N/A", "No payment records", "-", "-", "0 VND", "-"));
             }
             return new AdminReportData(
-                    Arrays.asList(metric("Payment Method", safe(paymentMethod)), metric("Payment Type", safe(paymentType)),
-                            metric("Status", safe(status)), metric("Records", number(rows.size()))),
+                    Arrays.asList(metric("Revenue Category", revenueCategoryLabel(paymentType)),
+                            metric("Payment Type", safe(paymentType)),
+                            metric("Period", periodLabel(period)), metric("Records", number(rows.size()))),
                     Arrays.asList("Payment ID", "Customer", "Method / Type", "Status", "Amount", "Payment Date"),
                     rows, null, null);
         });
@@ -396,6 +397,52 @@ public class AdminReportService {
 
     private String safe(String value) {
         return value == null || value.trim().isEmpty() ? "N/A" : value.trim();
+    }
+
+    private String revenueCategoryLabel(String paymentType) {
+        String type = safe(paymentType);
+        if ("BOOKING".equals(type)) {
+            return "Booking Revenue";
+        }
+        if ("LATE_FEE".equals(type)) {
+            return "Late Return Fees";
+        }
+        if ("DAMAGE_FEE".equals(type)) {
+            return "Damage Fees";
+        }
+        if ("CLEANING_FEE".equals(type)) {
+            return "Cleaning Fees";
+        }
+        if ("LOST_ACCESSORY".equals(type)) {
+            return "Lost Accessory Fees";
+        }
+        if ("OTHER".equals(type)) {
+            return "Other Charges";
+        }
+        return type;
+    }
+
+    private String revenueCategoryDescription(String paymentType) {
+        String type = safe(paymentType);
+        if ("BOOKING".equals(type)) {
+            return "Money paid for vehicle rental bookings.";
+        }
+        if ("LATE_FEE".equals(type)) {
+            return "Extra fees when customers return vehicles late.";
+        }
+        if ("DAMAGE_FEE".equals(type)) {
+            return "Compensation fees for vehicle damage incidents.";
+        }
+        if ("CLEANING_FEE".equals(type)) {
+            return "Cleaning fees charged after vehicle return.";
+        }
+        if ("LOST_ACCESSORY".equals(type)) {
+            return "Fees for missing accessories or equipment.";
+        }
+        if ("OTHER".equals(type)) {
+            return "Other extra charges collected from rentals.";
+        }
+        return "Payment group recorded by the system.";
     }
 
     private String number(Object value) {

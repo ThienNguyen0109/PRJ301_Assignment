@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,9 +23,9 @@
                     </div>
                     <div class="admin-hero-panel">
                         <c:forEach var="stat" items="${adminStats}">
-                            <div class="hero-metric">
-                                <span><c:out value="${stat.label}"/></span>
-                                <strong><c:out value="${stat.value}"/></strong>
+                            <div class="hero-metric" data-admin-stat>
+                                <span data-admin-stat-label><c:out value="${stat.label}"/></span>
+                                <strong data-admin-stat-value><c:out value="${stat.value}"/></strong>
                             </div>
                         </c:forEach>
                     </div>
@@ -32,9 +33,9 @@
 
                 <section class="admin-section admin-grid">
                     <c:forEach var="stat" items="${adminStats}">
-                        <article class="admin-card">
-                            <div class="admin-card-label"><c:out value="${stat.label}"/></div>
-                            <div class="admin-card-value"><c:out value="${stat.value}"/></div>
+                        <article class="admin-card" data-admin-stat>
+                            <div class="admin-card-label" data-admin-stat-label><c:out value="${stat.label}"/></div>
+                            <div class="admin-card-value" data-admin-stat-value><c:out value="${stat.value}"/></div>
                             <div class="admin-card-foot">Live database metric</div>
                         </article>
                     </c:forEach>
@@ -120,7 +121,7 @@
                                             </c:choose>
                                         </span>
                                     </div>
-                                    <div class="bar-chart">
+                                    <div class="bar-chart" data-admin-chart="financial-primary">
                                         <c:forEach var="item" items="${adminChartPrimary}" varStatus="status">
                                             <div class="bar-item" title="${item.value}">
                                                 <c:if test="${item.percent gt 0}">
@@ -139,12 +140,26 @@
                                             <p>Current successful payment split.</p>
                                         </div>
                                     </div>
+                                    <c:set var="mainPaymentPercent" value="0"/>
                                     <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
                                         <c:if test="${status.first}">
-                                            <div class="donut-chart finance-donut"><span><c:out value="${item.percent}"/>%</span></div>
+                                            <c:set var="mainPaymentPercent" value="${item.percent}"/>
                                         </c:if>
                                     </c:forEach>
-                                    <div class="chart-legend">
+                                    <c:choose>
+                                        <c:when test="${mainPaymentPercent gt 0}">
+                                            <div class="donut-chart finance-donut"
+                                                 style="background: conic-gradient(#2563eb 0 ${mainPaymentPercent}%, #06b6d4 ${mainPaymentPercent}% 100%);">
+                                                <span><c:out value="${mainPaymentPercent}"/>%</span>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="donut-chart finance-donut" style="background: conic-gradient(#e2e8f0 0 100%);">
+                                                <span>0%</span>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="chart-legend" data-admin-chart="financial-secondary">
                                         <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
                                             <div>
                                                 <i style="background:${status.index == 0 ? '#2563eb' : (status.index == 1 ? '#06b6d4' : '#f59e0b')}"></i>
@@ -163,7 +178,7 @@
                                         </div>
                                         <span class="status-chip">Live Fleet</span>
                                     </div>
-                                    <div class="stack-chart">
+                                    <div class="stack-chart" data-admin-chart="station-primary">
                                         <c:forEach var="item" items="${adminChartPrimary}">
                                             <div class="stack-row">
                                                 <label><c:out value="${item.label}"/></label>
@@ -194,7 +209,7 @@
                                             <div class="donut-chart station-donut"><span><c:out value="${item.percent}"/>%</span></div>
                                         </c:if>
                                     </c:forEach>
-                                    <div class="chart-legend">
+                                    <div class="chart-legend" data-admin-chart="station-secondary">
                                         <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
                                             <div>
                                                 <i style="background:${status.index == 0 ? '#2563eb' : (status.index == 1 ? '#06b6d4' : '#f59e0b')}"></i>
@@ -213,7 +228,7 @@
                                         </div>
                                         <span class="status-chip">Demand</span>
                                     </div>
-                                    <div class="horizontal-bars">
+                                    <div class="horizontal-bars" data-admin-chart="model-primary">
                                         <c:forEach var="item" items="${adminChartPrimary}">
                                             <div class="hbar-row">
                                                 <label><c:out value="${item.label}"/></label>
@@ -235,7 +250,7 @@
                                             <div class="donut-chart model-donut"><span><c:out value="${item.percent}"/>%</span></div>
                                         </c:if>
                                     </c:forEach>
-                                    <div class="chart-legend">
+                                    <div class="chart-legend" data-admin-chart="model-secondary">
                                         <c:forEach var="item" items="${adminChartSecondary}" varStatus="status">
                                             <div>
                                                 <i style="background:${status.index == 0 ? '#ef4444' : '#22c55e'}"></i>
@@ -286,14 +301,15 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody data-admin-report-rows>
+                                    <c:set var="actionIndex" value="${fn:length(adminColumns)}"/>
                                     <c:forEach var="row" items="${adminRows}">
                                         <tr>
                                             <c:forEach var="cell" items="${row}" varStatus="status">
-                                                <c:if test="${status.index lt 4}">
+                                                <c:if test="${status.index lt actionIndex}">
                                                     <td>
                                                         <c:choose>
-                                                            <c:when test="${status.index eq 3}">
+                                                            <c:when test="${status.index ge 2}">
                                                                 <span class="status-chip"><c:out value="${cell}"/></span>
                                                             </c:when>
                                                             <c:otherwise><c:out value="${cell}"/></c:otherwise>
@@ -303,8 +319,8 @@
                                             </c:forEach>
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${not empty row[4]}">
-                                                        <a class="admin-button light" href="${pageContext.request.contextPath}/${row[4]}">View</a>
+                                                    <c:when test="${not empty row[actionIndex]}">
+                                                        <a class="admin-button light" href="${pageContext.request.contextPath}/${row[actionIndex]}">View</a>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="admin-button light disabled-link">View</span>

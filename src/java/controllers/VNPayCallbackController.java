@@ -25,6 +25,7 @@ import services.BookingService;
 import services.EmailService;
 import services.ReturnService;
 import services.VNPayService;
+import realtime.RealtimeEventPublisher;
 
 /**
  * Servlet for handling VNPay callback.
@@ -172,6 +173,10 @@ public class VNPayCallbackController extends HttpServlet {
                             "Náº¡p tiá»n qua VNPay - MÃ£ giao dá»‹ch: " + transactionNo);
 
                     if (transactionDAO.createTransaction(transaction)) {
+                        RealtimeEventPublisher.customer(user.getAccountId(), "WALLET_BALANCE_CHANGED",
+                                "Wallet updated", "Your VNPay top-up was completed.");
+                        RealtimeEventPublisher.admin("PAYMENT_CHANGED", "Wallet top-up completed",
+                                "A customer wallet was topped up via VNPay.");
                         session.setAttribute("topupSuccess", true);
                         session.setAttribute("topupSuccessAmount", topupAmount);
                         session.removeAttribute("topupOrderId");

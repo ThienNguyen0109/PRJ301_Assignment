@@ -21,10 +21,13 @@ public class AdminReportDAO {
     }
 
     public List<Object[]> financialRows(EntityManager em, Timestamp start, Timestamp endExclusive) {
-        String sql = "SELECT payment_method, payment_type, status, COALESCE(SUM(amount), 0) "
+        String sql = "SELECT payment_type, "
+                + "COALESCE(SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END), 0), "
+                + "COALESCE(SUM(CASE WHEN status = 'PENDING' THEN amount ELSE 0 END), 0), "
+                + "COALESCE(SUM(CASE WHEN status = 'FAILED' THEN amount ELSE 0 END), 0) "
                 + "FROM Payment WHERE payment_date >= ?1 AND payment_date < ?2 "
-                + "GROUP BY payment_method, payment_type, status "
-                + "ORDER BY COALESCE(SUM(amount), 0) DESC";
+                + "GROUP BY payment_type "
+                + "ORDER BY COALESCE(SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END), 0) DESC";
         return em.createNativeQuery(sql)
                 .setParameter(1, start)
                 .setParameter(2, endExclusive)
@@ -195,6 +198,22 @@ public class AdminReportDAO {
                 .setParameter(3, paymentMethod)
                 .setParameter(4, paymentType)
                 .setParameter(5, status)
+                .getResultList();
+    }
+
+    public List<Object[]> financialDetailRowsByType(EntityManager em, Timestamp start, Timestamp endExclusive,
+            String paymentType) {
+        String sql = "SELECT p.payment_id, a.full_name, p.payment_method, p.payment_type, p.status, p.amount, p.payment_date "
+                + "FROM Payment p "
+                + "JOIN Rental r ON r.rental_id = p.rental_id "
+                + "JOIN Account a ON a.account_id = r.customer_id "
+                + "WHERE p.payment_date >= ?1 AND p.payment_date < ?2 "
+                + "AND p.payment_type = ?3 "
+                + "ORDER BY p.payment_date DESC";
+        return em.createNativeQuery(sql)
+                .setParameter(1, start)
+                .setParameter(2, endExclusive)
+                .setParameter(3, paymentType)
                 .getResultList();
     }
 

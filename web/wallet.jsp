@@ -171,7 +171,7 @@
         <div class="container">
             <div class="balance-card">
                 <div class="balance-label">💰 Số dư ví của bạn</div>
-                <div class="balance-amount">
+                <div class="balance-amount" data-realtime-wallet-balance>
                     <c:choose>
                         <c:when test="${not empty wallet}">
                             <fmt:formatNumber value="${wallet.balance}" pattern="#,##0.00" /> VND
@@ -268,5 +268,6 @@
                 document.getElementById('amount').value = amount;
             }
         </script>
+        <%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>
     </body>
 </html>

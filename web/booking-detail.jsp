@@ -92,5 +92,6 @@
                 <a class="primary-btn" href="${pageContext.request.contextPath}?action=home">Quay về Home</a>
             </div>
         </div>
+        <%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>
     </body>
 </html>

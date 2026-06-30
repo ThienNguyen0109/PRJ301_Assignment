@@ -508,6 +508,56 @@ BEGIN
 END;
 GO
 
+/* =========================
+   REALTIME NOTIFICATION
+   ========================= */
+IF OBJECT_ID(N'Notification', N'U') IS NULL
+BEGIN
+    CREATE TABLE Notification (
+        notification_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        account_id UNIQUEIDENTIFIER NULL,
+        role_target VARCHAR(20) NULL,
+        type VARCHAR(50) NOT NULL,
+        title NVARCHAR(255) NOT NULL,
+        message NVARCHAR(MAX),
+        is_read BIT NOT NULL DEFAULT 0,
+        created_at DATETIME2 DEFAULT GETDATE(),
+
+        CONSTRAINT FK_Notification_Account
+            FOREIGN KEY (account_id)
+            REFERENCES Account(account_id),
+
+        CONSTRAINT CK_Notification_RoleTarget
+            CHECK (role_target IS NULL OR role_target IN ('CUSTOMER', 'STAFF', 'ADMIN')),
+
+        CONSTRAINT CK_Notification_Target
+            CHECK (account_id IS NOT NULL OR role_target IS NOT NULL)
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Notification_Account_Read_Created'
+      AND object_id = OBJECT_ID(N'Notification')
+)
+BEGIN
+    CREATE INDEX IX_Notification_Account_Read_Created
+        ON Notification(account_id, is_read, created_at DESC);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Notification_Role_Created'
+      AND object_id = OBJECT_ID(N'Notification')
+)
+BEGIN
+    CREATE INDEX IX_Notification_Role_Created
+        ON Notification(role_target, created_at DESC);
+END;
+GO
+
 /* =====================================================
    SEED DATA - INSERT KHÔNG BỊ TRÙNG KHI CHẠY LẠI
    ===================================================== */

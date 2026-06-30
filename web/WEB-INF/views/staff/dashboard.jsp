@@ -15,17 +15,17 @@
         <main class="staff-content">
             <div class="content-header"><h1>Operations Overview</h1><p>Monitor pickup, returns, incidents and maintenance workload.</p></div>
             <section class="stats-grid">
-                <article class="stat-card stat-blue"><div><div class="label">Vehicles Waiting For Pickup</div><div class="value">${dashboard.waitingForPickup}</div></div><div class="stat-icon">P</div></article>
-                <article class="stat-card stat-orange"><div><div class="label">Vehicles Currently Rented</div><div class="value">${dashboard.currentlyRented}</div></div><div class="stat-icon">R</div></article>
-                <article class="stat-card stat-green"><div><div class="label">Vehicles Waiting For Return</div><div class="value">${dashboard.waitingForReturn}</div></div><div class="stat-icon">W</div></article>
-                <article class="stat-card stat-purple"><div><div class="label">Vehicles Under Maintenance</div><div class="value">${dashboard.underMaintenance}</div></div><div class="stat-icon">M</div></article>
+                <article class="stat-card stat-blue"><div><div class="label">Vehicles Waiting For Pickup</div><div class="value" data-staff-stat="waitingForPickup">${dashboard.waitingForPickup}</div></div><div class="stat-icon">P</div></article>
+                <article class="stat-card stat-orange"><div><div class="label">Vehicles Currently Rented</div><div class="value" data-staff-stat="currentlyRented">${dashboard.currentlyRented}</div></div><div class="stat-icon">R</div></article>
+                <article class="stat-card stat-green"><div><div class="label">Vehicles Waiting For Return</div><div class="value" data-staff-stat="waitingForReturn">${dashboard.waitingForReturn}</div></div><div class="stat-icon">W</div></article>
+                <article class="stat-card stat-purple"><div><div class="label">Vehicles Under Maintenance</div><div class="value" data-staff-stat="underMaintenance">${dashboard.underMaintenance}</div></div><div class="stat-icon">M</div></article>
             </section>
             <section class="staff-card">
                 <div class="card-header"><h2>Recent Activities</h2><a class="btn btn-light btn-sm" href="${pageContext.request.contextPath}?action=staff-pickup">Open Pickup</a></div>
                 <div class="table-responsive">
                     <table class="staff-table">
                         <thead><tr><th>Rental ID</th><th>Customer</th><th>Vehicle</th><th>Action</th><th>Time</th></tr></thead>
-                        <tbody>
+                        <tbody data-staff-activities>
                             <c:forEach var="activity" items="${dashboard.recentActivities}">
                                 <tr><td><strong>${activity.rentalId}</strong></td><td>${activity.customer}</td><td>${activity.vehicle}</td><td>${activity.action}</td><td><fmt:formatDate value="${activity.time}" pattern="dd/MM/yyyy hh:mm a"/></td></tr>
                             </c:forEach>

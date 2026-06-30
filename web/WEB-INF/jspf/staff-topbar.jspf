@@ -5,3 +5,4 @@
     </div>
     <div class="topbar-user"><span class="topbar-role">STAFF</span><span class="topbar-name">${sessionScope.userName}</span></div>
 </header>
+<%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>

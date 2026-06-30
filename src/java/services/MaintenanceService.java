@@ -8,6 +8,7 @@ import enums.VehicleStatus;
 import java.util.List;
 import models.Vehicle;
 import models.VehicleMaintenance;
+import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 public class MaintenanceService {
@@ -39,5 +40,11 @@ public class MaintenanceService {
             vehicle.setStatus(VehicleStatus.AVAILABLE);
             return null;
         });
+        RealtimeEventPublisher.staff("MAINTENANCE_COMPLETED", "Maintenance completed",
+                "A vehicle is available for rental again.");
+        RealtimeEventPublisher.admin("VEHICLE_AVAILABILITY_CHANGED", "Vehicle availability changed",
+                "A maintenance vehicle returned to AVAILABLE.");
+        RealtimeEventPublisher.all("VEHICLE_AVAILABILITY_CHANGED", "Vehicle available",
+                "A vehicle has returned from maintenance.");
     }
 }

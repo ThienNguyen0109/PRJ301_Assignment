@@ -563,5 +563,6 @@
                 </div>
             </c:if>
         </div>
+        <%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>
     </body>
 </html>

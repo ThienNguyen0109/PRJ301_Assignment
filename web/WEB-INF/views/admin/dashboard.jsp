@@ -25,9 +25,9 @@
                     </div>
                     <div class="admin-hero-panel">
                         <c:forEach var="stat" items="${adminStats}">
-                            <div class="hero-metric">
-                                <span><c:out value="${stat.label}"/></span>
-                                <strong><c:out value="${stat.value}"/></strong>
+                            <div class="hero-metric" data-admin-stat>
+                                <span data-admin-stat-label><c:out value="${stat.label}"/></span>
+                                <strong data-admin-stat-value><c:out value="${stat.value}"/></strong>
                             </div>
                         </c:forEach>
                     </div>
@@ -35,9 +35,9 @@
 
                 <section class="admin-section admin-grid">
                     <c:forEach var="stat" items="${adminStats}">
-                        <article class="admin-card">
-                            <div class="admin-card-label"><c:out value="${stat.label}"/></div>
-                            <div class="admin-card-value"><c:out value="${stat.value}"/></div>
+                        <article class="admin-card" data-admin-stat>
+                            <div class="admin-card-label" data-admin-stat-label><c:out value="${stat.label}"/></div>
+                            <div class="admin-card-value" data-admin-stat-value><c:out value="${stat.value}"/></div>
                             <div class="admin-card-foot">Live database metric</div>
                         </article>
                     </c:forEach>
@@ -61,7 +61,7 @@
                                         </c:forEach>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody data-admin-dashboard-rows>
                                     <c:forEach var="row" items="${adminRows}">
                                         <tr>
                                             <c:forEach var="cell" items="${row}" varStatus="status">

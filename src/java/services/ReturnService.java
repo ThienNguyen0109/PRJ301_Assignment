@@ -32,6 +32,7 @@ import models.Rental;
 import models.RentalStatusHistory;
 import models.Vehicle;
 import models.VehicleMaintenance;
+import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 public class ReturnService {
@@ -57,7 +58,7 @@ public class ReturnService {
         if (damageFeeAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Damage fee khong duoc am.");
         }
-        return JPAUtil.executeInTransaction(em -> {
+        ReturnConfirmationResult result = JPAUtil.executeInTransaction(em -> {
             Rental rental = requireRentedRental(em, rentalId);
             Vehicle vehicle = returnDAO.findVehicleForUpdate(em, rental.getVehicleId());
             if (vehicle == null) {
@@ -108,6 +109,8 @@ public class ReturnService {
             return new ReturnConfirmationResult(damaged, lateFee, normalizedDamageFee, method,
                     extraChargeOrderId, extraChargeTotal);
         });
+        publishReturnEvents(result);
+        return result;
     }
 
     private Rental requireRentedRental(EntityManager em, String rentalId) {
@@ -167,10 +170,14 @@ public class ReturnService {
 
     public void completeLateFeeVNPayPayment(String orderId, String transactionNo) {
         updateExtraChargeVNPayPayment(orderId, transactionNo, PaymentStatus.SUCCESS);
+        RealtimeEventPublisher.admin("EXTRA_CHARGE_PAID", "Extra charge paid",
+                "A VNPay extra charge payment was completed.");
     }
 
     public void failLateFeeVNPayPayment(String orderId, String transactionNo) {
         updateExtraChargeVNPayPayment(orderId, transactionNo, PaymentStatus.FAILED);
+        RealtimeEventPublisher.admin("EXTRA_CHARGE_FAILED", "Extra charge failed",
+                "A VNPay extra charge payment failed.");
     }
 
     private ExtraChargeStatus initialChargeStatus(BigDecimal amount, PaymentMethod method) {
@@ -300,6 +307,24 @@ public class ReturnService {
             return PaymentType.LATE_FEE;
         }
         return PaymentType.OTHER;
+    }
+
+    private void publishReturnEvents(ReturnConfirmationResult result) {
+        RealtimeEventPublisher.staff("RENTAL_COMPLETED", "Vehicle returned",
+                "A rented vehicle was returned by the customer.");
+        RealtimeEventPublisher.admin("ADMIN_METRICS_CHANGED", "Admin metrics updated",
+                "Revenue and fleet status were updated after a return.");
+        if (result != null && result.isDamaged()) {
+            RealtimeEventPublisher.staff("INCIDENT_CREATED", "Incident report created",
+                    "A damaged vehicle was moved to maintenance.");
+            RealtimeEventPublisher.staff("MAINTENANCE_CREATED", "Maintenance required",
+                    "A vehicle is waiting for maintenance.");
+            RealtimeEventPublisher.admin("VEHICLE_MOVED_TO_MAINTENANCE", "Vehicle maintenance",
+                    "A returned vehicle was moved to maintenance.");
+        } else {
+            RealtimeEventPublisher.all("VEHICLE_AVAILABILITY_CHANGED", "Vehicle available",
+                    "A returned vehicle is available again.");
+        }
     }
 
     private Timestamp now() { return new Timestamp(System.currentTimeMillis()); }

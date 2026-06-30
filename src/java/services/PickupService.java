@@ -12,6 +12,7 @@ import java.util.UUID;
 import models.Rental;
 import models.RentalStatusHistory;
 import models.Vehicle;
+import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 public class PickupService {
@@ -51,6 +52,10 @@ public class PickupService {
             persistHistory(em, rentalId, RentalStatus.RENTED);
             return null;
         });
+        RealtimeEventPublisher.staff("PICKUP_CONFIRMED", "Pickup confirmed",
+                "A booked rental was delivered to the customer.");
+        RealtimeEventPublisher.admin("RENTAL_STATUS_CHANGED", "Rental status changed",
+                "A rental moved from BOOKED to RENTED.");
     }
 
     public void markNoShow(String rentalId) {
@@ -66,6 +71,10 @@ public class PickupService {
             persistHistory(em, rentalId, RentalStatus.NO_SHOW);
             return null;
         });
+        RealtimeEventPublisher.staff("RENTAL_NO_SHOW", "Rental marked no-show",
+                "A booked rental was marked as no-show.");
+        RealtimeEventPublisher.admin("VEHICLE_AVAILABILITY_CHANGED", "Vehicle availability changed",
+                "A vehicle was released after a no-show.");
     }
 
     private Rental requireBookedRental(javax.persistence.EntityManager em, String rentalId) {

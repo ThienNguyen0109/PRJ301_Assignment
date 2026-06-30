@@ -1,0 +1,11 @@
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:if test="${not empty sessionScope.user}">
+    <script>
+        window.EVR_REALTIME = {
+            contextPath: '${pageContext.request.contextPath}',
+            accountId: '${sessionScope.user.accountId}',
+            role: '${sessionScope.user.role}'
+        };
+    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/realtime.js?v=20260630-2"></script>
+</c:if>

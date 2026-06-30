@@ -253,7 +253,7 @@
                     <div class="wallet-card">
                         <h2 class="card-title">💳 Ví của bạn</h2>
                         <p class="wallet-label">Số dư hiện tại</p>
-                        <div class="wallet-balance">
+                        <div class="wallet-balance" data-realtime-wallet-balance>
                             <c:choose>
                                 <c:when test="${not empty wallet}">
                                     <fmt:formatNumber value="${wallet.balance}" pattern="#,##0.00" /> VND
@@ -378,5 +378,6 @@
                 </c:choose>
             </section>
         </div>
+        <%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>
     </body>
 </html>

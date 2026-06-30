@@ -29,6 +29,7 @@ import models.RentalStatusHistory;
 import models.Vehicle;
 import models.Wallet;
 import models.WalletTransaction;
+import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 /**
@@ -101,6 +102,7 @@ public class BookingService {
             createRentalStatusHistory(em, rental.getRentalId(), RentalStatus.BOOKED);
 
             tx.commit();
+            publishBookingSuccess(customer.getAccountId(), freshQuote, PaymentMethod.WALLET);
             return buildDetail(rental.getRentalId(), payment.getPaymentId(), PaymentMethod.WALLET,
                     PaymentStatus.SUCCESS, "WALLET", freshQuote);
         } catch (SQLException ex) {
@@ -142,6 +144,8 @@ public class BookingService {
             createRentalStatusHistory(em, rental.getRentalId(), RentalStatus.BOOKED);
 
             tx.commit();
+            RealtimeEventPublisher.admin("PAYMENT_PENDING", "Pending VNPay booking",
+                    "A customer started a VNPay booking payment.");
             return payment.getPaymentId();
         } catch (SQLException ex) {
             rollback(tx);
@@ -174,6 +178,7 @@ public class BookingService {
             updateVehicleStatus(em, quote.getVehicleId(), VehicleStatus.RENTED);
 
             tx.commit();
+            publishBookingSuccess(customer.getAccountId(), quote, PaymentMethod.VNPAY);
             return buildDetail(payment.getRentalId(), payment.getPaymentId(), PaymentMethod.VNPAY,
                     PaymentStatus.SUCCESS, transactionNo, quote);
         } catch (SQLException ex) {
@@ -207,6 +212,8 @@ public class BookingService {
             }
 
             tx.commit();
+            RealtimeEventPublisher.admin("PAYMENT_FAILED", "VNPay payment failed",
+                    "A booking payment was marked as failed.");
         } catch (Exception ex) {
             rollback(tx);
             LOGGER.log(Level.WARNING, "Could not mark VNPay booking payment failed: " + orderId, ex);
@@ -451,6 +458,22 @@ public class BookingService {
         detail.setTransactionCode(transactionCode);
         detail.setQuote(quote);
         return detail;
+    }
+
+    private void publishBookingSuccess(String customerId, BookingQuote quote, PaymentMethod method) {
+        String vehicleName = quote != null && quote.getVehicleModelName() != null
+                ? quote.getVehicleModelName()
+                : "Vehicle";
+        RealtimeEventPublisher.staff("RENTAL_BOOKED", "New paid booking",
+                vehicleName + " is waiting for pickup.");
+        RealtimeEventPublisher.admin("PAYMENT_CHANGED", "Payment completed",
+                "A " + method + " booking payment was completed.");
+        RealtimeEventPublisher.admin("ADMIN_METRICS_CHANGED", "Admin metrics updated",
+                "Financial and fleet data have changed.");
+        RealtimeEventPublisher.all("VEHICLE_AVAILABILITY_CHANGED", "Vehicle availability changed",
+                vehicleName + " availability has been updated.");
+        RealtimeEventPublisher.customer(customerId, "RENTAL_BOOKED", "Booking confirmed",
+                "Your booking has been confirmed.");
     }
 
     private void validateDates(Date startDate, Date endDate) throws SQLException {
