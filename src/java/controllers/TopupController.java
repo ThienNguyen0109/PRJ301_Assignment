@@ -5,6 +5,7 @@ import daos.IWalletDAO;
 import models.Wallet;
 import models.Account;
 import services.VNPayService;
+import utils.RequestUrlUtil;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -69,8 +70,7 @@ public class TopupController extends HttpServlet {
                         String orderId = "TOPUP" + System.currentTimeMillis();
                         
                         // Create VNPay payment URL
-                        String returnUrl = request.getScheme() + "://" + request.getServerName() 
-                            + ":" + request.getServerPort() + request.getContextPath() + "/vnpay-callback";
+                        String returnUrl = RequestUrlUtil.buildUrl(request, "/vnpay-callback");
                         
                         String paymentUrl = VNPayService.createPaymentUrl(
                             amount,

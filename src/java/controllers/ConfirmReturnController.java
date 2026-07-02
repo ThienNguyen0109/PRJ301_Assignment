@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import models.Account;
 import services.ReturnService;
 import services.VNPayService;
+import utils.RequestUrlUtil;
 
 @WebServlet(name = "ConfirmReturnController", urlPatterns = {"/staff/return/confirm"})
 public class ConfirmReturnController extends HttpServlet {
@@ -50,8 +51,7 @@ public class ConfirmReturnController extends HttpServlet {
 
             if (result.isExtraChargeVNPayPending()) {
                 session.setAttribute("chargeOrderId", result.getExtraChargeOrderId());
-                String returnUrl = request.getScheme() + "://" + request.getServerName() + ":"
-                        + request.getServerPort() + request.getContextPath() + "/vnpay-callback";
+                String returnUrl = RequestUrlUtil.buildUrl(request, "/vnpay-callback");
                 String paymentUrl = VNPayService.createPaymentUrl(
                         result.getExtraChargePaymentAmount().longValue(),
                         result.getExtraChargeOrderId(),

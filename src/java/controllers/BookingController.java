@@ -17,6 +17,7 @@ import models.Account;
 import services.BookingService;
 import services.EmailService;
 import services.VNPayService;
+import utils.RequestUrlUtil;
 
 /**
  * Handles booking payment submissions.
@@ -65,8 +66,7 @@ public class BookingController extends HttpServlet {
             }
 
             String orderId = "BOOK" + System.currentTimeMillis();
-            String returnUrl = request.getScheme() + "://" + request.getServerName()
-                    + ":" + request.getServerPort() + request.getContextPath() + "/vnpay-callback";
+            String returnUrl = RequestUrlUtil.buildUrl(request, "/vnpay-callback");
             String paymentUrl = VNPayService.createPaymentUrl(
                     Math.round(quote.getFinalAmount()),
                     orderId,
