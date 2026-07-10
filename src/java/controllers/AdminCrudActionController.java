@@ -21,6 +21,8 @@ import models.Account;
 import models.Station;
 import services.AdminAccountService;
 import services.AdminDiscountService;
+import services.AdminRentalService;
+import services.AdminPaymentService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
@@ -43,7 +45,10 @@ import services.AdminVehicleService;
     "/admin/vehicles/save",
     "/admin/vehicles/delete",
     "/admin/discounts/save",
-    "/admin/discounts/delete"
+    "/admin/discounts/delete",
+    "/admin/rentals/cancel",
+    "/admin/payments/fail",
+    "/admin/payments/confirm-cash"
 })
 public class AdminCrudActionController extends HttpServlet {
 
@@ -53,6 +58,8 @@ public class AdminCrudActionController extends HttpServlet {
     private final AdminStationService stationService = new AdminStationService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
     private final AdminDiscountService discountService = new AdminDiscountService();
+    private final AdminRentalService rentalService = new AdminRentalService();
+    private final AdminPaymentService paymentService = new AdminPaymentService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -138,6 +145,20 @@ public class AdminCrudActionController extends HttpServlet {
                 flash(request, "adminSuccess", "Discount deleted successfully.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-discounts");
                 return;
+            }
+            if ("/admin/rentals/cancel".equals(path)) {
+                rentalService.cancelBookedRental(request.getParameter("rentalId"));
+                flash(request, "adminSuccess", "Booked rental cancelled successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-rentals");
+                return;
+            }
+            if ("/admin/payments/fail".equals(path)) {
+                paymentService.markFailed(request.getParameter("paymentId")); flash(request, "adminSuccess", "Pending payment marked as failed.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-payments"); return;
+            }
+            if ("/admin/payments/confirm-cash".equals(path)) {
+                paymentService.confirmCashPayment(request.getParameter("paymentId")); flash(request, "adminSuccess", "Pending CASH payment confirmed.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-payments"); return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
         } catch (IllegalArgumentException | IllegalStateException ex) {
@@ -363,6 +384,14 @@ public class AdminCrudActionController extends HttpServlet {
         if (path.contains("discounts")) {
             String id = trim(request.getParameter("discountId"));
             return context + "?action=admin-discount-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("rentals")) {
+            String id = trim(request.getParameter("rentalId"));
+            return context + "?action=admin-rental-detail" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("payments")) {
+            String id = trim(request.getParameter("paymentId"));
+            return context + "?action=admin-payment-detail" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
         return context + "?action=admin-dashboard";
     }

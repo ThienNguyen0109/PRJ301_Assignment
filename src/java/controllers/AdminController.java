@@ -20,6 +20,9 @@ import javax.servlet.http.HttpSession;
 import models.Account;
 import services.AdminAccountService;
 import services.AdminDiscountService;
+import services.AdminRentalService;
+import services.AdminPaymentService;
+import services.AdminWalletService;
 import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
@@ -53,12 +56,15 @@ import services.AdminVehicleService;
     "/admin/discounts/detail",
     "/admin/rental-discounts",
     "/admin/rentals",
+    "/admin/rentals/detail",
     "/admin/rental-status-history",
     "/admin/payments",
+    "/admin/payments/detail",
     "/admin/extra-charges",
     "/admin/incidents",
     "/admin/maintenance",
     "/admin/wallets",
+    "/admin/wallets/detail",
     "/admin/reviews",
     "/admin/profile",
     "/admin/stations/form",
@@ -73,6 +79,9 @@ public class AdminController extends HttpServlet {
     private final AdminStationService stationService = new AdminStationService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
     private final AdminDiscountService discountService = new AdminDiscountService();
+    private final AdminRentalService rentalService = new AdminRentalService();
+    private final AdminPaymentService paymentService = new AdminPaymentService();
+    private final AdminWalletService walletService = new AdminWalletService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -331,6 +340,60 @@ public class AdminController extends HttpServlet {
             consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/discounts/detail.jsp").forward(request, response);
             return true;
+        }
+        if ("/admin/rentals".equals(path)) {
+            configureAdminShell(request, admin, "rentals", "Rentals", "Transactions", "Search rental, customer, phone, or vehicle");
+            List<dto.AdminRentalRow> rentals = rentalService.search(request.getParameter("keyword"), request.getParameter("stationId"),
+                    request.getParameter("status"), request.getParameter("startDate"), request.getParameter("endDate"));
+            request.setAttribute("rentals", paginate(request, rentals));
+            request.setAttribute("stations", rentalService.findAllStations());
+            request.setAttribute("rentalStatuses", enums.RentalStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedStationId", paramOrDefault(request, "stationId", "ALL"));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            request.setAttribute("startDate", paramOrDefault(request, "startDate", ""));
+            request.setAttribute("endDate", paramOrDefault(request, "endDate", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rentals/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/rentals/detail".equals(path)) {
+            configureAdminShell(request, admin, "rentals", "Rental Detail", "Transactions", "Search rentals");
+            dto.AdminRentalRow rental = rentalService.findDetail(request.getParameter("id"));
+            request.setAttribute("rental", rental);
+            if (rental != null) {
+                request.setAttribute("payments", rentalService.findPayments(rental.getRentalId()));
+                request.setAttribute("rentalHistory", rentalService.findHistory(rental.getRentalId()));
+            }
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rentals/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/payments".equals(path)) {
+            configureAdminShell(request, admin, "payments", "Payments", "Transactions", "Search payment, rental, customer, or transaction");
+            List<dto.AdminPaymentRow> payments = paymentService.search(request.getParameter("keyword"), request.getParameter("method"), request.getParameter("type"), request.getParameter("status"));
+            request.setAttribute("payments", paginate(request, payments)); request.setAttribute("paymentMethods", enums.PaymentMethod.values());
+            request.setAttribute("paymentTypes", enums.PaymentType.values()); request.setAttribute("paymentStatuses", enums.PaymentStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", "")); request.setAttribute("selectedMethod", paramOrDefault(request, "method", "ALL"));
+            request.setAttribute("selectedType", paramOrDefault(request, "type", "ALL")); request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            consumeFlash(request); request.getRequestDispatcher("/WEB-INF/views/admin/payments/list.jsp").forward(request, response); return true;
+        }
+        if ("/admin/payments/detail".equals(path)) {
+            configureAdminShell(request, admin, "payments", "Payment Detail", "Transactions", "Search payments");
+            request.setAttribute("payment", paymentService.findDetail(request.getParameter("id"))); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/payments/detail.jsp").forward(request, response); return true;
+        }
+        if ("/admin/wallets".equals(path)) {
+            configureAdminShell(request, admin, "wallets", "Wallets", "Transactions", "Search customer name, email, or phone");
+            request.setAttribute("wallets", paginate(request, walletService.search(request.getParameter("keyword"))));
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", "")); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/wallets/list.jsp").forward(request, response); return true;
+        }
+        if ("/admin/wallets/detail".equals(path)) {
+            configureAdminShell(request, admin, "wallets", "Wallet Detail", "Transactions", "Search wallets");
+            dto.AdminWalletRow wallet = walletService.findDetail(request.getParameter("id")); request.setAttribute("wallet", wallet);
+            if (wallet != null) request.setAttribute("walletTransactions", walletService.findTransactions(wallet.getWalletId()));
+            consumeFlash(request); request.getRequestDispatcher("/WEB-INF/views/admin/wallets/detail.jsp").forward(request, response); return true;
         }
         return false;
     }
