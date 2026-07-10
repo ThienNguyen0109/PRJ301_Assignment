@@ -111,6 +111,10 @@ public class MainController extends HttpServlet {
                 url = "/admin/vehicles/detail";
             } else if (action.equals("admin-discounts")) {
                 url = "/admin/discounts";
+            } else if (action.equals("admin-discount-form")) {
+                url = "/admin/discounts/form";
+            } else if (action.equals("admin-discount-detail")) {
+                url = "/admin/discounts/detail";
             } else if (action.equals("admin-rental-discounts")) {
                 url = "/admin/rental-discounts";
             } else if (action.equals("admin-rentals")) {

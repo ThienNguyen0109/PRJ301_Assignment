@@ -5,6 +5,7 @@ import enums.VehicleModelImageType;
 import enums.VehicleStatus;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
 import services.AdminAccountService;
+import services.AdminDiscountService;
 import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
@@ -47,6 +49,8 @@ import services.AdminVehicleService;
     "/admin/vehicles/form",
     "/admin/vehicles/detail",
     "/admin/discounts",
+    "/admin/discounts/form",
+    "/admin/discounts/detail",
     "/admin/rental-discounts",
     "/admin/rentals",
     "/admin/rental-status-history",
@@ -68,6 +72,7 @@ public class AdminController extends HttpServlet {
     private final AdminReportService reportService = new AdminReportService();
     private final AdminStationService stationService = new AdminStationService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
+    private final AdminDiscountService discountService = new AdminDiscountService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -293,6 +298,38 @@ public class AdminController extends HttpServlet {
             request.setAttribute("vehicle", vehicleService.findById(request.getParameter("id")));
             consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/vehicles/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/discounts".equals(path)) {
+            configureAdminShell(request, admin, "discounts", "Discounts", "CRUD", "Search discount code");
+            List<models.Discount> discounts = discountService.search(request.getParameter("keyword"), request.getParameter("status"));
+            request.setAttribute("discounts", paginate(request, discounts));
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            request.setAttribute("now", new Timestamp(System.currentTimeMillis()));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/discounts/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/discounts/form".equals(path)) {
+            configureAdminShell(request, admin, "discounts", isBlank(request.getParameter("id")) ? "Create Discount" : "Edit Discount", "CRUD", "Search discount code");
+            models.Discount discount = discountService.findById(request.getParameter("id"));
+            request.setAttribute("discount", discount);
+            request.setAttribute("discountHasUsage", discount != null && discountService.hasUsage(discount.getDiscountId()));
+            request.setAttribute("expiredAtInput", discount == null || discount.getExpiredAt() == null
+                    ? "" : new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(discount.getExpiredAt()));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/discounts/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/discounts/detail".equals(path)) {
+            configureAdminShell(request, admin, "discounts", "Discount Detail", "CRUD", "Search discount code");
+            models.Discount discount = discountService.findById(request.getParameter("id"));
+            request.setAttribute("discount", discount);
+            request.setAttribute("discountHasUsage", discount != null && discountService.hasUsage(discount.getDiscountId()));
+            request.setAttribute("now", new Timestamp(System.currentTimeMillis()));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/discounts/detail.jsp").forward(request, response);
             return true;
         }
         return false;

@@ -20,6 +20,7 @@ import javax.servlet.http.Part;
 import models.Account;
 import models.Station;
 import services.AdminAccountService;
+import services.AdminDiscountService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
@@ -40,7 +41,9 @@ import services.AdminVehicleService;
     "/admin/stations/save",
     "/admin/stations/delete",
     "/admin/vehicles/save",
-    "/admin/vehicles/delete"
+    "/admin/vehicles/delete",
+    "/admin/discounts/save",
+    "/admin/discounts/delete"
 })
 public class AdminCrudActionController extends HttpServlet {
 
@@ -49,6 +52,7 @@ public class AdminCrudActionController extends HttpServlet {
     private final AdminVehicleModelImageService imageService = new AdminVehicleModelImageService();
     private final AdminStationService stationService = new AdminStationService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
+    private final AdminDiscountService discountService = new AdminDiscountService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -121,6 +125,18 @@ public class AdminCrudActionController extends HttpServlet {
                 vehicleService.delete(request.getParameter("vehicleId"));
                 flash(request, "adminSuccess", "Vehicle deleted successfully.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-vehicles");
+                return;
+            }
+            if ("/admin/discounts/save".equals(path)) {
+                saveDiscount(request);
+                flash(request, "adminSuccess", "Discount saved successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-discounts");
+                return;
+            }
+            if ("/admin/discounts/delete".equals(path)) {
+                discountService.delete(request.getParameter("discountId"));
+                flash(request, "adminSuccess", "Discount deleted successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-discounts");
                 return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
@@ -198,6 +214,17 @@ public class AdminCrudActionController extends HttpServlet {
             vehicleService.update(vehicleId, request.getParameter("modelId"), request.getParameter("stationId"),
                     request.getParameter("licensePlate"), request.getParameter("color"),
                     request.getParameter("batteryLevel"), request.getParameter("status"));
+        }
+    }
+
+    private void saveDiscount(HttpServletRequest request) {
+        String discountId = trim(request.getParameter("discountId"));
+        if (discountId.isEmpty()) {
+            discountService.create(request.getParameter("code"), request.getParameter("discountPercent"),
+                    request.getParameter("quantity"), request.getParameter("expiredAt"));
+        } else {
+            discountService.update(discountId, request.getParameter("code"), request.getParameter("discountPercent"),
+                    request.getParameter("quantity"), request.getParameter("expiredAt"));
         }
     }
 
@@ -332,6 +359,10 @@ public class AdminCrudActionController extends HttpServlet {
         if (path.contains("vehicles")) {
             String id = trim(request.getParameter("vehicleId"));
             return context + "?action=admin-vehicle-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("discounts")) {
+            String id = trim(request.getParameter("discountId"));
+            return context + "?action=admin-discount-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
         return context + "?action=admin-dashboard";
     }
