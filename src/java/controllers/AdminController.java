@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 import models.Account;
 import services.AdminAccountService;
 import services.AdminReportService;
+import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
 
@@ -51,13 +52,17 @@ import services.AdminVehicleModelService;
     "/admin/maintenance",
     "/admin/wallets",
     "/admin/reviews",
-    "/admin/profile"
+    "/admin/profile",
+    "/admin/stations/form",
+    "/admin/stations/detail",
 })
 public class AdminController extends HttpServlet {
+
     private final AdminAccountService accountService = new AdminAccountService();
     private final AdminVehicleModelService vehicleModelService = new AdminVehicleModelService();
     private final AdminVehicleModelImageService vehicleModelImageService = new AdminVehicleModelImageService();
     private final AdminReportService reportService = new AdminReportService();
+    private final AdminStationService stationService = new AdminStationService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -137,6 +142,60 @@ public class AdminController extends HttpServlet {
             request.setAttribute("account", accountService.findById(request.getParameter("id")));
             consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/accounts/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/stations".equals(path)) {
+            configureAdminShell(
+                    request,
+                    admin,
+                    "stations",
+                    "Stations",
+                    "CRUD",
+                    "Search station");
+            request.setAttribute("stations", paginate(request, stationService.search(request.getParameter("keyword"))));
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/admin/stations/list.jsp")
+                    .forward(request, response);
+            return true;
+        }
+        if ("/admin/stations/form".equals(path)) {
+            configureAdminShell(
+                    request,
+                    admin,
+                    "stations",
+                    isBlank(request.getParameter("id"))
+                    ? "Create Station"
+                    : "Edit Station",
+                    "CRUD",
+                    "Search station");
+            request.setAttribute(
+                    "station",
+                    stationService.getStationById(
+                            request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/admin/stations/form.jsp")
+                    .forward(request, response);
+            return true;
+        }
+        if ("/admin/stations/detail".equals(path)) {
+            configureAdminShell(
+                    request,
+                    admin,
+                    "stations",
+                    "Station Detail",
+                    "CRUD",
+                    "Search station");
+            request.setAttribute(
+                    "station",
+                    stationService.getStationById(
+                            request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/admin/stations/detail.jsp")
+                    .forward(request, response);
             return true;
         }
         if ("/admin/vehicle-models".equals(path)) {
@@ -249,7 +308,9 @@ public class AdminController extends HttpServlet {
 
     private void consumeFlash(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session == null) return;
+        if (session == null) {
+            return;
+        }
         request.setAttribute("adminSuccess", session.getAttribute("adminSuccess"));
         request.setAttribute("adminError", session.getAttribute("adminError"));
         session.removeAttribute("adminSuccess");
@@ -330,26 +391,66 @@ public class AdminController extends HttpServlet {
     }
 
     private String actionForPath(String path) {
-        if ("/admin/financial-reports".equals(path)) return "admin-financial-reports";
-        if ("/admin/station-performance".equals(path)) return "admin-station-performance";
-        if ("/admin/model-performance".equals(path)) return "admin-model-performance";
-        if ("/admin/accounts".equals(path)) return "admin-accounts";
-        if ("/admin/stations".equals(path)) return "admin-stations";
-        if ("/admin/categories".equals(path)) return "admin-categories";
-        if ("/admin/vehicle-models".equals(path)) return "admin-vehicle-models";
-        if ("/admin/vehicle-model-images".equals(path)) return "admin-vehicle-model-images";
-        if ("/admin/vehicles".equals(path)) return "admin-vehicles";
-        if ("/admin/discounts".equals(path)) return "admin-discounts";
-        if ("/admin/rental-discounts".equals(path)) return "admin-rental-discounts";
-        if ("/admin/rentals".equals(path)) return "admin-rentals";
-        if ("/admin/rental-status-history".equals(path)) return "admin-rental-status-history";
-        if ("/admin/payments".equals(path)) return "admin-payments";
-        if ("/admin/extra-charges".equals(path)) return "admin-extra-charges";
-        if ("/admin/incidents".equals(path)) return "admin-incidents";
-        if ("/admin/maintenance".equals(path)) return "admin-maintenance";
-        if ("/admin/wallets".equals(path)) return "admin-wallets";
-        if ("/admin/reviews".equals(path)) return "admin-reviews";
-        if ("/admin/profile".equals(path)) return "admin-profile";
+        if ("/admin/financial-reports".equals(path)) {
+            return "admin-financial-reports";
+        }
+        if ("/admin/station-performance".equals(path)) {
+            return "admin-station-performance";
+        }
+        if ("/admin/model-performance".equals(path)) {
+            return "admin-model-performance";
+        }
+        if ("/admin/accounts".equals(path)) {
+            return "admin-accounts";
+        }
+        if ("/admin/stations".equals(path)) {
+            return "admin-stations";
+        }
+        if ("/admin/categories".equals(path)) {
+            return "admin-categories";
+        }
+        if ("/admin/vehicle-models".equals(path)) {
+            return "admin-vehicle-models";
+        }
+        if ("/admin/vehicle-model-images".equals(path)) {
+            return "admin-vehicle-model-images";
+        }
+        if ("/admin/vehicles".equals(path)) {
+            return "admin-vehicles";
+        }
+        if ("/admin/discounts".equals(path)) {
+            return "admin-discounts";
+        }
+        if ("/admin/rental-discounts".equals(path)) {
+            return "admin-rental-discounts";
+        }
+        if ("/admin/rentals".equals(path)) {
+            return "admin-rentals";
+        }
+        if ("/admin/rental-status-history".equals(path)) {
+            return "admin-rental-status-history";
+        }
+        if ("/admin/payments".equals(path)) {
+            return "admin-payments";
+        }
+        if ("/admin/extra-charges".equals(path)) {
+            return "admin-extra-charges";
+        }
+        if ("/admin/incidents".equals(path)) {
+            return "admin-incidents";
+        }
+        if ("/admin/maintenance".equals(path)) {
+            return "admin-maintenance";
+        }
+        if ("/admin/wallets".equals(path)) {
+            return "admin-wallets";
+        }
+        if ("/admin/reviews".equals(path)) {
+            return "admin-reviews";
+        }
+        if ("/admin/profile".equals(path)) {
+            return "admin-profile";
+        }
         return "admin-dashboard";
     }
 
@@ -569,6 +670,7 @@ public class AdminController extends HttpServlet {
     }
 
     public static class AdminStat {
+
         private final String label;
         private final String value;
 
@@ -577,11 +679,17 @@ public class AdminController extends HttpServlet {
             this.value = value;
         }
 
-        public String getLabel() { return label; }
-        public String getValue() { return value; }
+        public String getLabel() {
+            return label;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     public static class AdminPage {
+
         private final String activeModule;
         private final String title;
         private final String subtitle;
@@ -615,6 +723,7 @@ public class AdminController extends HttpServlet {
     }
 
     public static class AdminPagination {
+
         private final int currentPage;
         private final int totalPages;
         private final int totalItems;
@@ -634,18 +743,45 @@ public class AdminController extends HttpServlet {
             this.urlPrefix = urlPrefix;
         }
 
-        public int getCurrentPage() { return currentPage; }
-        public int getTotalPages() { return totalPages; }
-        public int getTotalItems() { return totalItems; }
-        public int getPageSize() { return pageSize; }
-        public int getStartItem() { return startItem; }
-        public int getEndItem() { return endItem; }
-        public String getUrlPrefix() { return urlPrefix; }
-        public boolean isHasPrevious() { return currentPage > 1; }
-        public boolean isHasNext() { return currentPage < totalPages; }
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public int getTotalItems() {
+            return totalItems;
+        }
+
+        public int getPageSize() {
+            return pageSize;
+        }
+
+        public int getStartItem() {
+            return startItem;
+        }
+
+        public int getEndItem() {
+            return endItem;
+        }
+
+        public String getUrlPrefix() {
+            return urlPrefix;
+        }
+
+        public boolean isHasPrevious() {
+            return currentPage > 1;
+        }
+
+        public boolean isHasNext() {
+            return currentPage < totalPages;
+        }
     }
 
     private static class ReportSelection {
+
         private final dto.AdminReportPeriod period;
         private final String selectedPeriod;
         private final String startDate;

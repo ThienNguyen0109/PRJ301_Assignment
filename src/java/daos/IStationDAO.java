@@ -8,5 +8,13 @@ import models.Station;
  */
 public interface IStationDAO {
     List<Station> getAllStations();
+
+    Station getStationById(String id);
+
+    boolean createStation(Station station);
+
+    boolean updateStation(Station station);
+
+    boolean deleteStation(String id);
 }
 

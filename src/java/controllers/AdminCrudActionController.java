@@ -18,7 +18,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import models.Account;
+import models.Station;
 import services.AdminAccountService;
+import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
 
@@ -33,12 +35,16 @@ import services.AdminVehicleModelService;
     "/admin/vehicle-models/save",
     "/admin/vehicle-models/delete",
     "/admin/vehicle-model-images/save",
-    "/admin/vehicle-model-images/delete"
+    "/admin/vehicle-model-images/delete",
+    "/admin/stations/save",
+    "/admin/stations/delete"
 })
 public class AdminCrudActionController extends HttpServlet {
+
     private final AdminAccountService accountService = new AdminAccountService();
     private final AdminVehicleModelService modelService = new AdminVehicleModelService();
     private final AdminVehicleModelImageService imageService = new AdminVehicleModelImageService();
+    private final AdminStationService stationService = new AdminStationService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -87,6 +93,18 @@ public class AdminCrudActionController extends HttpServlet {
                 imageService.delete(request.getParameter("imageId"));
                 flash(request, "adminSuccess", "Vehicle model image deleted successfully.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-vehicle-model-images");
+                return;
+            }
+            if ("/admin/stations/save".equals(path)) {
+                saveStation(request);
+                flash(request, "adminSuccess", "Station saved successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-stations");
+                return;
+            }
+            if ("/admin/stations/delete".equals(path)) {
+                stationService.deleteStation(request.getParameter("stationId"));
+                flash(request, "adminSuccess", "Station deleted successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-stations");
                 return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
@@ -143,6 +161,17 @@ public class AdminCrudActionController extends HttpServlet {
         }
     }
 
+    private void saveStation(HttpServletRequest request) {
+        String stationId = trim(request.getParameter("stationId"));
+        if (stationId.isEmpty()) {
+            stationService.create(request.getParameter("name"), request.getParameter("address"),
+                    request.getParameter("contactNumber"));
+        } else {
+            stationService.update(stationId, request.getParameter("name"), request.getParameter("address"),
+                    request.getParameter("contactNumber"));
+        }
+    }
+
     private void saveVehicleModelImage(HttpServletRequest request) throws IOException, ServletException {
         String imageId = trim(request.getParameter("imageId"));
         String uploadedImagePath = saveVehicleImage(request, imageId.isEmpty());
@@ -186,7 +215,7 @@ public class AdminCrudActionController extends HttpServlet {
         Files.createDirectories(uploadDir);
         Path targetFile = uploadDir.resolve(storedFileName);
 
-        try (java.io.InputStream input = imagePart.getInputStream()) {
+        try ( java.io.InputStream input = imagePart.getInputStream()) {
             Files.copy(input, targetFile, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -266,6 +295,10 @@ public class AdminCrudActionController extends HttpServlet {
         if (path.contains("vehicle-models")) {
             String id = trim(request.getParameter("modelId"));
             return context + "?action=admin-vehicle-model-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("stations")) {
+            String id = trim(request.getParameter("stationId"));
+            return context + "?action=admin-station-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
         return context + "?action=admin-dashboard";
     }
