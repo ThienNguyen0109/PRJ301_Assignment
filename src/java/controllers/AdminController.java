@@ -23,6 +23,8 @@ import services.AdminDiscountService;
 import services.AdminRentalService;
 import services.AdminPaymentService;
 import services.AdminWalletService;
+import services.AdminIncidentService;
+import services.AdminReviewService;
 import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
@@ -62,10 +64,13 @@ import services.AdminVehicleService;
     "/admin/payments/detail",
     "/admin/extra-charges",
     "/admin/incidents",
+    "/admin/incidents/form",
+    "/admin/incidents/detail",
     "/admin/maintenance",
     "/admin/wallets",
     "/admin/wallets/detail",
     "/admin/reviews",
+    "/admin/reviews/detail",
     "/admin/profile",
     "/admin/stations/form",
     "/admin/stations/detail",
@@ -82,6 +87,8 @@ public class AdminController extends HttpServlet {
     private final AdminRentalService rentalService = new AdminRentalService();
     private final AdminPaymentService paymentService = new AdminPaymentService();
     private final AdminWalletService walletService = new AdminWalletService();
+    private final AdminIncidentService incidentService = new AdminIncidentService();
+    private final AdminReviewService reviewService = new AdminReviewService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -394,6 +401,30 @@ public class AdminController extends HttpServlet {
             dto.AdminWalletRow wallet = walletService.findDetail(request.getParameter("id")); request.setAttribute("wallet", wallet);
             if (wallet != null) request.setAttribute("walletTransactions", walletService.findTransactions(wallet.getWalletId()));
             consumeFlash(request); request.getRequestDispatcher("/WEB-INF/views/admin/wallets/detail.jsp").forward(request, response); return true;
+        }
+        if ("/admin/incidents".equals(path)) {
+            configureAdminShell(request, admin, "incidents", "Incidents", "Operations", "Search incident, rental, vehicle, or model");
+            request.setAttribute("incidents", paginate(request, incidentService.search(request.getParameter("keyword"), request.getParameter("severity"))));
+            request.setAttribute("incidentSeverities", enums.IncidentSeverity.values()); request.setAttribute("keyword", paramOrDefault(request, "keyword", "")); request.setAttribute("selectedSeverity", paramOrDefault(request, "severity", "ALL"));
+            consumeFlash(request); request.getRequestDispatcher("/WEB-INF/views/admin/incidents/list.jsp").forward(request, response); return true;
+        }
+        if ("/admin/incidents/form".equals(path)) {
+            configureAdminShell(request, admin, "incidents", "Edit Incident", "Operations", "Search incidents");
+            request.setAttribute("incident", incidentService.findDetail(request.getParameter("id"))); request.setAttribute("incidentSeverities", enums.IncidentSeverity.values()); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/incidents/form.jsp").forward(request, response); return true;
+        }
+        if ("/admin/incidents/detail".equals(path)) {
+            configureAdminShell(request, admin, "incidents", "Incident Detail", "Operations", "Search incidents"); request.setAttribute("incident", incidentService.findDetail(request.getParameter("id"))); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/incidents/detail.jsp").forward(request, response); return true;
+        }
+        if ("/admin/reviews".equals(path)) {
+            configureAdminShell(request, admin, "reviews", "Reviews", "Operations", "Search customer, model, or comment");
+            request.setAttribute("reviews", paginate(request, reviewService.search(request.getParameter("keyword"), request.getParameter("rating")))); request.setAttribute("keyword", paramOrDefault(request, "keyword", "")); request.setAttribute("selectedRating", paramOrDefault(request, "rating", "ALL")); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/reviews/list.jsp").forward(request, response); return true;
+        }
+        if ("/admin/reviews/detail".equals(path)) {
+            configureAdminShell(request, admin, "reviews", "Review Detail", "Operations", "Search reviews"); request.setAttribute("review", reviewService.findDetail(request.getParameter("id"))); consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/reviews/detail.jsp").forward(request, response); return true;
         }
         return false;
     }

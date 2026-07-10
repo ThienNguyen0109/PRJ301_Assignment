@@ -23,6 +23,7 @@ import services.AdminAccountService;
 import services.AdminDiscountService;
 import services.AdminRentalService;
 import services.AdminPaymentService;
+import services.AdminIncidentService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
@@ -49,6 +50,7 @@ import services.AdminVehicleService;
     "/admin/rentals/cancel",
     "/admin/payments/fail",
     "/admin/payments/confirm-cash"
+    ,"/admin/incidents/save"
 })
 public class AdminCrudActionController extends HttpServlet {
 
@@ -60,6 +62,7 @@ public class AdminCrudActionController extends HttpServlet {
     private final AdminDiscountService discountService = new AdminDiscountService();
     private final AdminRentalService rentalService = new AdminRentalService();
     private final AdminPaymentService paymentService = new AdminPaymentService();
+    private final AdminIncidentService incidentService = new AdminIncidentService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -159,6 +162,10 @@ public class AdminCrudActionController extends HttpServlet {
             if ("/admin/payments/confirm-cash".equals(path)) {
                 paymentService.confirmCashPayment(request.getParameter("paymentId")); flash(request, "adminSuccess", "Pending CASH payment confirmed.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-payments"); return;
+            }
+            if ("/admin/incidents/save".equals(path)) {
+                incidentService.update(request.getParameter("incidentId"), request.getParameter("description"), request.getParameter("severity"));
+                flash(request, "adminSuccess", "Incident updated successfully."); response.sendRedirect(request.getContextPath() + "?action=admin-incidents"); return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
         } catch (IllegalArgumentException | IllegalStateException ex) {
@@ -392,6 +399,9 @@ public class AdminCrudActionController extends HttpServlet {
         if (path.contains("payments")) {
             String id = trim(request.getParameter("paymentId"));
             return context + "?action=admin-payment-detail" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("incidents")) {
+            String id = trim(request.getParameter("incidentId")); return context + "?action=admin-incident-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
         return context + "?action=admin-dashboard";
     }

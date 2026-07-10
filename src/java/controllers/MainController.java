@@ -131,6 +131,10 @@ public class MainController extends HttpServlet {
                 url = "/admin/extra-charges";
             } else if (action.equals("admin-incidents")) {
                 url = "/admin/incidents";
+            } else if (action.equals("admin-incident-form")) {
+                url = "/admin/incidents/form";
+            } else if (action.equals("admin-incident-detail")) {
+                url = "/admin/incidents/detail";
             } else if (action.equals("admin-maintenance")) {
                 url = "/admin/maintenance";
             } else if (action.equals("admin-wallets")) {
@@ -139,6 +143,8 @@ public class MainController extends HttpServlet {
                 url = "/admin/wallets/detail";
             } else if (action.equals("admin-reviews")) {
                 url = "/admin/reviews";
+            } else if (action.equals("admin-review-detail")) {
+                url = "/admin/reviews/detail";
             } else if (action.equals("admin-profile")) {
                 url = "/admin/profile";
             } else if (action.equals("staff-pickup")) {
