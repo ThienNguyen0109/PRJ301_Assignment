@@ -2,6 +2,7 @@ package controllers;
 
 import enums.Role;
 import enums.VehicleModelImageType;
+import enums.VehicleStatus;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
+import services.AdminVehicleService;
 
 @WebServlet(name = "AdminController", urlPatterns = {
     "/admin/dashboard",
@@ -42,6 +44,8 @@ import services.AdminVehicleModelService;
     "/admin/vehicle-model-images/form",
     "/admin/vehicle-model-images/detail",
     "/admin/vehicles",
+    "/admin/vehicles/form",
+    "/admin/vehicles/detail",
     "/admin/discounts",
     "/admin/rental-discounts",
     "/admin/rentals",
@@ -63,6 +67,7 @@ public class AdminController extends HttpServlet {
     private final AdminVehicleModelImageService vehicleModelImageService = new AdminVehicleModelImageService();
     private final AdminReportService reportService = new AdminReportService();
     private final AdminStationService stationService = new AdminStationService();
+    private final AdminVehicleService vehicleService = new AdminVehicleService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -254,6 +259,40 @@ public class AdminController extends HttpServlet {
             request.setAttribute("image", vehicleModelImageService.findById(request.getParameter("id")));
             consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/vehicle-model-images/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicles".equals(path)) {
+            configureAdminShell(request, admin, "vehicles", "Vehicles", "CRUD", "Search license plate, model, station");
+            List<dto.AdminVehicleRow> vehicles = vehicleService.search(
+                    request.getParameter("keyword"), request.getParameter("stationId"),
+                    request.getParameter("categoryId"), request.getParameter("status"));
+            request.setAttribute("vehicles", paginate(request, vehicles));
+            request.setAttribute("stations", vehicleService.findAllStations());
+            request.setAttribute("categories", vehicleService.findAllCategories());
+            request.setAttribute("vehicleStatuses", VehicleStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedStationId", paramOrDefault(request, "stationId", "ALL"));
+            request.setAttribute("selectedCategoryId", paramOrDefault(request, "categoryId", "ALL"));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicles/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicles/form".equals(path)) {
+            configureAdminShell(request, admin, "vehicles", isBlank(request.getParameter("id")) ? "Create Vehicle" : "Edit Vehicle", "CRUD", "Search vehicles");
+            request.setAttribute("vehicle", vehicleService.findById(request.getParameter("id")));
+            request.setAttribute("models", vehicleService.findAllModels());
+            request.setAttribute("stations", vehicleService.findAllStations());
+            request.setAttribute("vehicleStatuses", VehicleStatus.values());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicles/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/vehicles/detail".equals(path)) {
+            configureAdminShell(request, admin, "vehicles", "Vehicle Detail", "CRUD", "Search vehicles");
+            request.setAttribute("vehicle", vehicleService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/vehicles/detail.jsp").forward(request, response);
             return true;
         }
         return false;

@@ -23,6 +23,7 @@ import services.AdminAccountService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
+import services.AdminVehicleService;
 
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,
@@ -37,7 +38,9 @@ import services.AdminVehicleModelService;
     "/admin/vehicle-model-images/save",
     "/admin/vehicle-model-images/delete",
     "/admin/stations/save",
-    "/admin/stations/delete"
+    "/admin/stations/delete",
+    "/admin/vehicles/save",
+    "/admin/vehicles/delete"
 })
 public class AdminCrudActionController extends HttpServlet {
 
@@ -45,6 +48,7 @@ public class AdminCrudActionController extends HttpServlet {
     private final AdminVehicleModelService modelService = new AdminVehicleModelService();
     private final AdminVehicleModelImageService imageService = new AdminVehicleModelImageService();
     private final AdminStationService stationService = new AdminStationService();
+    private final AdminVehicleService vehicleService = new AdminVehicleService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -105,6 +109,18 @@ public class AdminCrudActionController extends HttpServlet {
                 stationService.deleteStation(request.getParameter("stationId"));
                 flash(request, "adminSuccess", "Station deleted successfully.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-stations");
+                return;
+            }
+            if ("/admin/vehicles/save".equals(path)) {
+                saveVehicle(request);
+                flash(request, "adminSuccess", "Vehicle saved successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-vehicles");
+                return;
+            }
+            if ("/admin/vehicles/delete".equals(path)) {
+                vehicleService.delete(request.getParameter("vehicleId"));
+                flash(request, "adminSuccess", "Vehicle deleted successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-vehicles");
                 return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
@@ -169,6 +185,19 @@ public class AdminCrudActionController extends HttpServlet {
         } else {
             stationService.update(stationId, request.getParameter("name"), request.getParameter("address"),
                     request.getParameter("contactNumber"));
+        }
+    }
+
+    private void saveVehicle(HttpServletRequest request) {
+        String vehicleId = trim(request.getParameter("vehicleId"));
+        if (vehicleId.isEmpty()) {
+            vehicleService.create(request.getParameter("modelId"), request.getParameter("stationId"),
+                    request.getParameter("licensePlate"), request.getParameter("color"),
+                    request.getParameter("batteryLevel"), request.getParameter("status"));
+        } else {
+            vehicleService.update(vehicleId, request.getParameter("modelId"), request.getParameter("stationId"),
+                    request.getParameter("licensePlate"), request.getParameter("color"),
+                    request.getParameter("batteryLevel"), request.getParameter("status"));
         }
     }
 
@@ -299,6 +328,10 @@ public class AdminCrudActionController extends HttpServlet {
         if (path.contains("stations")) {
             String id = trim(request.getParameter("stationId"));
             return context + "?action=admin-station-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("vehicles")) {
+            String id = trim(request.getParameter("vehicleId"));
+            return context + "?action=admin-vehicle-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
         return context + "?action=admin-dashboard";
     }
