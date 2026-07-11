@@ -40,7 +40,6 @@
         <div class="admin-nav-label">Operations</div>
         <a class="admin-nav-link ${activeModule eq 'incidents' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-incidents"><span class="admin-nav-icon">I</span>Incidents</a>
         <a class="admin-nav-link ${activeModule eq 'maintenance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-maintenance"><span class="admin-nav-icon">MT</span>Maintenance</a>
-        <a class="admin-nav-link ${activeModule eq 'reviews' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-reviews"><span class="admin-nav-icon">RV</span>Reviews</a>
 
         <div class="admin-nav-label">Account</div>
         <a class="admin-nav-link ${activeModule eq 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-profile"><span class="admin-nav-icon">U</span>Profile</a>

@@ -291,7 +291,7 @@
                 <p class="subtitle">Vui lòng nhập mã OTP gồm 6 chữ số để hoàn tất đăng ký.</p>
 
                 <div class="info-box">
-                    ⏱️ <strong>Lưu ý:</strong> Mã OTP có hiệu lực trong 5 phút
+                    <strong>Lưu ý:</strong> Mã OTP có hiệu lực trong 5 phút
                 </div>
 
                 <% 

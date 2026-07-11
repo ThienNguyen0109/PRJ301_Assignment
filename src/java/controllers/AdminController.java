@@ -29,7 +29,6 @@ import services.AdminIncidentService;
 import services.AdminMaintenanceService;
 import services.AdminRentalDiscountService;
 import services.AdminRentalStatusHistoryService;
-import services.AdminReviewService;
 import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
@@ -85,8 +84,6 @@ import services.AdminWalletTransactionService;
     "/admin/wallets/detail",
     "/admin/wallet-transactions",
     "/admin/wallet-transactions/detail",
-    "/admin/reviews",
-    "/admin/reviews/detail",
     "/admin/profile",
     "/admin/stations/form",
     "/admin/stations/detail",
@@ -110,7 +107,6 @@ public class AdminController extends HttpServlet {
     private final AdminExtraChargeService extraChargeService = new AdminExtraChargeService();
     private final AdminRentalDiscountService rentalDiscountService = new AdminRentalDiscountService();
     private final AdminRentalStatusHistoryService rentalStatusHistoryService = new AdminRentalStatusHistoryService();
-    private final AdminReviewService reviewService = new AdminReviewService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -550,15 +546,6 @@ public class AdminController extends HttpServlet {
             configureAdminShell(request, admin, "incidents", "Incident Detail", "Operations", "Search incidents"); request.setAttribute("incident", incidentService.findDetail(request.getParameter("id"))); consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/incidents/detail.jsp").forward(request, response); return true;
         }
-        if ("/admin/reviews".equals(path)) {
-            configureAdminShell(request, admin, "reviews", "Reviews", "Operations", "Search customer, model, or comment");
-            request.setAttribute("reviews", paginate(request, reviewService.search(request.getParameter("keyword"), request.getParameter("rating")))); request.setAttribute("keyword", paramOrDefault(request, "keyword", "")); request.setAttribute("selectedRating", paramOrDefault(request, "rating", "ALL")); consumeFlash(request);
-            request.getRequestDispatcher("/WEB-INF/views/admin/reviews/list.jsp").forward(request, response); return true;
-        }
-        if ("/admin/reviews/detail".equals(path)) {
-            configureAdminShell(request, admin, "reviews", "Review Detail", "Operations", "Search reviews"); request.setAttribute("review", reviewService.findDetail(request.getParameter("id"))); consumeFlash(request);
-            request.getRequestDispatcher("/WEB-INF/views/admin/reviews/detail.jsp").forward(request, response); return true;
-        }
         if ("/admin/maintenance".equals(path)) {
             configureAdminShell(request, admin, "maintenance", "Maintenance", "Operations", "Search vehicle, station, or note");
             request.setAttribute("maintenanceRecords", paginate(request, maintenanceService.search(request.getParameter("keyword"), request.getParameter("status"))));
@@ -775,9 +762,6 @@ public class AdminController extends HttpServlet {
         if ("/admin/wallet-transactions".equals(path)) {
             return "admin-wallet-transactions";
         }
-        if ("/admin/reviews".equals(path)) {
-            return "admin-reviews";
-        }
         if ("/admin/profile".equals(path)) {
             return "admin-profile";
         }
@@ -875,11 +859,6 @@ public class AdminController extends HttpServlet {
             return crud("wallets", "Wallets", "View customer wallet balance and wallet transaction activity.",
                     "Export Wallets", "Search customer wallet", "Wallets", "118", "Topups", "74",
                     "Payments", "36", "Balance", "86.5M", columns("Customer", "Balance", "Last Transaction", "Status"));
-        }
-        if ("/admin/reviews".equals(path)) {
-            return crud("reviews", "Reviews", "Moderate customer reviews and rating quality.",
-                    "Moderate Reviews", "Search customer, vehicle, rating", "Reviews", "24", "Average", "4.6",
-                    "Hidden", "0", "Priority", "P4", columns("Customer", "Vehicle", "Rating", "Created"));
         }
         if ("/admin/profile".equals(path)) {
             return page("profile", "Admin Profile", "Review your admin account and access level.",

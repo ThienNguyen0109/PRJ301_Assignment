@@ -61,7 +61,7 @@ public class ResetPasswordController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "?action=reset-password");
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error during password reset: " + ex.getMessage(), ex);
-            request.setAttribute("error", "CÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá»­ láº¡i.");
+            request.setAttribute("error", "Có lỗi xảy ra. Vui lòng thử lại.");
             forward(request, response);
         }
     }
@@ -71,7 +71,7 @@ public class ResetPasswordController extends HttpServlet {
         String email = request.getParameter("email");
 
         if (email == null || email.trim().isEmpty()) {
-            request.setAttribute("error", "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            request.setAttribute("error", "Email không được để trống");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
@@ -79,14 +79,14 @@ public class ResetPasswordController extends HttpServlet {
 
         Account account = accountDAO.getAccountByEmail(email.trim());
         if (account == null) {
-            request.setAttribute("error", "Email khÃ´ng tá»“n táº¡i trong há»‡ thá»‘ng");
+            request.setAttribute("error", "Email không tồn tại trong hệ thống");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
         }
 
         if (!"ACTIVE".equals(account.getStatus())) {
-            request.setAttribute("error", "TÃ i khoáº£n nÃ y Ä‘ang khÃ´ng hoáº¡t Ä‘á»™ng");
+            request.setAttribute("error", "Tài khoản này đang không hoạt động");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
@@ -95,7 +95,7 @@ public class ResetPasswordController extends HttpServlet {
         String otp = OTPService.generateOTP();
         boolean emailSent = EmailService.sendPasswordResetOTPEmail(email.trim(), otp);
         if (!emailSent) {
-            request.setAttribute("error", "Lá»—i khi gá»­i mÃ£ OTP. Vui lÃ²ng thá»­ láº¡i.");
+            request.setAttribute("error", "Lỗi khi gửi mã OTP. Vui lòng thử lại.");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
@@ -107,7 +107,7 @@ public class ResetPasswordController extends HttpServlet {
         session.setAttribute("resetVerified", false);
         session.setAttribute("resetStep", "otp");
 
-        request.setAttribute("success", "MÃ£ OTP Ä‘Ã£ Ä‘Æ°á»£c gá»­i tá»›i email cá»§a báº¡n.");
+        request.setAttribute("success", "Mã OTP đã được gửi tới email của bạn.");
         forward(request, response);
     }
 
@@ -118,21 +118,21 @@ public class ResetPasswordController extends HttpServlet {
         Long creationTime = (Long) session.getAttribute("resetOtpCreationTime");
 
         if (storedOtp == null || creationTime == null || session.getAttribute("resetEmail") == null) {
-            request.setAttribute("error", "PhiÃªn Ä‘áº·t láº¡i máº­t kháº©u Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng nháº­p email láº¡i.");
+            request.setAttribute("error", "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng nhập email lại.");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
         }
 
         if (enteredOtp == null || enteredOtp.trim().isEmpty()) {
-            request.setAttribute("error", "MÃ£ OTP khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            request.setAttribute("error", "Mã OTP không được để trống");
             session.setAttribute("resetStep", "otp");
             forward(request, response);
             return;
         }
 
         if (!OTPService.validateOTP(storedOtp, enteredOtp.trim(), creationTime)) {
-            request.setAttribute("error", "MÃ£ OTP khÃ´ng Ä‘Ãºng hoáº·c Ä‘Ã£ háº¿t háº¡n");
+            request.setAttribute("error", "Mã OTP không đúng hoặc đã hết hạn");
             session.setAttribute("resetStep", "otp");
             forward(request, response);
             return;
@@ -140,7 +140,7 @@ public class ResetPasswordController extends HttpServlet {
 
         session.setAttribute("resetVerified", true);
         session.setAttribute("resetStep", "password");
-        request.setAttribute("success", "XÃ¡c minh OTP thÃ nh cÃ´ng. Vui lÃ²ng nháº­p máº­t kháº©u má»›i.");
+        request.setAttribute("success", "Xác minh OTP thành công. Vui lòng nhập mật khẩu mới.");
         forward(request, response);
     }
 
@@ -150,7 +150,7 @@ public class ResetPasswordController extends HttpServlet {
         String email = (String) session.getAttribute("resetEmail");
 
         if (email == null || resetVerified == null || !resetVerified) {
-            request.setAttribute("error", "Vui lÃ²ng xÃ¡c minh OTP trÆ°á»›c khi Ä‘á»•i máº­t kháº©u.");
+            request.setAttribute("error", "Vui lòng xác minh OTP trước khi đổi mật khẩu.");
             session.setAttribute("resetStep", "email");
             forward(request, response);
             return;
@@ -160,35 +160,35 @@ public class ResetPasswordController extends HttpServlet {
         String confirmPassword = request.getParameter("confirmPassword");
 
         if (newPassword == null || newPassword.isEmpty()) {
-            request.setAttribute("error", "Máº­t kháº©u má»›i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            request.setAttribute("error", "Mật khẩu mới không được để trống");
             session.setAttribute("resetStep", "password");
             forward(request, response);
             return;
         }
 
         if (newPassword.length() < 6) {
-            request.setAttribute("error", "Máº­t kháº©u má»›i pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±");
+            request.setAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự");
             session.setAttribute("resetStep", "password");
             forward(request, response);
             return;
         }
 
         if (confirmPassword == null || !newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "XÃ¡c nháº­n máº­t kháº©u khÃ´ng trÃ¹ng khá»›p");
+            request.setAttribute("error", "Xác nhận mật khẩu không trùng khớp");
             session.setAttribute("resetStep", "password");
             forward(request, response);
             return;
         }
 
         if (!accountDAO.updatePasswordByEmail(email, newPassword)) {
-            request.setAttribute("error", "KhÃ´ng thá»ƒ cáº­p nháº­t máº­t kháº©u. Vui lÃ²ng thá»­ láº¡i.");
+            request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
             session.setAttribute("resetStep", "password");
             forward(request, response);
             return;
         }
 
         clearResetSession(session);
-        session.setAttribute("registrationSuccess", "Äáº·t láº¡i máº­t kháº©u thÃ nh cÃ´ng! Vui lÃ²ng Ä‘Äƒng nháº­p.");
+        session.setAttribute("registrationSuccess", "Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
         response.sendRedirect(request.getContextPath() + "?action=login");
     }
 

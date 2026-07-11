@@ -204,7 +204,7 @@
 
             <c:if test="${detailSearchPerformed}">
                 <div class="panel">
-                    <h2 class="section-title">🚘 Xe trống theo thời gian đã chọn</h2>
+                    <h2 class="section-title">Xe trống theo thời gian đã chọn</h2>
                     <c:choose>
                         <c:when test="${not empty availableVehicles}">
                             <div class="vehicle-list">

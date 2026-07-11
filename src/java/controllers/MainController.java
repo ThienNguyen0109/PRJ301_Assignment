@@ -161,10 +161,6 @@ public class MainController extends HttpServlet {
                 url = "/admin/wallet-transactions";
             } else if (action.equals("admin-wallet-transaction-detail")) {
                 url = "/admin/wallet-transactions/detail";
-            } else if (action.equals("admin-reviews")) {
-                url = "/admin/reviews";
-            } else if (action.equals("admin-review-detail")) {
-                url = "/admin/reviews/detail";
             } else if (action.equals("admin-profile")) {
                 url = "/admin/profile";
             } else if (action.equals("staff-pickup")) {

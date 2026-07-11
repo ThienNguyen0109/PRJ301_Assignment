@@ -1,0 +1,41 @@
+﻿<article class="vehicle-card">
+    <div class="vehicle-media">
+        <c:choose>
+            <c:when test="${not empty cardItem.thumbnailImage}">
+                <c:set var="vehicleImageUrl" value="${cardItem.thumbnailImage}" />
+                <c:if test="${not fn:startsWith(vehicleImageUrl, 'http://') and not fn:startsWith(vehicleImageUrl, 'https://')}">
+                    <c:set var="vehicleImageUrl" value="${pageContext.request.contextPath}/${vehicleImageUrl}" />
+                </c:if>
+                <img src="${vehicleImageUrl}" alt="${cardItem.modelName}">
+            </c:when>
+            <c:otherwise><span class="placeholder">EV</span></c:otherwise>
+        </c:choose>
+    </div>
+    <div class="vehicle-info">
+        <span class="station-name"><c:out value="${cardItem.stationName}"/></span>
+        <h3><c:out value="${cardItem.modelName}"/></h3>
+        <c:if test="${not empty cardItem.brand}">
+            <div class="muted"><c:out value="${cardItem.brand}"/></div>
+        </c:if>
+        <c:if test="${not empty cardItem.description}">
+            <p class="vehicle-description"><c:out value="${cardItem.description}"/></p>
+        </c:if>
+        <div class="station-address">
+            <c:out value="${empty cardItem.stationAddress ? 'Chưa cập nhật địa chỉ trạm' : cardItem.stationAddress}"/>
+        </div>
+        <div class="vehicle-meta">
+            <span class="meta-pill">Còn lại: <strong><c:out value="${cardItem.remaining}"/></strong></span>
+            <span class="meta-pill">Số ghế: <strong><c:out value="${empty cardItem.seatCount ? 0 : cardItem.seatCount}"/></strong></span>
+        </div>
+        <div class="price-line"><fmt:formatNumber value="${cardItem.pricePerDay}" pattern="#,##0" /> VND/ngày</div>
+        <c:url var="vehicleDetailUrl" value="/">
+            <c:param name="action" value="vehicle-detail" />
+            <c:param name="modelId" value="${cardItem.modelId}" />
+            <c:param name="stationId" value="${cardItem.stationId}" />
+        </c:url>
+        <div class="card-actions">
+            <a class="btn-ghost" href="${vehicleDetailUrl}">Xem chi tiết</a>
+            <a class="btn-gold" href="${vehicleDetailUrl}">Chọn xe</a>
+        </div>
+    </div>
+</article>
