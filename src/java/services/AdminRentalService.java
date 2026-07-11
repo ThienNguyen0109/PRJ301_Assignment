@@ -8,8 +8,10 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
+import models.Discount;
 import models.Payment;
 import models.Rental;
+import models.RentalDiscount;
 import models.RentalStatusHistory;
 import models.Station;
 import models.Vehicle;
@@ -37,7 +39,12 @@ public class AdminRentalService {
             Rental rental = rentalDAO.findForUpdate(em, rentalId);
             if (rental == null) throw new IllegalArgumentException("Rental not found.");
             if (rental.getStatus() != RentalStatus.BOOKED) throw new IllegalStateException("Only a BOOKED rental can be cancelled.");
+            if (rentalDAO.hasSuccessfulPayment(em, rental.getRentalId())) {
+                throw new IllegalStateException("This rental already has a successful payment. Please handle refund before cancelling.");
+            }
             Vehicle vehicle = rentalDAO.findVehicleForUpdate(em, rental.getVehicleId());
+            failPendingPayments(em, rental.getRentalId());
+            restoreRentalDiscounts(em, rental.getRentalId());
             rental.setStatus(RentalStatus.CANCELLED);
             if (vehicle != null && vehicle.getStatus() == VehicleStatus.RENTED) vehicle.setStatus(VehicleStatus.AVAILABLE);
             em.persist(new RentalStatusHistory(UUID.randomUUID().toString(), rental.getRentalId(),
@@ -57,5 +64,33 @@ public class AdminRentalService {
         try { return Date.valueOf(value.trim()); }
         catch (IllegalArgumentException ex) { throw new IllegalArgumentException(label + " is invalid."); }
     }
+
+    private void failPendingPayments(javax.persistence.EntityManager em, String rentalId) {
+        List<Payment> payments = em.createQuery(
+                "SELECT p FROM Payment p WHERE p.rentalId = :rentalId AND p.status = :status", Payment.class)
+                .setParameter("rentalId", rentalId)
+                .setParameter("status", enums.PaymentStatus.PENDING)
+                .setLockMode(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+                .getResultList();
+        Timestamp failedAt = new Timestamp(System.currentTimeMillis());
+        for (Payment payment : payments) {
+            payment.setStatus(enums.PaymentStatus.FAILED);
+            payment.setPaymentDate(failedAt);
+        }
+    }
+
+    private void restoreRentalDiscounts(javax.persistence.EntityManager em, String rentalId) {
+        List<RentalDiscount> rentalDiscounts = em.createQuery(
+                "SELECT rd FROM RentalDiscount rd WHERE rd.rentalId = :rentalId", RentalDiscount.class)
+                .setParameter("rentalId", rentalId)
+                .getResultList();
+        for (RentalDiscount rentalDiscount : rentalDiscounts) {
+            Discount discount = em.find(Discount.class, rentalDiscount.getDiscountId(), javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+            if (discount != null) {
+                discount.setQuantity((discount.getQuantity() == null ? 0 : discount.getQuantity()) + 1);
+            }
+        }
+    }
+
     private void required(String value, String label) { if (value == null || value.trim().isEmpty()) throw new IllegalArgumentException(label + " is required."); }
 }

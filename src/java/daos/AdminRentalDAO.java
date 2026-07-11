@@ -8,6 +8,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
+import enums.PaymentStatus;
 import models.Payment;
 import models.Rental;
 import models.RentalStatusHistory;
@@ -65,6 +66,16 @@ public class AdminRentalDAO {
 
     public Rental findForUpdate(EntityManager em, String rentalId) { return em.find(Rental.class, trim(rentalId), LockModeType.PESSIMISTIC_WRITE); }
     public Vehicle findVehicleForUpdate(EntityManager em, String vehicleId) { return em.find(Vehicle.class, vehicleId, LockModeType.PESSIMISTIC_WRITE); }
+
+    public boolean hasSuccessfulPayment(EntityManager em, String rentalId) {
+        Long count = em.createQuery(
+                "SELECT COUNT(p) FROM Payment p WHERE p.rentalId = :rentalId AND p.status = :status",
+                Long.class)
+                .setParameter("rentalId", rentalId)
+                .setParameter("status", PaymentStatus.SUCCESS)
+                .getSingleResult();
+        return count != null && count > 0;
+    }
 
     private List<AdminRentalRow> map(List<Object[]> rows) {
         List<AdminRentalRow> result = new ArrayList<>();

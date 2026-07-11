@@ -1,9 +1,6 @@
 package daos;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import models.Station;
@@ -11,25 +8,19 @@ import utils.JPAUtil;
 
 public class AdminStationDAO {
 
-    private static final Logger LOGGER = Logger.getLogger(AdminStationDAO.class.getName());
-
     public List<Station> search(String keyword) {
-        try {
-            return JPAUtil.execute(em -> {
-                String jpql = "SELECT s FROM Station s "
-                        + "WHERE (:keyword = '' OR LOWER(s.name) LIKE :pattern "
-                        + "OR LOWER(s.address) LIKE :pattern OR s.contactNumber LIKE :pattern) "
-                        + "ORDER BY s.name";
-                String normalized = keyword == null ? "" : keyword.trim().toLowerCase();
-                return em.createQuery(jpql, Station.class)
-                        .setParameter("keyword", normalized)
-                        .setParameter("pattern", "%" + normalized + "%")
-                        .getResultList();
-            });
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Could not load stations", ex);
-            return Collections.emptyList();
-        }
+        return JPAUtil.execute(em -> {
+            String jpql = "SELECT s FROM Station s "
+                    + "WHERE (:keyword = '' OR LOWER(s.name) LIKE :pattern "
+                    + "OR LOWER(s.address) LIKE :pattern "
+                    + "OR LOWER(COALESCE(s.contactNumber, '')) LIKE :pattern) "
+                    + "ORDER BY s.name";
+            String normalized = keyword == null ? "" : keyword.trim().toLowerCase();
+            return em.createQuery(jpql, Station.class)
+                    .setParameter("keyword", normalized)
+                    .setParameter("pattern", "%" + normalized + "%")
+                    .getResultList();
+        });
     }
 
     public Station findById(String stationId) {

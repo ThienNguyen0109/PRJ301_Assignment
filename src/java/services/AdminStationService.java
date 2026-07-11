@@ -61,7 +61,10 @@ public class AdminStationService {
     private void validate(Station station) {
         validateRequired(station.getName(), "Station name");
         validateRequired(station.getAddress(), "Address");
-        validateRequired(station.getContactNumber(), "Contact number");
+        if (station.getContactNumber() != null && !station.getContactNumber().trim().isEmpty()
+                && !station.getContactNumber().trim().matches("[0-9+\\- ]{8,20}")) {
+            throw new IllegalArgumentException("Contact number is invalid.");
+        }
     }
 
     private void validateRequired(String value, String label) {

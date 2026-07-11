@@ -24,7 +24,7 @@
                     <input type="hidden" name="stationId" value="${station.stationId}">
                     <div class="admin-form-grid">
                         <div class="admin-field"><label>Station Name</label><input type="text" name="name" value="${station.name}" required maxlength="100"></div>
-                        <div class="admin-field"><label>Contact Number</label><input type="text" name="contactNumber" value="${station.contactNumber}" required maxlength="20"></div>
+                        <div class="admin-field"><label>Contact Number</label><input type="text" name="contactNumber" value="${station.contactNumber}" maxlength="20"></div>
                         <div class="admin-field full"><label>Address</label><textarea name="address" required rows="4"><c:out value="${station.address}"/></textarea></div>
                     </div>
                     <div class="admin-form-actions"><button class="admin-button" type="submit">Save Station</button><a class="admin-button light" href="${pageContext.request.contextPath}?action=admin-stations">Cancel</a></div>
