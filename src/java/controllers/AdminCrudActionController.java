@@ -20,10 +20,13 @@ import javax.servlet.http.Part;
 import models.Account;
 import models.Station;
 import services.AdminAccountService;
+import services.AdminCategoryService;
 import services.AdminDiscountService;
 import services.AdminRentalService;
 import services.AdminPaymentService;
+import services.AdminExtraChargeService;
 import services.AdminIncidentService;
+import services.AdminMaintenanceService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
@@ -43,6 +46,8 @@ import services.AdminVehicleService;
     "/admin/vehicle-model-images/delete",
     "/admin/stations/save",
     "/admin/stations/delete",
+    "/admin/categories/save",
+    "/admin/categories/delete",
     "/admin/vehicles/save",
     "/admin/vehicles/delete",
     "/admin/discounts/save",
@@ -50,7 +55,11 @@ import services.AdminVehicleService;
     "/admin/rentals/cancel",
     "/admin/payments/fail",
     "/admin/payments/confirm-cash"
-    ,"/admin/incidents/save"
+    ,"/admin/extra-charges/save",
+    "/admin/extra-charges/cancel",
+    "/admin/incidents/save",
+    "/admin/maintenance/save",
+    "/admin/maintenance/complete"
 })
 public class AdminCrudActionController extends HttpServlet {
 
@@ -58,11 +67,14 @@ public class AdminCrudActionController extends HttpServlet {
     private final AdminVehicleModelService modelService = new AdminVehicleModelService();
     private final AdminVehicleModelImageService imageService = new AdminVehicleModelImageService();
     private final AdminStationService stationService = new AdminStationService();
+    private final AdminCategoryService categoryService = new AdminCategoryService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
     private final AdminDiscountService discountService = new AdminDiscountService();
     private final AdminRentalService rentalService = new AdminRentalService();
     private final AdminPaymentService paymentService = new AdminPaymentService();
+    private final AdminExtraChargeService extraChargeService = new AdminExtraChargeService();
     private final AdminIncidentService incidentService = new AdminIncidentService();
+    private final AdminMaintenanceService maintenanceService = new AdminMaintenanceService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -125,6 +137,18 @@ public class AdminCrudActionController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "?action=admin-stations");
                 return;
             }
+            if ("/admin/categories/save".equals(path)) {
+                saveCategory(request);
+                flash(request, "adminSuccess", "Category saved successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-categories");
+                return;
+            }
+            if ("/admin/categories/delete".equals(path)) {
+                categoryService.delete(request.getParameter("categoryId"));
+                flash(request, "adminSuccess", "Category deleted successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-categories");
+                return;
+            }
             if ("/admin/vehicles/save".equals(path)) {
                 saveVehicle(request);
                 flash(request, "adminSuccess", "Vehicle saved successfully.");
@@ -163,9 +187,33 @@ public class AdminCrudActionController extends HttpServlet {
                 paymentService.confirmCashPayment(request.getParameter("paymentId")); flash(request, "adminSuccess", "Pending CASH payment confirmed.");
                 response.sendRedirect(request.getContextPath() + "?action=admin-payments"); return;
             }
+            if ("/admin/extra-charges/save".equals(path)) {
+                saveExtraCharge(request);
+                flash(request, "adminSuccess", "Extra charge saved successfully.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-extra-charges");
+                return;
+            }
+            if ("/admin/extra-charges/cancel".equals(path)) {
+                extraChargeService.cancel(request.getParameter("chargeId"));
+                flash(request, "adminSuccess", "Extra charge cancelled.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-extra-charges");
+                return;
+            }
             if ("/admin/incidents/save".equals(path)) {
                 incidentService.update(request.getParameter("incidentId"), request.getParameter("description"), request.getParameter("severity"));
                 flash(request, "adminSuccess", "Incident updated successfully."); response.sendRedirect(request.getContextPath() + "?action=admin-incidents"); return;
+            }
+            if ("/admin/maintenance/save".equals(path)) {
+                maintenanceService.create(request.getParameter("vehicleId"), request.getParameter("description"));
+                flash(request, "adminSuccess", "Maintenance record created.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-maintenance");
+                return;
+            }
+            if ("/admin/maintenance/complete".equals(path)) {
+                maintenanceService.markCompleted(request.getParameter("maintenanceId"));
+                flash(request, "adminSuccess", "Maintenance marked as completed.");
+                response.sendRedirect(request.getContextPath() + "?action=admin-maintenance");
+                return;
             }
             response.sendRedirect(request.getContextPath() + "?action=admin-dashboard");
         } catch (IllegalArgumentException | IllegalStateException ex) {
@@ -229,6 +277,32 @@ public class AdminCrudActionController extends HttpServlet {
         } else {
             stationService.update(stationId, request.getParameter("name"), request.getParameter("address"),
                     request.getParameter("contactNumber"));
+        }
+    }
+
+    private void saveCategory(HttpServletRequest request) {
+        String categoryId = trim(request.getParameter("categoryId"));
+        if (categoryId.isEmpty()) {
+            categoryService.create(request.getParameter("name"));
+        } else {
+            categoryService.update(categoryId, request.getParameter("name"));
+        }
+    }
+
+    private void saveExtraCharge(HttpServletRequest request) {
+        String chargeId = trim(request.getParameter("chargeId"));
+        if (chargeId.isEmpty()) {
+            extraChargeService.create(
+                    request.getParameter("rentalId"),
+                    request.getParameter("chargeType"),
+                    request.getParameter("amount"),
+                    request.getParameter("description"));
+        } else {
+            extraChargeService.update(
+                    chargeId,
+                    request.getParameter("chargeType"),
+                    request.getParameter("amount"),
+                    request.getParameter("description"));
         }
     }
 
@@ -384,6 +458,10 @@ public class AdminCrudActionController extends HttpServlet {
             String id = trim(request.getParameter("stationId"));
             return context + "?action=admin-station-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
+        if (path.contains("categories")) {
+            String id = trim(request.getParameter("categoryId"));
+            return context + "?action=admin-category-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
         if (path.contains("vehicles")) {
             String id = trim(request.getParameter("vehicleId"));
             return context + "?action=admin-vehicle-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
@@ -400,8 +478,18 @@ public class AdminCrudActionController extends HttpServlet {
             String id = trim(request.getParameter("paymentId"));
             return context + "?action=admin-payment-detail" + (id.isEmpty() ? "" : "&id=" + encode(id));
         }
+        if (path.contains("extra-charges")) {
+            String id = trim(request.getParameter("chargeId"));
+            return context + "?action=admin-extra-charge-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
         if (path.contains("incidents")) {
             String id = trim(request.getParameter("incidentId")); return context + "?action=admin-incident-form" + (id.isEmpty() ? "" : "&id=" + encode(id));
+        }
+        if (path.contains("maintenance")) {
+            String id = trim(request.getParameter("maintenanceId"));
+            return id.isEmpty()
+                    ? context + "?action=admin-maintenance-form"
+                    : context + "?action=admin-maintenance-detail&id=" + encode(id);
         }
         return context + "?action=admin-dashboard";
     }

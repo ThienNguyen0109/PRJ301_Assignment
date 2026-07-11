@@ -91,6 +91,10 @@ public class MainController extends HttpServlet {
                 url = "/admin/stations/detail";
             } else if (action.equals("admin-categories")) {
                 url = "/admin/categories";
+            } else if (action.equals("admin-category-form")) {
+                url = "/admin/categories/form";
+            } else if (action.equals("admin-category-detail")) {
+                url = "/admin/categories/detail";
             } else if (action.equals("admin-vehicle-models")) {
                 url = "/admin/vehicle-models";
             } else if (action.equals("admin-vehicle-model-form")) {
@@ -117,18 +121,26 @@ public class MainController extends HttpServlet {
                 url = "/admin/discounts/detail";
             } else if (action.equals("admin-rental-discounts")) {
                 url = "/admin/rental-discounts";
+            } else if (action.equals("admin-rental-discount-detail")) {
+                url = "/admin/rental-discounts/detail";
             } else if (action.equals("admin-rentals")) {
                 url = "/admin/rentals";
             } else if (action.equals("admin-rental-detail")) {
                 url = "/admin/rentals/detail";
             } else if (action.equals("admin-rental-status-history")) {
                 url = "/admin/rental-status-history";
+            } else if (action.equals("admin-rental-status-history-detail")) {
+                url = "/admin/rental-status-history/detail";
             } else if (action.equals("admin-payments")) {
                 url = "/admin/payments";
             } else if (action.equals("admin-payment-detail")) {
                 url = "/admin/payments/detail";
             } else if (action.equals("admin-extra-charges")) {
                 url = "/admin/extra-charges";
+            } else if (action.equals("admin-extra-charge-form")) {
+                url = "/admin/extra-charges/form";
+            } else if (action.equals("admin-extra-charge-detail")) {
+                url = "/admin/extra-charges/detail";
             } else if (action.equals("admin-incidents")) {
                 url = "/admin/incidents";
             } else if (action.equals("admin-incident-form")) {
@@ -137,10 +149,18 @@ public class MainController extends HttpServlet {
                 url = "/admin/incidents/detail";
             } else if (action.equals("admin-maintenance")) {
                 url = "/admin/maintenance";
+            } else if (action.equals("admin-maintenance-form")) {
+                url = "/admin/maintenance/form";
+            } else if (action.equals("admin-maintenance-detail")) {
+                url = "/admin/maintenance/detail";
             } else if (action.equals("admin-wallets")) {
                 url = "/admin/wallets";
             } else if (action.equals("admin-wallet-detail")) {
                 url = "/admin/wallets/detail";
+            } else if (action.equals("admin-wallet-transactions")) {
+                url = "/admin/wallet-transactions";
+            } else if (action.equals("admin-wallet-transaction-detail")) {
+                url = "/admin/wallet-transactions/detail";
             } else if (action.equals("admin-reviews")) {
                 url = "/admin/reviews";
             } else if (action.equals("admin-review-detail")) {

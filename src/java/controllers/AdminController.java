@@ -19,17 +19,23 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Account;
 import services.AdminAccountService;
+import services.AdminCategoryService;
 import services.AdminDiscountService;
 import services.AdminRentalService;
 import services.AdminPaymentService;
+import services.AdminExtraChargeService;
 import services.AdminWalletService;
 import services.AdminIncidentService;
+import services.AdminMaintenanceService;
+import services.AdminRentalDiscountService;
+import services.AdminRentalStatusHistoryService;
 import services.AdminReviewService;
 import services.AdminReportService;
 import services.AdminStationService;
 import services.AdminVehicleModelImageService;
 import services.AdminVehicleModelService;
 import services.AdminVehicleService;
+import services.AdminWalletTransactionService;
 
 @WebServlet(name = "AdminController", urlPatterns = {
     "/admin/dashboard",
@@ -44,6 +50,8 @@ import services.AdminVehicleService;
     "/admin/accounts/detail",
     "/admin/stations",
     "/admin/categories",
+    "/admin/categories/form",
+    "/admin/categories/detail",
     "/admin/vehicle-models",
     "/admin/vehicle-models/form",
     "/admin/vehicle-models/detail",
@@ -57,18 +65,26 @@ import services.AdminVehicleService;
     "/admin/discounts/form",
     "/admin/discounts/detail",
     "/admin/rental-discounts",
+    "/admin/rental-discounts/detail",
     "/admin/rentals",
     "/admin/rentals/detail",
     "/admin/rental-status-history",
+    "/admin/rental-status-history/detail",
     "/admin/payments",
     "/admin/payments/detail",
     "/admin/extra-charges",
+    "/admin/extra-charges/form",
+    "/admin/extra-charges/detail",
     "/admin/incidents",
     "/admin/incidents/form",
     "/admin/incidents/detail",
     "/admin/maintenance",
+    "/admin/maintenance/form",
+    "/admin/maintenance/detail",
     "/admin/wallets",
     "/admin/wallets/detail",
+    "/admin/wallet-transactions",
+    "/admin/wallet-transactions/detail",
     "/admin/reviews",
     "/admin/reviews/detail",
     "/admin/profile",
@@ -82,12 +98,18 @@ public class AdminController extends HttpServlet {
     private final AdminVehicleModelImageService vehicleModelImageService = new AdminVehicleModelImageService();
     private final AdminReportService reportService = new AdminReportService();
     private final AdminStationService stationService = new AdminStationService();
+    private final AdminCategoryService categoryService = new AdminCategoryService();
     private final AdminVehicleService vehicleService = new AdminVehicleService();
     private final AdminDiscountService discountService = new AdminDiscountService();
     private final AdminRentalService rentalService = new AdminRentalService();
     private final AdminPaymentService paymentService = new AdminPaymentService();
     private final AdminWalletService walletService = new AdminWalletService();
+    private final AdminWalletTransactionService walletTransactionService = new AdminWalletTransactionService();
     private final AdminIncidentService incidentService = new AdminIncidentService();
+    private final AdminMaintenanceService maintenanceService = new AdminMaintenanceService();
+    private final AdminExtraChargeService extraChargeService = new AdminExtraChargeService();
+    private final AdminRentalDiscountService rentalDiscountService = new AdminRentalDiscountService();
+    private final AdminRentalStatusHistoryService rentalStatusHistoryService = new AdminRentalStatusHistoryService();
     private final AdminReviewService reviewService = new AdminReviewService();
 
     @Override
@@ -222,6 +244,30 @@ public class AdminController extends HttpServlet {
             request.getRequestDispatcher(
                     "/WEB-INF/views/admin/stations/detail.jsp")
                     .forward(request, response);
+            return true;
+        }
+        if ("/admin/categories".equals(path)) {
+            configureAdminShell(request, admin, "categories", "Categories", "CRUD", "Search category");
+            request.setAttribute("categories", paginate(request, categoryService.search(request.getParameter("keyword"))));
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/categories/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/categories/form".equals(path)) {
+            configureAdminShell(request, admin, "categories",
+                    isBlank(request.getParameter("id")) ? "Create Category" : "Edit Category",
+                    "CRUD", "Search category");
+            request.setAttribute("category", categoryService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/categories/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/categories/detail".equals(path)) {
+            configureAdminShell(request, admin, "categories", "Category Detail", "CRUD", "Search category");
+            request.setAttribute("category", categoryService.findById(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/categories/detail.jsp").forward(request, response);
             return true;
         }
         if ("/admin/vehicle-models".equals(path)) {
@@ -390,6 +436,72 @@ public class AdminController extends HttpServlet {
             request.setAttribute("payment", paymentService.findDetail(request.getParameter("id"))); consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/payments/detail.jsp").forward(request, response); return true;
         }
+        if ("/admin/extra-charges".equals(path)) {
+            configureAdminShell(request, admin, "extra-charges", "Extra Charges", "Transactions", "Search charge, rental, customer, or vehicle");
+            request.setAttribute("charges", paginate(request, extraChargeService.search(request.getParameter("keyword"), request.getParameter("type"), request.getParameter("status"))));
+            request.setAttribute("chargeTypes", enums.ExtraChargeType.values());
+            request.setAttribute("chargeStatuses", enums.ExtraChargeStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedType", paramOrDefault(request, "type", "ALL"));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/extra-charges/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/extra-charges/form".equals(path)) {
+            configureAdminShell(request, admin, "extra-charges",
+                    isBlank(request.getParameter("id")) ? "Create Extra Charge" : "Edit Extra Charge",
+                    "Transactions", "Search extra charges");
+            request.setAttribute("charge", extraChargeService.findDetail(request.getParameter("id")));
+            request.setAttribute("eligibleRentals", extraChargeService.findEligibleRentals());
+            request.setAttribute("chargeTypes", enums.ExtraChargeType.values());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/extra-charges/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/extra-charges/detail".equals(path)) {
+            configureAdminShell(request, admin, "extra-charges", "Extra Charge Detail", "Transactions", "Search extra charges");
+            request.setAttribute("charge", extraChargeService.findDetail(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/extra-charges/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/rental-discounts".equals(path)) {
+            configureAdminShell(request, admin, "rental-discounts", "Rental Discounts", "Transactions", "Search rental, customer, or code");
+            request.setAttribute("rentalDiscounts", paginate(request, rentalDiscountService.search(request.getParameter("keyword"))));
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rental-discounts/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/rental-discounts/detail".equals(path)) {
+            configureAdminShell(request, admin, "rental-discounts", "Rental Discount Detail", "Transactions", "Search rental discounts");
+            request.setAttribute("rentalDiscount", rentalDiscountService.findDetail(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rental-discounts/detail.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/rental-status-history".equals(path)) {
+            configureAdminShell(request, admin, "rental-status-history", "Rental Status History", "Transactions", "Search rental, customer, or vehicle");
+            request.setAttribute("historyRows", paginate(request, rentalStatusHistoryService.search(
+                    request.getParameter("keyword"), request.getParameter("status"),
+                    request.getParameter("startDate"), request.getParameter("endDate"))));
+            request.setAttribute("rentalStatuses", enums.RentalStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            request.setAttribute("startDate", paramOrDefault(request, "startDate", ""));
+            request.setAttribute("endDate", paramOrDefault(request, "endDate", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rental-status-history/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/rental-status-history/detail".equals(path)) {
+            configureAdminShell(request, admin, "rental-status-history", "Status History Detail", "Transactions", "Search history");
+            request.setAttribute("historyRow", rentalStatusHistoryService.findDetail(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/rental-status-history/detail.jsp").forward(request, response);
+            return true;
+        }
         if ("/admin/wallets".equals(path)) {
             configureAdminShell(request, admin, "wallets", "Wallets", "Transactions", "Search customer name, email, or phone");
             request.setAttribute("wallets", paginate(request, walletService.search(request.getParameter("keyword"))));
@@ -401,6 +513,27 @@ public class AdminController extends HttpServlet {
             dto.AdminWalletRow wallet = walletService.findDetail(request.getParameter("id")); request.setAttribute("wallet", wallet);
             if (wallet != null) request.setAttribute("walletTransactions", walletService.findTransactions(wallet.getWalletId()));
             consumeFlash(request); request.getRequestDispatcher("/WEB-INF/views/admin/wallets/detail.jsp").forward(request, response); return true;
+        }
+        if ("/admin/wallet-transactions".equals(path)) {
+            configureAdminShell(request, admin, "wallet-transactions", "Wallet Transactions", "Transactions", "Search customer, wallet, or description");
+            request.setAttribute("walletTransactions", paginate(request, walletTransactionService.search(
+                    request.getParameter("keyword"), request.getParameter("type"),
+                    request.getParameter("startDate"), request.getParameter("endDate"))));
+            request.setAttribute("transactionTypes", enums.TransactionType.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedType", paramOrDefault(request, "type", "ALL"));
+            request.setAttribute("startDate", paramOrDefault(request, "startDate", ""));
+            request.setAttribute("endDate", paramOrDefault(request, "endDate", ""));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/wallet-transactions/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/wallet-transactions/detail".equals(path)) {
+            configureAdminShell(request, admin, "wallet-transactions", "Wallet Transaction Detail", "Transactions", "Search wallet transactions");
+            request.setAttribute("walletTransaction", walletTransactionService.findDetail(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/wallet-transactions/detail.jsp").forward(request, response);
+            return true;
         }
         if ("/admin/incidents".equals(path)) {
             configureAdminShell(request, admin, "incidents", "Incidents", "Operations", "Search incident, rental, vehicle, or model");
@@ -425,6 +558,30 @@ public class AdminController extends HttpServlet {
         if ("/admin/reviews/detail".equals(path)) {
             configureAdminShell(request, admin, "reviews", "Review Detail", "Operations", "Search reviews"); request.setAttribute("review", reviewService.findDetail(request.getParameter("id"))); consumeFlash(request);
             request.getRequestDispatcher("/WEB-INF/views/admin/reviews/detail.jsp").forward(request, response); return true;
+        }
+        if ("/admin/maintenance".equals(path)) {
+            configureAdminShell(request, admin, "maintenance", "Maintenance", "Operations", "Search vehicle, station, or note");
+            request.setAttribute("maintenanceRecords", paginate(request, maintenanceService.search(request.getParameter("keyword"), request.getParameter("status"))));
+            request.setAttribute("maintenanceStatuses", enums.MaintenanceStatus.values());
+            request.setAttribute("keyword", paramOrDefault(request, "keyword", ""));
+            request.setAttribute("selectedStatus", paramOrDefault(request, "status", "ALL"));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/maintenance/list.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/maintenance/form".equals(path)) {
+            configureAdminShell(request, admin, "maintenance", "Create Maintenance", "Operations", "Search maintenance");
+            request.setAttribute("vehicles", maintenanceService.findAllVehicles());
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/maintenance/form.jsp").forward(request, response);
+            return true;
+        }
+        if ("/admin/maintenance/detail".equals(path)) {
+            configureAdminShell(request, admin, "maintenance", "Maintenance Detail", "Operations", "Search maintenance");
+            request.setAttribute("maintenance", maintenanceService.findDetail(request.getParameter("id")));
+            consumeFlash(request);
+            request.getRequestDispatcher("/WEB-INF/views/admin/maintenance/detail.jsp").forward(request, response);
+            return true;
         }
         return false;
     }
@@ -614,6 +771,9 @@ public class AdminController extends HttpServlet {
         }
         if ("/admin/wallets".equals(path)) {
             return "admin-wallets";
+        }
+        if ("/admin/wallet-transactions".equals(path)) {
+            return "admin-wallet-transactions";
         }
         if ("/admin/reviews".equals(path)) {
             return "admin-reviews";
