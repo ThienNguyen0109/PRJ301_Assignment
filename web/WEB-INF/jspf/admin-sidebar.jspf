@@ -35,6 +35,7 @@
         <a class="admin-nav-link ${activeModule eq 'extra-charges' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-extra-charges"><span class="admin-nav-icon">EC</span>Extra Charges</a>
         <a class="admin-nav-link ${activeModule eq 'rental-discounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rental-discounts"><span class="admin-nav-icon">RD</span>Rental Discounts</a>
         <a class="admin-nav-link ${activeModule eq 'wallets' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallets"><span class="admin-nav-icon">W</span>Wallets</a>
+        <a class="admin-nav-link ${activeModule eq 'wallet-transactions' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallet-transactions"><span class="admin-nav-icon">WT</span>Wallet Transactions</a>
 
         <div class="admin-nav-label">Operations</div>
         <a class="admin-nav-link ${activeModule eq 'incidents' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-incidents"><span class="admin-nav-icon">I</span>Incidents</a>
