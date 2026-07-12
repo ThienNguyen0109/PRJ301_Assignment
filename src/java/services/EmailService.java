@@ -100,6 +100,7 @@ public class EmailService {
                 row("Số điện thoại", phone) +
                 row("Xe", quote.getVehicleModelName() + " - " + quote.getLicensePlate()) +
                 row("Trạm nhận xe", quote.getStationName()) +
+                row("Địa chỉ nhận xe", quote.getStationAddress()) +
                 row("Thời gian thuê", quote.getStartDate() + " đến " + quote.getEndDate()) +
                 row("Số ngày", String.valueOf(quote.getTotalDays())) +
                 row("Phương thức thanh toán", detail.getPaymentMethod().getValue()) +

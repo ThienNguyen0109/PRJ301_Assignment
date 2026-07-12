@@ -19,6 +19,10 @@
     <body class="customer-page">
         <c:set var="navName" value="${empty displayName ? (empty sessionScope.user.fullName ? 'User' : sessionScope.user.fullName) : displayName}" />
         <c:set var="navInitial" value="${fn:substring(navName, 0, 1)}" />
+        <c:set var="profileSuccessMessage" value="${sessionScope.profileSuccess}" />
+        <c:set var="profileErrorMessage" value="${sessionScope.profileError}" />
+        <c:remove var="profileSuccess" scope="session" />
+        <c:remove var="profileError" scope="session" />
 
         <nav class="customer-navbar">
             <a class="brand-link" href="${pageContext.request.contextPath}?action=home">
@@ -57,6 +61,31 @@
                 <article class="summary-tile"><strong><c:out value="${empty rentalHistories ? 0 : fn:length(rentalHistories)}"/></strong><span>Đơn trong trang hiện tại</span></article>
             </section>
 
+            <c:if test="${not empty profileSuccessMessage}">
+                <div class="field-success" style="margin-top:18px;"><c:out value="${profileSuccessMessage}"/></div>
+            </c:if>
+            <c:if test="${not empty profileErrorMessage}">
+                <div class="error-message" style="margin-top:18px;"><c:out value="${profileErrorMessage}"/></div>
+            </c:if>
+            <c:if test="${empty profileUser.phone}">
+                <section class="glass-card" style="margin-top:24px; border-color:rgba(244,201,93,.42);">
+                    <div class="section-head">
+                        <div>
+                            <span class="kicker">Phone Required</span>
+                            <h2>Cập nhật số điện thoại</h2>
+                            <p>Bạn cần số điện thoại để staff xác minh khi nhận xe và để hệ thống cho phép thanh toán booking.</p>
+                        </div>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form" style="margin-top:18px;">
+                        <div class="form-row">
+                            <label for="phone">Số điện thoại</label>
+                            <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" placeholder="Nhập số điện thoại 10-11 chữ số" required>
+                        </div>
+                        <button class="btn-gold" type="submit">Cập nhật số điện thoại</button>
+                    </form>
+                </section>
+            </c:if>
+
             <div class="profile-grid" style="margin-top:24px;">
                 <section class="glass-card">
                     <div class="section-head">
@@ -73,6 +102,15 @@
                         <div class="info-row"><span>Role</span><strong><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></strong></div>
                         <div class="info-row"><span>Status</span><strong><c:out value="${empty profileUser.status ? 'ACTIVE' : profileUser.status}"/></strong></div>
                     </div>
+                    <c:if test="${not empty profileUser.phone}">
+                        <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form" style="margin-top:18px;">
+                            <div class="form-row">
+                                <label for="profilePhone">Cập nhật số điện thoại</label>
+                                <input id="profilePhone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" required>
+                            </div>
+                            <button class="btn-gold" type="submit">Lưu thay đổi</button>
+                        </form>
+                    </c:if>
                 </section>
 
                 <aside class="wallet-balance-card">

@@ -251,6 +251,7 @@ public class BookingService {
         quote.setStationId(vehicle.getStationId());
         quote.setLicensePlate(vehicle.getLicensePlate());
         quote.setStationName(vehicle.getStation() != null ? vehicle.getStation().getName() : null);
+        quote.setStationAddress(vehicle.getStation() != null ? vehicle.getStation().getAddress() : null);
         quote.setVehicleModelName(vehicle.getModel() != null ? vehicle.getModel().getName() : null);
         quote.setStartDate(startDate);
         quote.setEndDate(endDate);

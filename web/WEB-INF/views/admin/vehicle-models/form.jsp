@@ -51,7 +51,7 @@
                         </div>
                         <div class="admin-field">
                             <label>Price Per Day</label>
-                            <input type="number" name="pricePerDay" min="1" step="1000" value="${model.pricePerDay}" required>
+                            <input type="number" name="pricePerDay" min="1000" step="1000" value="${model.pricePerDay}" required>
                         </div>
                         <div class="admin-field full">
                             <label>Description</label>

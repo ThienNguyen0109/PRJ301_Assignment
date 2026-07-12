@@ -35,6 +35,8 @@ public class MainController extends HttpServlet {
                     return;
                 }
                 url = "/login.jsp";
+            } else if (action.equals("google-login")) {
+                url = "/google-login";
             } else if (action.equals("logout")) {
                 url = "/logout";
             } else if (action.equals("register")) {
