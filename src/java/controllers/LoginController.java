@@ -65,9 +65,9 @@ public class LoginController extends HttpServlet {
         try {
             // Validate input
             if (email == null || email.trim().isEmpty()) {
-                error = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+                error = "Email không được để trống";
             } else if (password == null || password.trim().isEmpty()) {
-                error = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+                error = "Mật khẩu không được để trống";
             } else {
                 // Attempt to authenticate user
                 Account account = accountDAO.getAccountByEmailAndPassword(email.trim(), password);
@@ -89,16 +89,16 @@ public class LoginController extends HttpServlet {
                         return;
                     } else {
                         // Account is inactive
-                        error = "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a";
+                        error = "Tài khoản của bạn đã bị vô hiệu hóa";
                     }
                 } else {
                     // Invalid credentials
-                    error = "Email hoáº·c máº­t kháº©u khÃ´ng chÃ­nh xÃ¡c";
+                    error = "Email hoặc mật khẩu không chính xác";
                     LOGGER.log(Level.WARNING, "Failed login attempt for email: " + email);
                 }
             }
         } catch (Exception ex) {
-            error = "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh Ä‘Äƒng nháº­p";
+            error = "Có lỗi xảy ra trong quá trình đăng nhập";
             LOGGER.log(Level.SEVERE, "Error during login: " + ex.getMessage(), ex);
         }
 

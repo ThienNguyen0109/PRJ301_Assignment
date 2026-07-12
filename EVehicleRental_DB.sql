@@ -1,4 +1,4 @@
-﻿/* =====================================================
+/* =====================================================
    EVehicleRental_DB - Full MSSQL Script
    Có thể Ctrl + A và Execute toàn bộ.
    - Tự tạo database nếu chưa có

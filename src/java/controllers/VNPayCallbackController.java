@@ -144,7 +144,7 @@ public class VNPayCallbackController extends HttpServlet {
         }
 
         bookingService.failPendingVNPayPayment(orderId, transactionNo);
-        String retryUrl = buildBookingRetryUrl(request, quote, "Thanh toÃ¡n VNPay tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.");
+        String retryUrl = buildBookingRetryUrl(request, quote, "Thanh toán VNPay thất bại. Vui lòng thử lại.");
         clearBookingSession(session);
         response.sendRedirect(retryUrl);
     }
@@ -170,7 +170,7 @@ public class VNPayCallbackController extends HttpServlet {
                             wallet.getWalletId(),
                             (double) topupAmount,
                             TransactionType.TOPUP,
-                            "Náº¡p tiá»n qua VNPay - MÃ£ giao dá»‹ch: " + transactionNo);
+                            "Nạp tiền qua VNPay - Mã giao dịch: " + transactionNo);
 
                     if (transactionDAO.createTransaction(transaction)) {
                         RealtimeEventPublisher.customer(user.getAccountId(), "WALLET_BALANCE_CHANGED",

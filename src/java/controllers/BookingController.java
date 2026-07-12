@@ -1,5 +1,6 @@
 package controllers;
 
+import daos.AccountDAO;
 import dto.BookingDetail;
 import dto.BookingQuote;
 import enums.PaymentMethod;
@@ -26,6 +27,7 @@ import utils.RequestUrlUtil;
 public class BookingController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(BookingController.class.getName());
     private BookingService bookingService = new BookingService();
+    private AccountDAO accountDAO = new AccountDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -41,6 +43,13 @@ public class BookingController extends HttpServlet {
         }
 
         Account customer = (Account) session.getAttribute("user");
+        customer = refreshCustomerSession(session, customer);
+        if (isBlank(customer.getPhone())) {
+            session.setAttribute("profileError", "Vui lòng cập nhật số điện thoại trước khi thanh toán booking.");
+            response.sendRedirect(request.getContextPath() + "?action=profile");
+            return;
+        }
+
         String vehicleId = request.getParameter("vehicleId");
         String stationId = request.getParameter("stationId");
         String startDate = request.getParameter("startDate");
@@ -117,4 +126,25 @@ public class BookingController extends HttpServlet {
         }
         return message;
     }
+
+    private Account refreshCustomerSession(HttpSession session, Account customer) {
+        if (customer == null || isBlank(customer.getEmail())) {
+            return customer;
+        }
+        Account fresh = accountDAO.getAccountByEmail(customer.getEmail());
+        if (fresh != null) {
+            session.setAttribute("user", fresh);
+            session.setAttribute("userName", fresh.getFullName());
+            session.setAttribute("userEmail", fresh.getEmail());
+            session.setAttribute("userRole", fresh.getRole().getValue());
+            return fresh;
+        }
+        return customer;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
 }
+
+

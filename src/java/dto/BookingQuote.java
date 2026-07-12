@@ -13,6 +13,7 @@ public class BookingQuote implements Serializable {
     private String vehicleId;
     private String stationId;
     private String stationName;
+    private String stationAddress;
     private String vehicleModelName;
     private String licensePlate;
     private Date startDate;
@@ -56,6 +57,14 @@ public class BookingQuote implements Serializable {
 
     public void setStationName(String stationName) {
         this.stationName = stationName;
+    }
+
+    public String getStationAddress() {
+        return stationAddress;
+    }
+
+    public void setStationAddress(String stationAddress) {
+        this.stationAddress = stationAddress;
     }
 
     public String getVehicleModelName() {

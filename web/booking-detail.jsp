@@ -79,6 +79,7 @@
                         <div class="line"><span>Xe</span><strong>${bookingDetail.quote.vehicleModelName}</strong></div>
                         <div class="line"><span>Biển số</span><strong>${bookingDetail.quote.licensePlate}</strong></div>
                         <div class="line"><span>Trạm nhận xe</span><strong>${bookingDetail.quote.stationName}</strong></div>
+                        <div class="line"><span>Địa chỉ nhận xe</span><strong>${empty bookingDetail.quote.stationAddress ? 'Chưa cập nhật địa chỉ trạm' : bookingDetail.quote.stationAddress}</strong></div>
                         <div class="line"><span>Ngày thuê</span><strong>${bookingDetail.quote.startDate} đến ${bookingDetail.quote.endDate}</strong></div>
                         <div class="line"><span>Total Days</span><strong>${bookingDetail.quote.totalDays}</strong></div>
                         <div class="line"><span>Payment Method</span><strong>${bookingDetail.paymentMethod.value}</strong></div>

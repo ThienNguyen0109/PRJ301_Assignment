@@ -45,6 +45,7 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+client_secret_*.json
 
 # System files
 .classpath

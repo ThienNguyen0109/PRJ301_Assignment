@@ -1,6 +1,6 @@
-<%-- 
+﻿<%--
     Document   : login
-    Created on : May 28, 2026, 7:47:20 AM
+    Created on : May 28, 2026
     Author     : thien
 --%>
 
@@ -12,11 +12,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Đăng Nhập - E-Vehicle Rental</title>
         <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
 
             body {
                 min-height: 100vh;
@@ -48,7 +44,7 @@
                 position: fixed;
                 inset: -24px;
                 pointer-events: none;
-                background: url('assets/images/backgound/electric-car-auth-bg.jpg') center 58% / cover no-repeat;
+                background: url('<%= request.getContextPath() %>/assets/images/backgound/electric-car-auth-bg.jpg') center 58% / cover no-repeat;
                 transform: scale(1);
                 animation: backgroundDrift 18s ease-in-out infinite alternate;
                 z-index: 0;
@@ -85,24 +81,14 @@
 
             .login-shell::after {
                 inset: -18%;
-                background: linear-gradient(108deg,
-                    transparent 0%,
-                    transparent 42%,
-                    rgba(255, 255, 255, 0.0) 45%,
-                    rgba(255, 255, 255, 0.18) 49%,
-                    rgba(248, 223, 157, 0.13) 51%,
-                    rgba(255, 255, 255, 0.0) 56%,
-                    transparent 100%);
+                background: linear-gradient(108deg, transparent 0%, transparent 42%, rgba(255,255,255,0) 45%, rgba(255,255,255,0.18) 49%, rgba(248,223,157,0.13) 51%, rgba(255,255,255,0) 56%, transparent 100%);
                 mix-blend-mode: screen;
                 transform: translateX(-48%) rotate(0.001deg);
                 animation: lightSweep 8.5s ease-in-out infinite;
             }
 
             .brand-panel,
-            .login-container {
-                border-radius: 8px;
-                overflow: hidden;
-            }
+            .login-container { border-radius: 8px; overflow: hidden; }
 
             .brand-panel {
                 position: relative;
@@ -165,10 +151,7 @@
                 text-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
             }
 
-            .brand-title .accent {
-                display: block;
-                color: #f8df9d;
-            }
+            .brand-title .accent { display: block; color: #f8df9d; }
 
             .brand-copy {
                 max-width: 460px;
@@ -177,13 +160,7 @@
                 font-size: 16px;
             }
 
-            .brand-points {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 28px;
-            }
-
+            .brand-points { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
             .brand-points span {
                 padding: 9px 12px;
                 border-radius: 999px;
@@ -216,64 +193,34 @@
                 pointer-events: none;
             }
 
-            .login-container > * {
-                position: relative;
-            }
+            .login-container > * { position: relative; }
+            .login-container h1 { color: #f8fafc; margin-bottom: 10px; text-align: center; font-size: 28px; font-weight: 800; }
+            .login-container .subtitle { color: rgba(248,250,252,.62); text-align: center; margin-bottom: 30px; font-size: 14px; }
+            .form-group { margin-bottom: 20px; }
+            label { display: block; color: rgba(248,250,252,.9); font-weight: 700; margin-bottom: 8px; font-size: 14px; }
 
-            .login-container h1 {
-                color: #f8fafc;
-                margin-bottom: 10px;
-                text-align: center;
-                font-size: 28px;
-                font-weight: 800;
-            }
-
-            .login-container .subtitle {
-                color: rgba(248, 250, 252, 0.62);
-                text-align: center;
-                margin-bottom: 30px;
-                font-size: 14px;
-            }
-
-            .form-group {
-                margin-bottom: 20px;
-            }
-
-            label {
-                display: block;
-                color: rgba(248, 250, 252, 0.9);
-                font-weight: 700;
-                margin-bottom: 8px;
-                font-size: 14px;
-            }
-
-            input[type="email"],
-            input[type="password"] {
+            input[type="email"], input[type="password"] {
                 width: 100%;
                 padding: 13px 14px;
-                border: 1px solid rgba(17, 24, 39, 0.14);
+                border: 1px solid rgba(255, 255, 255, 0.14);
                 border-radius: 7px;
                 background: rgba(255, 255, 255, 0.08);
                 color: #f8fafc;
                 font-size: 14px;
-                transition: border-color 0.25s, box-shadow 0.25s, background 0.25s, transform 0.25s;
+                transition: border-color .25s, box-shadow .25s, background .25s, transform .25s;
             }
 
-            input[type="email"]:focus,
-            input[type="password"]:focus {
+            input[type="email"]:focus, input[type="password"]:focus {
                 outline: none;
-                border-color: rgba(214, 169, 78, 0.85);
-                box-shadow: 0 0 0 4px rgba(214, 169, 78, 0.16);
-                background: rgba(255, 255, 255, 0.12);
+                border-color: rgba(214, 169, 78, .85);
+                box-shadow: 0 0 0 4px rgba(214, 169, 78, .16);
+                background: rgba(255,255,255,.12);
                 transform: translateY(-1px);
             }
 
-            input::placeholder {
-                color: rgba(248, 250, 252, 0.48);
-            }
+            input::placeholder { color: rgba(248,250,252,.48); }
 
-            .error-message,
-            .success-message {
+            .error-message, .success-message {
                 padding: 12px 14px;
                 border-radius: 7px;
                 margin-bottom: 20px;
@@ -281,149 +228,78 @@
                 line-height: 1.5;
             }
 
-            .error-message {
-                color: #7f1d1d;
-                background-color: #fee2e2;
-                border: 1px solid #fecaca;
-                display: <%= request.getAttribute("error") != null ? "block" : "none" %>;
-            }
+            .error-message { color: #7f1d1d; background-color: #fee2e2; border: 1px solid #fecaca; }
+            .success-message { color: #14532d; background-color: #dcfce7; border: 1px solid #bbf7d0; }
 
-            .success-message {
-                color: #14532d;
-                background-color: #dcfce7;
-                border: 1px solid #bbf7d0;
-                display: block;
-            }
-
-            .login-btn {
+            .login-btn, .google-login-btn {
                 width: 100%;
-                padding: 13px;
-                color: #09111f;
-                border: 1px solid rgba(218, 183, 99, 0.55);
+                min-height: 48px;
                 border-radius: 7px;
-                background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%);
                 font-size: 16px;
                 font-weight: 800;
                 cursor: pointer;
-                box-shadow: 0 12px 28px rgba(180, 122, 31, 0.2);
-                transition: transform 0.25s, box-shadow 0.25s, filter 0.25s;
+                transition: transform .25s, box-shadow .25s, filter .25s;
             }
 
-            .login-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 16px 36px rgba(180, 122, 31, 0.3);
-                filter: brightness(1.04);
+            .login-btn {
+                padding: 13px;
+                color: #09111f;
+                border: 1px solid rgba(218, 183, 99, .55);
+                background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%);
+                box-shadow: 0 12px 28px rgba(180, 122, 31, .2);
             }
 
-            @keyframes backgroundDrift {
-                from { transform: scale(1) translate3d(0, 0, 0); }
-                to { transform: scale(1.045) translate3d(-12px, -10px, 0); }
-            }
+            .login-btn:hover, .google-login-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(0,0,0,.3); }
 
-            @keyframes shellReveal {
-                from { opacity: 0; transform: translateY(18px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
+            .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: rgba(248,250,252,.56); font-size: 13px; font-weight: 700; }
+            .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.14); }
 
-            @keyframes brandReveal {
-                from { opacity: 0; transform: translateX(-26px); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-
-            @keyframes cardReveal {
-                from { opacity: 0; transform: translateX(24px) scale(0.98); }
-                to { opacity: 1; transform: translateX(0) scale(1); }
-            }
-
-            @keyframes haloFloat {
-                from { transform: translateY(0) scale(1); opacity: 0.55; }
-                to { transform: translateY(-14px) scale(1.04); opacity: 0.9; }
-            }
-
-            @keyframes cardSheen {
-                0%, 58% { transform: translateX(-120%); }
-                78%, 100% { transform: translateX(120%); }
-            }
-
-            @keyframes headlightPulse {
-                0%, 100% { opacity: 0.38; filter: blur(2px); transform: scale(1); }
-                48% { opacity: 0.78; filter: blur(5px); transform: scale(1.05); }
-            }
-
-            @keyframes lightSweep {
-                0%, 46% { opacity: 0; transform: translateX(-55%) rotate(0.001deg); }
-                58% { opacity: 0.65; }
-                76%, 100% { opacity: 0; transform: translateX(55%) rotate(0.001deg); }
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                *, *::before, *::after {
-                    animation-duration: 0.01ms !important;
-                    animation-iteration-count: 1 !important;
-                    scroll-behavior: auto !important;
-                }
-            }
-
-            .helper-row {
-                text-align: right;
-                margin-top: -8px;
-                margin-bottom: 20px;
-                font-size: 14px;
-            }
-
-            .footer-links {
-                text-align: center;
-                margin-top: 22px;
-                font-size: 14px;
-                color: rgba(248, 250, 252, 0.62);
-            }
-
-            .footer-links a,
-            .helper-row a {
-                color: #b47a1f;
-                font-weight: 800;
+            .google-login-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                color: #111827;
+                background: #fff;
+                border: 1px solid rgba(255,255,255,.2);
                 text-decoration: none;
             }
 
-            .footer-links a:hover,
-            .helper-row a:hover {
-                text-decoration: underline;
+            .google-icon {
+                width: 20px;
+                height: 20px;
+                display: inline-grid;
+                place-items: center;
+                border-radius: 50%;
+                color: #fff;
+                background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 50%, #fbbc05 0 75%, #ea4335 0);
+                font-size: 12px;
+                font-weight: 900;
             }
 
-            @media (max-width: 860px) {
-                .login-shell {
-                    grid-template-columns: 1fr;
-                }
+            .helper-row { text-align: right; margin-top: -8px; margin-bottom: 20px; font-size: 14px; }
+            .footer-links { text-align: center; margin-top: 22px; font-size: 14px; color: rgba(248,250,252,.62); }
+            .footer-links a, .helper-row a { color: #f8df9d; font-weight: 800; text-decoration: none; }
+            .footer-links a:hover, .helper-row a:hover { text-decoration: underline; }
 
-                .brand-panel {
-                    min-height: auto;
-                }
+            @keyframes backgroundDrift { from { transform: scale(1) translate3d(0,0,0); } to { transform: scale(1.045) translate3d(-12px,-10px,0); } }
+            @keyframes shellReveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes brandReveal { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
+            @keyframes cardReveal { from { opacity: 0; transform: translateX(24px) scale(.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
+            @keyframes haloFloat { from { transform: translateY(0) scale(1); opacity: .55; } to { transform: translateY(-14px) scale(1.04); opacity: .9; } }
+            @keyframes cardSheen { 0%, 58% { transform: translateX(-120%); } 78%, 100% { transform: translateX(120%); } }
+            @keyframes headlightPulse { 0%, 100% { opacity: .38; filter: blur(2px); transform: scale(1); } 48% { opacity: .78; filter: blur(5px); transform: scale(1.05); } }
+            @keyframes lightSweep { 0%, 46% { opacity: 0; transform: translateX(-55%) rotate(.001deg); } 58% { opacity: .65; } 76%, 100% { opacity: 0; transform: translateX(55%) rotate(.001deg); } }
 
-                .brand-mark {
-                    margin-bottom: 34px;
-                }
-            }
-
-            @media (max-width: 520px) {
-                body {
-                    padding: 16px;
-                }
-
-                .brand-panel,
-                .login-container {
-                    padding: 26px;
-                }
-
-                .brand-title {
-                    font-size: 30px;
-                }
-            }
+            @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
+            @media (max-width: 860px) { .login-shell { grid-template-columns: 1fr; } .brand-panel { min-height: auto; } .brand-mark { margin-bottom: 34px; } }
+            @media (max-width: 520px) { body { padding: 16px; } .brand-panel, .login-container { padding: 26px; } .brand-title { font-size: 30px; } }
         </style>
     </head>
     <body>
         <div class="login-shell">
             <section class="brand-panel">
-                <div class="brand-mark">🚗 E-Vehicle Rental</div>
+                <div class="brand-mark">EV E-Vehicle Rental</div>
                 <div class="brand-kicker">Premium Electric Mobility</div>
                 <h2 class="brand-title">Di chuyển xanh <span class="accent">chuẩn cao cấp.</span></h2>
                 <p class="brand-copy">Đăng nhập để quản lý ví, thuê xe điện và theo dõi mọi giao dịch trong một không gian hiện đại.</p>
@@ -438,49 +314,42 @@
                 <h1>Đăng Nhập</h1>
                 <p class="subtitle">E-Vehicle Rental System</p>
 
-                <% 
+                <%
                     Object successMsg = session.getAttribute("registrationSuccess");
                     if (successMsg != null) {
                 %>
-                    <div class="success-message">
-                        <%= successMsg %>
-                    </div>
-                <% 
+                    <div class="success-message"><%= successMsg %></div>
+                <%
                         session.removeAttribute("registrationSuccess");
                     }
                 %>
 
-                <% 
+                <%
+                    Object loginError = session.getAttribute("loginError");
+                    if (loginError != null) {
+                %>
+                    <div class="error-message"><%= loginError %></div>
+                <%
+                        session.removeAttribute("loginError");
+                    }
+                %>
+
+                <%
                     String error = (String) request.getAttribute("error");
                     if (error != null && !error.isEmpty()) {
                 %>
-                    <div class="error-message">
-                        <%= error %>
-                    </div>
+                    <div class="error-message"><%= error %></div>
                 <% } %>
 
                 <form action="login" method="POST" accept-charset="UTF-8">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
-                            placeholder="Nhập email của bạn"
-                            required
-                            value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
-                        >
+                        <input type="email" id="email" name="email" placeholder="Nhập email của bạn" required value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>">
                     </div>
 
                     <div class="form-group">
                         <label for="password">Mật Khẩu</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            placeholder="Nhập mật khẩu của bạn"
-                            required
-                        >
+                        <input type="password" id="password" name="password" placeholder="Nhập mật khẩu của bạn" required>
                     </div>
 
                     <div class="helper-row">
@@ -489,6 +358,13 @@
 
                     <button type="submit" class="login-btn">Đăng Nhập</button>
                 </form>
+
+                <div class="divider">hoặc</div>
+
+                <a class="google-login-btn" href="<%= request.getContextPath() %>?action=google-login">
+                    <span class="google-icon">G</span>
+                    Đăng nhập bằng Google
+                </a>
 
                 <div class="footer-links">
                     <a href="<%= request.getContextPath() %>?action=register">Đăng ký tài khoản</a>

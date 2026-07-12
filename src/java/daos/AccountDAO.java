@@ -99,6 +99,21 @@ public class AccountDAO implements IAccountDAO {
         }
     }
 
+    @Override
+    public boolean updatePhone(String accountId, String phone) {
+        try {
+            int updated = JPAUtil.executeInTransaction(em -> em.createQuery(
+                    "UPDATE Account a SET a.phone = :phone WHERE a.accountId = :accountId")
+                    .setParameter("phone", phone)
+                    .setParameter("accountId", accountId)
+                    .executeUpdate());
+            return updated > 0;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Could not update account phone with JPA", ex);
+            return false;
+        }
+    }
+
     private void applyAccountDefaults(Account account) {
         if (account.getAccountId() == null || account.getAccountId().trim().isEmpty()) {
             account.setAccountId(UUID.randomUUID().toString());

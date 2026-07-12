@@ -44,5 +44,13 @@ public interface IAccountDAO {
      * @return true if updated successfully, false otherwise
      */
     boolean updatePasswordByEmail(String email, String newPassword);
+
+    /**
+     * Update account phone number
+     * @param accountId Account id
+     * @param phone New phone number
+     * @return true if updated successfully, false otherwise
+     */
+    boolean updatePhone(String accountId, String phone);
 }
 
