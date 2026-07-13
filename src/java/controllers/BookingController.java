@@ -45,8 +45,12 @@ public class BookingController extends HttpServlet {
         Account customer = (Account) session.getAttribute("user");
         customer = refreshCustomerSession(session, customer);
         if (isBlank(customer.getPhone())) {
-            session.setAttribute("profileError", "Vui lòng cập nhật số điện thoại trước khi thanh toán booking.");
-            response.sendRedirect(request.getContextPath() + "?action=profile#phone-update");
+            session.setAttribute("bookingPhoneRequired", true);
+            response.sendRedirect(buildBookingRedirect(request, request.getParameter("vehicleId"),
+                    request.getParameter("stationId"),
+                    request.getParameter("startDate"),
+                    request.getParameter("endDate"),
+                    request.getParameter("discountCode")));
             return;
         }
 
@@ -117,6 +121,16 @@ public class BookingController extends HttpServlet {
 
     private String encode(String value) throws IOException {
         return java.net.URLEncoder.encode(value == null ? "" : value, "UTF-8");
+    }
+
+    private String buildBookingRedirect(HttpServletRequest request, String vehicleId, String stationId,
+            String startDate, String endDate, String discountCode) throws IOException {
+        return request.getContextPath() + "?action=booking"
+                + "&vehicleId=" + encode(vehicleId)
+                + "&stationId=" + encode(stationId)
+                + "&startDate=" + encode(startDate)
+                + "&endDate=" + encode(endDate)
+                + "&discountCode=" + encode(discountCode);
     }
 
     private String getUserMessage(Exception ex) {

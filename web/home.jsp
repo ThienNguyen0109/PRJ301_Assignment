@@ -24,8 +24,9 @@
 
         <nav class="customer-navbar">
             <a class="brand-link" href="${pageContext.request.contextPath}?action=home">
-                <span class="brand-logo">EV</span>
-                <span>E-Vehicle Rental System</span>
+                <span class="brand-logo">
+                    <img src="${pageContext.request.contextPath}/assets/images/logo/logo.png" alt="E-Vehicle Rental">
+                </span>
             </a>
             <div class="customer-menu">
                 <a class="active" href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
@@ -39,6 +40,11 @@
 
         <main class="customer-container">
             <section class="hero-section">
+                <div class="hero-video-layer" aria-hidden="true">
+                    <video autoplay muted loop playsinline>
+                        <source src="${pageContext.request.contextPath}/assets/video/istockphoto-902026438-640_adpp_is.mp4" type="video/mp4">
+                    </video>
+                </div>
                 <div class="hero-content">
                     <span class="kicker">Premium Electric Mobility</span>
                     <h1 class="hero-title">Thuê xe điện linh hoạt <span>cho mọi hành trình.</span></h1>

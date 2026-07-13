@@ -87,6 +87,34 @@
             }
             .secondary-btn { color: #111827; background: #ffffff; box-shadow: 0 10px 24px rgba(8,17,31,0.12); }
             .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+            .success-message {
+                color: #14532d; background: #dcfce7; border: 1px solid #bbf7d0;
+                border-radius: 7px; padding: 12px 14px; margin-bottom: 18px; line-height: 1.5;
+            }
+            .booking-modal-backdrop {
+                position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+                padding: 24px; background: rgba(3,10,20,0.72); backdrop-filter: blur(12px);
+            }
+            .booking-modal {
+                width: min(520px, 100%); padding: 30px; border-radius: 14px;
+                color: #f8fafc; border: 1px solid rgba(218,183,99,0.36);
+                background: radial-gradient(circle at 88% 8%, rgba(218,183,99,0.18), transparent 30%),
+                            linear-gradient(145deg, rgba(12,23,40,0.98), rgba(20,35,58,0.96));
+                box-shadow: 0 32px 90px rgba(0,0,0,0.38);
+            }
+            .booking-modal h3 { margin: 8px 0 10px; font-size: 30px; line-height: 1.1; }
+            .booking-modal p { margin: 0 0 18px; color: #cbd5e1; line-height: 1.65; }
+            .booking-modal label { color: #f8fafc; }
+            .booking-modal input[type="tel"] {
+                width: 100%; min-height: 50px; padding: 0 14px; border-radius: 10px;
+                border: 1px solid rgba(148,163,184,0.28); outline: 0;
+                color: #f8fafc; background: rgba(255,255,255,0.08); font-size: 15px; font-weight: 700;
+            }
+            .booking-modal input[type="tel"]:focus {
+                border-color: rgba(218,183,99,0.74);
+                box-shadow: 0 0 0 4px rgba(218,183,99,0.14);
+            }
+            .booking-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
             @media (max-width: 760px) {
                 .navbar { padding: 14px 18px; align-items: flex-start; gap: 12px; flex-direction: column; }
                 .navbar-menu { width: 100%; justify-content: space-between; }
@@ -112,6 +140,9 @@
 
                 <c:if test="${not empty bookingError}">
                     <div class="error-message">${bookingError}</div>
+                </c:if>
+                <c:if test="${not empty bookingPhoneSuccess}">
+                    <div class="success-message">${bookingPhoneSuccess}</div>
                 </c:if>
 
                 <c:if test="${not empty bookingQuote}">
@@ -173,5 +204,34 @@
                 </c:if>
             </div>
         </div>
+        <c:url var="bookingReturnUrl" value="/">
+            <c:param name="action" value="booking"/>
+            <c:param name="vehicleId" value="${vehicleId}"/>
+            <c:param name="stationId" value="${stationId}"/>
+            <c:param name="startDate" value="${startDate}"/>
+            <c:param name="endDate" value="${endDate}"/>
+            <c:param name="discountCode" value="${discountCode}"/>
+        </c:url>
+        <c:if test="${bookingPhoneRequired}">
+            <div class="booking-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="bookingPhoneTitle">
+                <div class="booking-modal">
+                    <span style="color:#f8df9d; font-size:12px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase;">Phone Required</span>
+                    <h3 id="bookingPhoneTitle">Cập nhật số điện thoại</h3>
+                    <p>Bạn cần cập nhật số điện thoại để staff xác minh khi nhận xe. Sau khi lưu, bạn sẽ quay lại trang booking này để tiếp tục thanh toán.</p>
+                    <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST">
+                        <input type="hidden" name="returnTo" value="${bookingReturnUrl}">
+                        <label for="bookingPhone">Số điện thoại</label>
+                        <input id="bookingPhone" type="tel" name="phone" pattern="[0-9]{10,11}" maxlength="11" placeholder="Nhập số điện thoại 10-11 chữ số" required autofocus>
+                        <c:if test="${not empty bookingPhoneError}">
+                            <div class="field-error">${bookingPhoneError}</div>
+                        </c:if>
+                        <div class="booking-modal-actions">
+                            <button class="primary-btn" type="submit">Lưu số điện thoại</button>
+                            <a class="secondary-btn" href="${pageContext.request.contextPath}?action=home">Để sau</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </c:if>
     </body>
 </html>

@@ -251,6 +251,82 @@
                     letter-spacing: 5px;
                 }
             }
+
+            .auth-bg-video {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 0;
+                filter: saturate(1.08) contrast(1.06);
+            }
+
+            body {
+                position: relative;
+                overflow-x: hidden;
+                background: #08111f;
+            }
+
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: 1;
+                pointer-events: none;
+                background:
+                    radial-gradient(circle at 72% 24%, rgba(248, 223, 157, 0.22), transparent 28%),
+                    linear-gradient(90deg, rgba(7, 17, 31, 0.92) 0%, rgba(7, 17, 31, 0.72) 45%, rgba(255, 255, 255, 0.52) 100%);
+            }
+
+            .verify-shell {
+                position: relative;
+                z-index: 2;
+                width: min(1040px, 100%);
+                grid-template-columns: minmax(0, 1fr) 440px;
+                gap: 34px;
+            }
+
+            .brand-panel {
+                min-height: 560px;
+                padding: clamp(36px, 5vw, 64px);
+                border-radius: 24px;
+                background:
+                    linear-gradient(90deg, rgba(7, 17, 31, 0.82), rgba(7, 17, 31, 0.38)),
+                    rgba(7, 17, 31, 0.22);
+                border: 1px solid rgba(248, 223, 157, 0.2);
+                box-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
+                backdrop-filter: blur(5px);
+            }
+
+            .brand-mark {
+                display: inline-flex;
+                align-items: center;
+                gap: 14px;
+                width: fit-content;
+                padding: 0;
+                border: 0;
+                border-radius: 999px;
+                background: transparent;
+                color: #f8df9d;
+                font-size: 21px;
+                box-shadow: none;
+            }
+
+            .brand-mark img {
+                width: 260px;
+                height: 92px;
+                object-fit: cover;
+                padding: 0;
+                border-radius: 18px;
+                background: #061120;
+            }
+
+            .verify-container {
+                border-radius: 24px;
+                border: 1px solid rgba(16,24,39,.08);
+                box-shadow: 0 28px 80px rgba(15,23,42,.2);
+            }
         </style>
         <script>
             let timeLeft = 5 * 60;
@@ -279,9 +355,14 @@
         </script>
     </head>
     <body>
+        <video class="auth-bg-video" autoplay muted loop playsinline aria-hidden="true">
+            <source src="<%= request.getContextPath() %>/assets/video/istockphoto-902026438-640_adpp_is.mp4" type="video/mp4">
+        </video>
         <div class="verify-shell">
             <section class="brand-panel">
-                <div class="brand-mark">🚗 E-Vehicle Rental</div>
+                <div class="brand-mark">
+                    <img src="<%= request.getContextPath() %>/assets/images/logo/logo.png" alt="E-Vehicle Rental">
+                </div>
                 <h2>Xác minh để bắt đầu trải nghiệm.</h2>
                 <p>Mã OTP đã được gửi tới email đăng ký. Hoàn tất bước này để kích hoạt tài khoản của bạn.</p>
             </section>

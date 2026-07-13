@@ -28,33 +28,59 @@ public class ProfileController extends HttpServlet {
 
         Account user = (Account) session.getAttribute("user");
         String phone = request.getParameter("phone");
+        String returnTo = request.getParameter("returnTo");
         if (phone != null) {
             phone = phone.trim();
         }
 
         if (isBlank(phone)) {
-            session.setAttribute("profileError", "Vui lòng nhập số điện thoại.");
-            response.sendRedirect(request.getContextPath() + "?action=profile");
+            redirectPhoneUpdateError(request, response, session, returnTo, "Vui lòng nhập số điện thoại.");
             return;
         }
 
         if (!phone.matches("\\d{10,11}")) {
-            session.setAttribute("profileError", "Số điện thoại phải gồm 10 đến 11 chữ số.");
-            response.sendRedirect(request.getContextPath() + "?action=profile");
+            redirectPhoneUpdateError(request, response, session, returnTo, "Số điện thoại phải gồm 10 đến 11 chữ số.");
             return;
         }
 
         boolean updated = accountDAO.updatePhone(user.getAccountId(), phone);
         if (!updated) {
-            session.setAttribute("profileError", "Không thể cập nhật số điện thoại. Vui lòng thử lại.");
-            response.sendRedirect(request.getContextPath() + "?action=profile");
+            redirectPhoneUpdateError(request, response, session, returnTo, "Không thể cập nhật số điện thoại. Vui lòng thử lại.");
             return;
         }
 
         user.setPhone(phone);
         session.setAttribute("user", user);
+        if (isSafeBookingReturn(request, returnTo)) {
+            session.setAttribute("bookingPhoneSuccess", "Đã cập nhật số điện thoại. Bạn có thể tiếp tục thanh toán booking.");
+            response.sendRedirect(returnTo);
+            return;
+        }
         session.setAttribute("profileSuccess", "Đã cập nhật số điện thoại thành công.");
         response.sendRedirect(request.getContextPath() + "?action=profile");
+    }
+
+    private void redirectPhoneUpdateError(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session, String returnTo, String message) throws IOException {
+        if (isSafeBookingReturn(request, returnTo)) {
+            session.setAttribute("bookingPhoneRequired", true);
+            session.setAttribute("bookingPhoneError", message);
+            response.sendRedirect(returnTo);
+            return;
+        }
+        session.setAttribute("profileError", message);
+        response.sendRedirect(request.getContextPath() + "?action=profile");
+    }
+
+    private boolean isSafeBookingReturn(HttpServletRequest request, String returnTo) {
+        if (isBlank(returnTo)) {
+            return false;
+        }
+        String contextPath = request.getContextPath();
+        return returnTo.startsWith(contextPath + "?action=booking")
+                || returnTo.startsWith(contextPath + "/?action=booking")
+                || returnTo.startsWith("?action=booking")
+                || returnTo.startsWith("/?action=booking");
     }
 
     private boolean isBlank(String value) {

@@ -211,6 +211,7 @@ public class PageController extends HttpServlet {
             paymentError = (String) session.getAttribute("bookingError");
             session.removeAttribute("bookingError");
         }
+        moveBookingPhoneFlash(request, session);
 
         try {
             Account user = (Account) session.getAttribute("user");
@@ -229,6 +230,28 @@ public class PageController extends HttpServlet {
                 return;
             }
             request.setAttribute("bookingError", firstNonBlank(paymentError, ex.getMessage()));
+        }
+    }
+
+    private void moveBookingPhoneFlash(HttpServletRequest request, HttpSession session) {
+        if (session == null) {
+            return;
+        }
+        Object required = session.getAttribute("bookingPhoneRequired");
+        if (Boolean.TRUE.equals(required)) {
+            request.setAttribute("bookingPhoneRequired", true);
+            session.removeAttribute("bookingPhoneRequired");
+        }
+        Object error = session.getAttribute("bookingPhoneError");
+        if (error != null) {
+            request.setAttribute("bookingPhoneRequired", true);
+            request.setAttribute("bookingPhoneError", error);
+            session.removeAttribute("bookingPhoneError");
+        }
+        Object success = session.getAttribute("bookingPhoneSuccess");
+        if (success != null) {
+            request.setAttribute("bookingPhoneSuccess", success);
+            session.removeAttribute("bookingPhoneSuccess");
         }
     }
 

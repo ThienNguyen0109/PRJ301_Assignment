@@ -294,12 +294,161 @@
             @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
             @media (max-width: 860px) { .login-shell { grid-template-columns: 1fr; } .brand-panel { min-height: auto; } .brand-mark { margin-bottom: 34px; } }
             @media (max-width: 520px) { body { padding: 16px; } .brand-panel, .login-container { padding: 26px; } .brand-title { font-size: 30px; } }
+
+            .auth-bg-video {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 0;
+                filter: saturate(1.08) contrast(1.06);
+            }
+
+            body {
+                padding: 32px;
+                background: #f7f8fb;
+            }
+
+            body::before {
+                background:
+                    radial-gradient(circle at 72% 24%, rgba(248, 223, 157, 0.22), transparent 28%),
+                    linear-gradient(90deg, rgba(7, 17, 31, 0.92) 0%, rgba(7, 17, 31, 0.72) 45%, rgba(255, 255, 255, 0.52) 100%);
+            }
+
+            body::after {
+                display: none;
+            }
+
+            .login-shell {
+                width: min(1180px, 100%);
+                grid-template-columns: minmax(0, 1.15fr) 450px;
+                gap: 34px;
+                min-height: min(720px, calc(100vh - 64px));
+                align-items: center;
+            }
+
+            .brand-panel {
+                min-height: 620px;
+                padding: clamp(36px, 5vw, 64px);
+                border-radius: 24px;
+                background:
+                    linear-gradient(90deg, rgba(7, 17, 31, 0.82), rgba(7, 17, 31, 0.38)),
+                    rgba(7, 17, 31, 0.22);
+                border: 1px solid rgba(248, 223, 157, 0.2);
+                box-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
+                backdrop-filter: blur(5px);
+            }
+
+            .brand-mark {
+                gap: 14px;
+                padding: 0;
+                color: #f8df9d;
+                border: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .brand-mark img {
+                width: 260px;
+                height: 92px;
+                object-fit: cover;
+                padding: 0;
+                border-radius: 18px;
+                background: #061120;
+            }
+
+            .brand-title {
+                max-width: 650px;
+                font-size: clamp(46px, 6vw, 74px);
+                letter-spacing: 0;
+            }
+
+            .brand-copy {
+                color: rgba(248,250,252,.84);
+                font-size: 17px;
+            }
+
+            .login-container {
+                background: rgba(255,255,255,.94);
+                border: 1px solid rgba(16,24,39,.08);
+                box-shadow: 0 28px 80px rgba(15,23,42,.2);
+                color: #101827;
+            }
+
+            .login-container::before {
+                background: linear-gradient(115deg, transparent 0%, rgba(248, 223, 157, 0.26) 42%, transparent 58%);
+            }
+
+            .login-container h1 {
+                color: #101827;
+            }
+
+            .login-container .subtitle,
+            .footer-links {
+                color: #64748b;
+            }
+
+            label {
+                color: #101827;
+            }
+
+            input[type="email"],
+            input[type="password"] {
+                color: #101827;
+                background: #fff;
+                border-color: rgba(16,24,39,.14);
+            }
+
+            input[type="email"]:focus,
+            input[type="password"]:focus {
+                background: #fff;
+            }
+
+            input::placeholder {
+                color: #94a3b8;
+            }
+
+            .helper-row a,
+            .footer-links a {
+                color: #a86f08;
+            }
+
+            .divider {
+                color: #64748b;
+            }
+
+            .divider::before,
+            .divider::after {
+                background: rgba(16,24,39,.1);
+            }
+
+            .google-login-btn {
+                color: #101827;
+                border-color: rgba(16,24,39,.12);
+                box-shadow: 0 12px 30px rgba(15,23,42,.08);
+            }
+
+            @media (max-width: 860px) {
+                .login-shell {
+                    grid-template-columns: 1fr;
+                }
+
+                .brand-panel {
+                    min-height: 430px;
+                }
+            }
         </style>
     </head>
     <body>
+        <video class="auth-bg-video" autoplay muted loop playsinline aria-hidden="true">
+            <source src="<%= request.getContextPath() %>/assets/video/istockphoto-902026438-640_adpp_is.mp4" type="video/mp4">
+        </video>
         <div class="login-shell">
             <section class="brand-panel">
-                <div class="brand-mark">EV E-Vehicle Rental</div>
+                <div class="brand-mark">
+                    <img src="<%= request.getContextPath() %>/assets/images/logo/logo.png" alt="E-Vehicle Rental">
+                </div>
                 <div class="brand-kicker">Premium Electric Mobility</div>
                 <h2 class="brand-title">Di chuyển xanh <span class="accent">chuẩn cao cấp.</span></h2>
                 <p class="brand-copy">Đăng nhập để quản lý ví, thuê xe điện và theo dõi mọi giao dịch trong một không gian hiện đại.</p>

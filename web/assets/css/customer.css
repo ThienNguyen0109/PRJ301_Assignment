@@ -937,3 +937,278 @@ body.customer-page::after {
     .profile-header { align-items: flex-start; flex-direction: column; }
     .section-head { align-items: flex-start; flex-direction: column; }
 }
+
+/* Premium light customer refresh */
+body.customer-page {
+    color: #101827;
+    background:
+        radial-gradient(circle at 10% 8%, rgba(215, 169, 67, 0.16), transparent 24%),
+        radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.10), transparent 22%),
+        linear-gradient(180deg, #f7f8fb 0%, #fbf7ee 52%, #ffffff 100%);
+}
+
+body.customer-page::before {
+    background:
+        linear-gradient(135deg, rgba(11, 22, 40, 0.08), transparent 32%),
+        linear-gradient(315deg, rgba(215, 169, 67, 0.12), transparent 28%);
+    opacity: 1;
+}
+
+body.customer-page::after {
+    background: linear-gradient(112deg, transparent 40%, rgba(255,255,255,0.62) 49%, rgba(215,169,67,0.14) 52%, transparent 62%);
+}
+
+.customer-navbar {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(16, 24, 39, 0.08);
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+.brand-link {
+    color: #0b1628;
+}
+
+.brand-logo {
+    width: 210px;
+    height: 74px;
+    color: #07111f;
+    background: #061120;
+    border: 0;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+    overflow: hidden;
+}
+
+.brand-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0;
+}
+
+.customer-menu a {
+    color: #334155;
+}
+
+.customer-menu a:hover,
+.customer-menu a.active {
+    color: #8a5c04;
+    background: rgba(215, 169, 67, 0.14);
+    border-color: rgba(215, 169, 67, 0.24);
+}
+
+.nav-user {
+    color: #475569;
+    border-color: rgba(16, 24, 39, 0.1);
+    background: #f8fafc;
+}
+
+.hero-section,
+.glass-card,
+.dark-card,
+.footer-card {
+    box-shadow: 0 24px 70px rgba(15,23,42,.1);
+}
+
+.hero-section {
+    min-height: 540px;
+    background: #07111f;
+    isolation: isolate;
+}
+
+.hero-video-layer {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+}
+
+.hero-video-layer video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(1.08) contrast(1.08);
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 70% 34%, rgba(215, 169, 67, 0.24), transparent 28%),
+        linear-gradient(90deg, rgba(7,17,31,.96) 0%, rgba(7,17,31,.76) 52%, rgba(7,17,31,.30) 100%);
+}
+
+.hero-section::after {
+    z-index: 0;
+}
+
+.hero-content {
+    z-index: 2;
+}
+
+.kicker {
+    color: #8a5c04;
+    border-color: rgba(215,169,67,.28);
+    background: rgba(255,255,255,.82);
+}
+
+.hero-title,
+.hero-title span {
+    color: #fff;
+}
+
+.hero-title span,
+.hero-stats .stat-tile strong {
+    color: #ffe3a3;
+}
+
+.hero-copy {
+    color: rgba(248, 250, 252, .82);
+}
+
+.btn-gold {
+    color: #111827;
+    background: linear-gradient(135deg, #ffe3a3, #d7a943);
+    border-color: rgba(215,169,67,.45);
+}
+
+.btn-ghost {
+    color: #172033;
+    background: rgba(255,255,255,.82);
+    border-color: rgba(16,24,39,.12);
+}
+
+.hero-stats .stat-tile {
+    border-color: rgba(255,255,255,.18);
+    background: rgba(255,255,255,.12);
+}
+
+.hero-stats .stat-tile span {
+    color: rgba(248,250,252,.72);
+}
+
+.glass-card {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.98), rgba(252,248,239,.92)),
+        radial-gradient(circle at 100% 0%, rgba(215,169,67,.12), transparent 28%);
+    border-color: rgba(16,24,39,.1);
+}
+
+.section-head h2,
+.card-title,
+.benefit-card h3,
+.info-card h3 {
+    color: #101827;
+}
+
+.section-head p,
+.muted,
+.card-copy,
+.vehicle-description,
+.station-address,
+.benefit-card p,
+.info-card p {
+    color: #64748b;
+}
+
+.field label,
+.booking-form label {
+    color: #101827;
+}
+
+.input-wrap,
+.wallet-input,
+.booking-form input[type="tel"] {
+    color: #101827;
+    background: #fff;
+    border-color: rgba(16,24,39,.12);
+}
+
+.input-wrap select,
+.input-wrap input,
+.wallet-input {
+    color: #101827;
+}
+
+.input-icon,
+.category-pill,
+.filter-chip {
+    color: #8a5c04;
+}
+
+.phone-update-card,
+.benefit-card,
+.info-card {
+    background: rgba(255,255,255,.78);
+    border-color: rgba(16,24,39,.1);
+}
+
+.vehicle-card {
+    background: #fff;
+    border-color: rgba(16,24,39,.1);
+    box-shadow: 0 22px 58px rgba(15,23,42,.09);
+}
+
+.vehicle-card:hover {
+    box-shadow: 0 30px 70px rgba(15,23,42,.16);
+}
+
+.vehicle-media {
+    background:
+        radial-gradient(ellipse at 50% 88%, rgba(215,169,67,.18), transparent 30%),
+        linear-gradient(180deg, #ffffff, #f6f8fb);
+}
+
+.vehicle-info {
+    background: #fff;
+    border-top-color: rgba(16,24,39,.08);
+}
+
+.vehicle-info h3 {
+    color: #101827;
+}
+
+.station-name,
+.price-line {
+    color: #9a6a08;
+}
+
+.meta-pill {
+    color: #475569;
+    background: #f8fafc;
+    border-color: rgba(16,24,39,.1);
+}
+
+.price-line {
+    border-top-color: rgba(16,24,39,.1);
+}
+
+.empty-state {
+    color: #64748b;
+    border-color: rgba(16,24,39,.16);
+    background: rgba(255,255,255,.72);
+}
+
+.footer-card {
+    color: rgba(248,250,252,.72);
+    background: #0b1628;
+}
+
+.footer-card strong {
+    color: #fff;
+}
+
+@media (max-width: 760px) {
+    .brand-link {
+        font-size: 18px;
+    }
+
+    .brand-logo {
+        width: 170px;
+        height: 60px;
+    }
+
+    .hero-section {
+        min-height: 520px;
+    }
+}
