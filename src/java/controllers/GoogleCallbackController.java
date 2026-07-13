@@ -46,8 +46,8 @@ public class GoogleCallbackController extends HttpServlet {
             Account account = googleAuthService.handleCallback(getServletContext(), code, redirectUri);
             setLoginSession(session, account);
             if (account != null && account.getRole() == Role.CUSTOMER && isBlank(account.getPhone())) {
-                session.setAttribute("profileError", "Vui lòng cập nhật số điện thoại để hoàn tất hồ sơ trước khi đặt xe.");
-                response.sendRedirect(request.getContextPath() + "?action=profile");
+                session.setAttribute("showPhoneUpdatePrompt", true);
+                response.sendRedirect(request.getContextPath() + "?action=home");
                 return;
             }
             response.sendRedirect(request.getContextPath() + getRedirectPageByRole(account));

@@ -46,7 +46,7 @@ public class BookingController extends HttpServlet {
         customer = refreshCustomerSession(session, customer);
         if (isBlank(customer.getPhone())) {
             session.setAttribute("profileError", "Vui lòng cập nhật số điện thoại trước khi thanh toán booking.");
-            response.sendRedirect(request.getContextPath() + "?action=profile");
+            response.sendRedirect(request.getContextPath() + "?action=profile#phone-update");
             return;
         }
 

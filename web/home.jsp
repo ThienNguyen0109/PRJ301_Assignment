@@ -19,6 +19,8 @@
     <body class="customer-page">
         <c:set var="navName" value="${empty sessionScope.user.fullName ? 'User' : sessionScope.user.fullName}" />
         <c:set var="navInitial" value="${fn:substring(navName, 0, 1)}" />
+        <c:set var="showPhoneUpdatePrompt" value="${sessionScope.showPhoneUpdatePrompt}" />
+        <c:remove var="showPhoneUpdatePrompt" scope="session" />
 
         <nav class="customer-navbar">
             <a class="brand-link" href="${pageContext.request.contextPath}?action=home">
@@ -202,6 +204,29 @@
                 <div>© 2026 E-Vehicle Rental System</div>
             </footer>
         </main>
+
+        <c:if test="${showPhoneUpdatePrompt}">
+            <div class="customer-modal-backdrop" id="phoneUpdateModal" role="dialog" aria-modal="true" aria-labelledby="phoneUpdateTitle">
+                <div class="customer-modal">
+                    <button class="modal-close" type="button" aria-label="Đóng thông báo" onclick="closePhoneUpdateModal()">×</button>
+                    <span class="kicker">Complete Profile</span>
+                    <h2 id="phoneUpdateTitle">Cập nhật số điện thoại</h2>
+                    <p>Bạn đã đăng nhập bằng Google thành công. Hãy cập nhật số điện thoại để staff có thể xác minh khi nhận xe và để quá trình booking diễn ra trọn vẹn.</p>
+                    <div class="modal-actions">
+                        <a class="btn-gold" href="${pageContext.request.contextPath}?action=profile#phone-update">Cập nhật ngay</a>
+                        <button class="btn-ghost" type="button" onclick="closePhoneUpdateModal()">Để sau</button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function closePhoneUpdateModal() {
+                    var modal = document.getElementById('phoneUpdateModal');
+                    if (modal) {
+                        modal.classList.add('is-hidden');
+                    }
+                }
+            </script>
+        </c:if>
 
         <%@ include file="/WEB-INF/jspf/realtime-client.jspf" %>
     </body>

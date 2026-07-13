@@ -68,7 +68,7 @@
                 <div class="error-message" style="margin-top:18px;"><c:out value="${profileErrorMessage}"/></div>
             </c:if>
             <c:if test="${empty profileUser.phone}">
-                <section class="glass-card" style="margin-top:24px; border-color:rgba(244,201,93,.42);">
+                <section class="glass-card phone-update-card" id="phone-update">
                     <div class="section-head">
                         <div>
                             <span class="kicker">Phone Required</span>
@@ -76,7 +76,7 @@
                             <p>Bạn cần số điện thoại để staff xác minh khi nhận xe và để hệ thống cho phép thanh toán booking.</p>
                         </div>
                     </div>
-                    <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form" style="margin-top:18px;">
+                    <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form">
                         <div class="form-row">
                             <label for="phone">Số điện thoại</label>
                             <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" placeholder="Nhập số điện thoại 10-11 chữ số" required>
@@ -103,7 +103,7 @@
                         <div class="info-row"><span>Status</span><strong><c:out value="${empty profileUser.status ? 'ACTIVE' : profileUser.status}"/></strong></div>
                     </div>
                     <c:if test="${not empty profileUser.phone}">
-                        <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form" style="margin-top:18px;">
+                        <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form compact">
                             <div class="form-row">
                                 <label for="profilePhone">Cập nhật số điện thoại</label>
                                 <input id="profilePhone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" required>
