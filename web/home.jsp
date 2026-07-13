@@ -38,7 +38,7 @@
             </div>
         </nav>
 
-        <main class="customer-container">
+        <main class="customer-container home-container">
             <section class="hero-section">
                 <div class="hero-video-layer" aria-hidden="true">
                     <video autoplay muted loop playsinline>
@@ -46,9 +46,9 @@
                     </video>
                 </div>
                 <div class="hero-content">
-                    <span class="kicker">Premium Electric Mobility</span>
-                    <h1 class="hero-title">Thuê xe điện linh hoạt <span>cho mọi hành trình.</span></h1>
-                    <p class="hero-copy">Chọn trạm, chọn mẫu xe và đặt xe chỉ trong vài bước. Tận hưởng trải nghiệm thuê xe điện sạch, nhanh và hiện đại.</p>
+                    <span class="kicker hero-badge">Premium Electric Mobility</span>
+                    <h1 class="hero-title">Thuê xe điện linh hoạt <span class="highlight">cho mọi hành trình.</span></h1>
+                    <p class="hero-copy hero-description">Chọn trạm, chọn mẫu xe và đặt xe chỉ trong vài bước. Tận hưởng trải nghiệm thuê xe điện sạch, nhanh và hiện đại.</p>
                     <div class="hero-actions">
                         <a class="btn-gold" href="#search-section">Tìm xe ngay</a>
                         <a class="btn-ghost" href="#vehicle-list">Xem các trạm</a>
@@ -61,7 +61,7 @@
                 </div>
             </section>
 
-            <section id="search-section" class="glass-card">
+            <section id="search-section" class="glass-card search-panel">
                 <div class="section-head">
                     <div>
                         <span class="kicker">Search Vehicle</span>
@@ -127,7 +127,7 @@
             </section>
 
             <c:if test="${not searchPerformed and not empty featuredVehicles}">
-                <section id="vehicle-list" class="glass-card">
+                <section id="vehicle-list" class="glass-card vehicle-section">
                     <div class="section-head">
                         <div>
                             <span class="kicker">Available Models</span>
@@ -147,7 +147,7 @@
             </c:if>
 
             <c:if test="${searchPerformed}">
-                <section id="vehicle-list" class="glass-card">
+                <section id="vehicle-list" class="glass-card vehicle-section">
                     <div class="section-head">
                         <div>
                             <span class="kicker">Search Results</span>
@@ -188,7 +188,7 @@
                 </section>
             </c:if>
 
-            <section class="glass-card">
+            <section class="glass-card benefit-section">
                 <div class="section-head">
                     <div>
                         <span class="kicker">Why Choose Us</span>
@@ -214,7 +214,7 @@
         <c:if test="${showPhoneUpdatePrompt}">
             <div class="customer-modal-backdrop" id="phoneUpdateModal" role="dialog" aria-modal="true" aria-labelledby="phoneUpdateTitle">
                 <div class="customer-modal">
-                    <button class="modal-close" type="button" aria-label="Đóng thông báo" onclick="closePhoneUpdateModal()">×</button>
+                    <button class="modal-close" type="button" aria-label="Đóng thông báo" onclick="closePhoneUpdateModal()">x</button>
                     <span class="kicker">Complete Profile</span>
                     <h2 id="phoneUpdateTitle">Cập nhật số điện thoại</h2>
                     <p>Bạn đã đăng nhập bằng Google thành công. Hãy cập nhật số điện thoại để staff có thể xác minh khi nhận xe và để quá trình booking diễn ra trọn vẹn.</p>

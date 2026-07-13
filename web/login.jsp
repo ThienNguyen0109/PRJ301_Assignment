@@ -333,11 +333,13 @@
                 padding: clamp(36px, 5vw, 64px);
                 border-radius: 24px;
                 background:
-                    linear-gradient(90deg, rgba(7, 17, 31, 0.82), rgba(7, 17, 31, 0.38)),
-                    rgba(7, 17, 31, 0.22);
-                border: 1px solid rgba(248, 223, 157, 0.2);
+                    radial-gradient(circle at 42% 22%, rgba(43, 114, 190, .16), transparent 30%),
+                    radial-gradient(circle at 70% 78%, rgba(248, 223, 157, .12), transparent 34%),
+                    linear-gradient(135deg, rgba(0, 5, 13, .78), rgba(2, 8, 20, .66));
+                border: 1px solid rgba(248, 223, 157, 0.28);
                 box-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
-                backdrop-filter: blur(5px);
+                backdrop-filter: blur(16px) saturate(1.08);
+                -webkit-backdrop-filter: blur(16px) saturate(1.08);
             }
 
             .brand-mark {
@@ -350,12 +352,13 @@
             }
 
             .brand-mark img {
-                width: 260px;
-                height: 92px;
+                width: min(540px, 86vw);
+                height: 178px;
                 object-fit: cover;
                 padding: 0;
                 border-radius: 18px;
-                background: #061120;
+                background: #00050d;
+                filter: drop-shadow(0 20px 34px rgba(0, 0, 0, .22));
             }
 
             .brand-title {
@@ -370,9 +373,11 @@
             }
 
             .login-container {
-                background: rgba(255,255,255,.94);
-                border: 1px solid rgba(16,24,39,.08);
-                box-shadow: 0 28px 80px rgba(15,23,42,.2);
+                background: rgba(255,255,255,.66);
+                border: 1px solid rgba(255,255,255,.46);
+                box-shadow: 0 28px 80px rgba(15,23,42,.24);
+                backdrop-filter: blur(20px) saturate(1.1);
+                -webkit-backdrop-filter: blur(20px) saturate(1.1);
                 color: #101827;
             }
 

@@ -1,0 +1,795 @@
+Hãy chỉnh sửa lại UI trang Home trong project Java JSP/Servlet hiện tại của tôi theo đúng phong cách sau:
+
+MỤC TIÊU TỔNG THỂ
+
+- Giữ navbar nền tối để logo nền đen hòa vào giao diện.
+- Giữ hero video theo phong cách premium, công nghệ, xe điện.
+- Phần nội dung bên dưới phải sáng, sạch, hiện đại và không quá tối.
+- Chỉ chỉnh sửa giao diện.
+- Không thay đổi bất kỳ chức năng nào.
+- Chỉ sử dụng HTML/JSP markup, CSS và JavaScript giao diện nếu thật sự cần.
+- Các hiệu ứng động chỉ dùng CSS, không dùng thư viện animation.
+- Không thêm Bootstrap, Tailwind, React, Vue hoặc framework frontend mới.
+
+QUY TẮC BẮT BUỘC
+
+Không được thay đổi:
+
+- Servlet
+- DAO
+- Service
+- Model
+- Database
+- Business logic
+- Session
+- Authentication
+- Authorization
+- JSTL
+- EL Expression
+- Form action
+- Form method
+- Input name
+- Select name
+- Button type
+- Request parameter
+- URL hiện có
+- Link xem chi tiết
+- Link chọn xe
+- Link đơn thuê
+- Link ví
+- Link profile
+- Link logout
+- Vòng lặp lấy dữ liệu xe từ database
+- Điều kiện hiển thị dữ liệu
+- Video hero hiện tại
+- Đường dẫn logo hiện tại
+
+Không hard-code dữ liệu giả để thay thế dữ liệu lấy từ database.
+
+Trước khi chỉnh sửa, hãy đọc toàn bộ file JSP, CSS và JavaScript hiện tại để xác định các class/id đang được sử dụng. Không đổi hoặc xóa class/id nếu chúng đang phục vụ JavaScript hoặc chức năng hiện có.
+
+==================================================
+1. PHONG CÁCH VÀ MÀU SẮC
+==================================================
+
+Thiết kế theo phong cách:
+
+- Premium
+- Hiện đại
+- Công nghệ
+- Xe điện
+- Sạch
+- Có chiều sâu
+- Không quá tối
+
+Tỷ lệ màu mong muốn:
+
+- Navbar và hero dùng màu tối
+- Phần nội dung xe dùng màu sáng
+- Gold dùng làm màu nhấn
+- Blue glow dùng rất nhẹ
+- Không dùng nền đen cho toàn bộ trang
+
+Bảng màu gợi ý:
+
+```css
+:root {
+    --nav-dark: #070c15;
+    --nav-dark-soft: #0d1624;
+    --navy: #10233f;
+    --navy-soft: #29445f;
+    --gold: #d6a84b;
+    --gold-light: #f7df9a;
+    --page-bg: #f6f8fb;
+    --section-bg: #f8fafc;
+    --cream-bg: #fffdf8;
+    --white: #ffffff;
+    --text-main: #142033;
+    --text-muted: #667085;
+    --border: rgba(20, 32, 51, 0.08);
+}
+==================================================
+2. NAVBAR
+
+Giữ navbar nền tối vì logo hiện tại có nền đen.
+
+Thiết kế navbar:
+
+Sticky trên đầu trang.
+Nền navy/đen pha gradient nhẹ.
+Có backdrop blur.
+Chiều cao khoảng 72–78px.
+Logo nằm bên trái và hòa vào nền.
+Menu nằm bên phải.
+Không làm navbar quá cao.
+Không đổi bất kỳ link hoặc URL nào.
+Active menu dùng gold.
+Hover menu có underline gold chạy nhẹ bằng CSS.
+Nút logout giữ nguyên chức năng, chỉ chỉnh style.
+
+Gợi ý CSS:
+
+.main-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 76px;
+    background:
+        linear-gradient(
+            90deg,
+            #070b12 0%,
+            #0b1320 55%,
+            #101827 100%
+        );
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 28px rgba(8, 15, 28, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.header-container {
+    width: min(1500px, calc(100% - 48px));
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    display: block;
+    width: 215px;
+    height: 58px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.nav-logo:hover {
+    transform: scale(1.025);
+}
+
+Không dùng mix-blend-mode nếu làm sai màu logo.
+
+Menu:
+
+.nav-link {
+    position: relative;
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #d6a84b, #ffe5a3);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #ffffff;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 70%;
+}
+==================================================
+3. CHUYỂN TIẾP TỪ NAVBAR TỐI SANG NỘI DUNG SÁNG
+
+Phần ngay dưới navbar phải chuyển màu mềm, không bị cắt đột ngột.
+
+Gợi ý:
+
+.hero-wrapper {
+    padding: 28px 20px 52px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(11, 19, 32, 0.09) 0%,
+            #eef2f7 18%,
+            #fffdf9 100%
+        );
+}
+
+Không để gradient bị loang thành mảng vàng hoặc xám lớn ở hai bên.
+
+==================================================
+4. HERO VIDEO
+
+Giữ nguyên video, text, các nút và thống kê hiện tại.
+
+Chỉ chỉnh giao diện:
+
+Hero căn giữa.
+Chiều rộng tối đa khoảng 1180–1240px.
+Bo góc khoảng 24–28px.
+Shadow mềm.
+Có chiều sâu.
+Overlay không quá tối.
+Nội dung bên trái dễ đọc.
+Không thay đổi nội dung hoặc link của các nút hiện có.
+
+Gợi ý:
+
+.hero {
+    position: relative;
+    width: min(1220px, 100%);
+    min-height: 540px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 26px;
+    isolation: isolate;
+    box-shadow:
+        0 28px 70px rgba(15, 23, 42, 0.22),
+        0 8px 24px rgba(15, 23, 42, 0.10);
+}
+
+Video:
+
+.hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: heroZoom 14s ease-in-out infinite alternate;
+}
+
+@keyframes heroZoom {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.055);
+    }
+}
+
+Overlay:
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(
+            circle at 74% 42%,
+            rgba(37, 99, 235, 0.15),
+            transparent 32%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(5, 14, 30, 0.94) 0%,
+            rgba(5, 14, 30, 0.72) 45%,
+            rgba(5, 14, 30, 0.18) 100%
+        );
+}
+
+Đảm bảo nội dung hero có position: relative và z-index cao hơn overlay.
+
+==================================================
+5. HIỆU ỨNG XUẤT HIỆN CHO HERO
+
+Chỉ dùng CSS.
+
+Các thành phần xuất hiện lần lượt từ dưới lên:
+
+Badge
+Tiêu đề
+Mô tả
+Nút
+Thẻ thống kê
+
+Gợi ý:
+
+.hero-badge,
+.hero-title,
+.hero-description,
+.hero-actions,
+.hero-stats {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+.hero-badge {
+    animation-delay: 0.1s;
+}
+
+.hero-title {
+    animation-delay: 0.25s;
+}
+
+.hero-description {
+    animation-delay: 0.4s;
+}
+
+.hero-actions {
+    animation-delay: 0.55s;
+}
+
+.hero-stats {
+    animation-delay: 0.7s;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+Không dùng hiệu ứng rung, xoay mạnh hoặc nhấp nháy liên tục.
+
+==================================================
+6. TIÊU ĐỀ HERO
+
+Hiện tại tiêu đề bị xuống dòng chưa cân đối.
+
+Hãy chỉnh kích thước và chiều rộng để câu:
+
+“Thuê xe điện linh hoạt cho mọi hành trình.”
+
+xuống dòng cân đối hơn, tránh để riêng từ “hoạt” trên một dòng.
+
+Không thay đổi nội dung text.
+
+Gợi ý:
+
+.hero-title {
+    max-width: 650px;
+    margin: 22px 0 18px;
+    font-size: clamp(42px, 5vw, 68px);
+    line-height: 1.06;
+    letter-spacing: -2px;
+    font-weight: 800;
+}
+
+.hero-title .highlight {
+    color: #ffdc8a;
+    text-shadow: 0 6px 24px rgba(214, 168, 75, 0.24);
+}
+
+Chỉ thêm span/class để style nếu cần, không thay đổi logic JSP.
+
+==================================================
+7. NÚT CTA
+
+Giữ nguyên link và chức năng nút.
+
+Thêm hiệu ứng:
+
+Hover nâng nhẹ
+Shadow gold
+Ánh sáng quét ngang
+Chỉ dùng CSS
+
+Gợi ý:
+
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f4ca67, #d6a84b);
+    color: #10233f;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(214, 168, 75, 0.24);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.btn-primary::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -70%;
+    width: 40%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.42);
+    transform: rotate(24deg);
+    transition: left 0.6s ease;
+}
+
+.btn-primary:hover::before {
+    left: 130%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(214, 168, 75, 0.32);
+}
+==================================================
+8. THẺ THỐNG KÊ TRONG HERO
+
+Giữ nguyên số liệu và nội dung lấy từ hệ thống.
+
+Thiết kế:
+
+Glass effect nhẹ
+Border trắng mờ
+Hover nâng lên
+Có floating animation rất nhẹ
+Không làm card nhấp nháy
+
+Gợi ý:
+
+.hero-stat-card {
+    background: rgba(255, 255, 255, 0.11);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 16px;
+    transition:
+        transform 0.3s ease,
+        background 0.3s ease;
+}
+
+.hero-stat-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.hero-stat-card:nth-child(1) {
+    animation: floating 4.5s ease-in-out infinite;
+}
+
+.hero-stat-card:nth-child(2) {
+    animation: floating 4.5s ease-in-out 0.4s infinite;
+}
+
+.hero-stat-card:nth-child(3) {
+    animation: floating 4.5s ease-in-out 0.8s infinite;
+}
+
+@keyframes floating {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+Lưu ý: nếu hover và animation cùng thay đổi transform gây xung đột, hãy dùng một wrapper riêng hoặc tắt floating khi hover.
+
+==================================================
+9. PHẦN DANH SÁCH XE
+
+Hiện tại khu vực xe đang nằm trong một khối trắng lớn.
+
+Hãy chỉnh lại:
+
+Bỏ background trắng lớn bao toàn bộ danh sách.
+Section dùng nền sáng xanh xám rất nhạt.
+Chỉ từng card xe có nền trắng.
+Giữ nguyên tiêu đề, dữ liệu, vòng lặp JSTL và các link.
+Không yêu cầu người dùng lọc trước.
+Khi mở Home vẫn hiển thị toàn bộ mẫu xe như hiện tại.
+
+Gợi ý:
+
+.vehicle-section {
+    position: relative;
+    padding: 76px 20px 96px;
+    background:
+        radial-gradient(
+            circle at 10% 15%,
+            rgba(214, 168, 75, 0.07),
+            transparent 24%
+        ),
+        radial-gradient(
+            circle at 88% 80%,
+            rgba(59, 130, 246, 0.06),
+            transparent 27%
+        ),
+        #f8fafc;
+    overflow: hidden;
+    border-top: 1px solid rgba(20, 32, 51, 0.05);
+}
+
+.vehicle-container {
+    position: relative;
+    z-index: 1;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    background: transparent;
+}
+
+Thêm grid công nghệ cực nhẹ:
+
+.vehicle-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(
+            rgba(15, 35, 63, 0.022) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(15, 35, 63, 0.022) 1px,
+            transparent 1px
+        );
+    background-size: 38px 38px;
+}
+
+Pattern phải rất mờ.
+
+==================================================
+10. CARD XE
+
+Giữ nguyên:
+
+Dữ liệu xe
+Ảnh
+Tên mẫu xe
+Trạm
+Giá
+Số ghế
+Số lượng xe
+Nút xem chi tiết
+Nút chọn xe
+Link hiện tại
+
+Chỉ chỉnh UI:
+
+.vehicle-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid rgba(15, 35, 63, 0.08);
+    border-radius: 22px;
+    box-shadow: 0 12px 34px rgba(15, 35, 63, 0.08);
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-9px);
+    border-color: rgba(214, 168, 75, 0.55);
+    box-shadow: 0 22px 50px rgba(15, 35, 63, 0.15);
+}
+
+Đường sáng gold chạy trên card:
+
+.vehicle-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 70%;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #d6a84b,
+        transparent
+    );
+    transition: left 0.7s ease;
+    z-index: 3;
+}
+
+.vehicle-card:hover::before {
+    left: 120%;
+}
+
+Ảnh xe:
+
+.vehicle-image-wrapper {
+    overflow: hidden;
+    background: linear-gradient(180deg, #ffffff, #f2f5f8);
+}
+
+.vehicle-image {
+    width: 100%;
+    height: 230px;
+    object-fit: contain;
+    transition: transform 0.45s ease;
+}
+
+.vehicle-card:hover .vehicle-image {
+    transform: scale(1.07);
+}
+==================================================
+11. HIỆU ỨNG CARD KHI TẢI TRANG
+
+Chỉ dùng CSS.
+
+.vehicle-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardReveal 0.7s ease forwards;
+}
+
+.vehicle-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.vehicle-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.vehicle-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.vehicle-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.vehicle-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.vehicle-card:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+@keyframes cardReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+Nếu số lượng card lớn, chỉ cần tạo delay cho 6 card đầu, các card sau dùng cùng một delay ngắn để tránh chờ lâu.
+
+==================================================
+12. TYPOGRAPHY VÀ SPACING
+Giữ font hiện tại nếu đang dùng font phù hợp.
+Tiêu đề section rõ ràng, hiện đại.
+Tăng khoảng trắng giữa hero và section xe.
+Không để nội dung quá sát mép.
+Không để card quá cao do khoảng cách thừa.
+Cân lại padding bên trong card để giá và nút luôn đồng đều.
+
+Gợi ý:
+
+.section-title {
+    color: var(--text-main);
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 1.15;
+    letter-spacing: -1px;
+}
+
+.section-description {
+    max-width: 680px;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+==================================================
+13. RESPONSIVE
+
+Đảm bảo hoạt động tốt trên desktop, tablet và mobile.
+
+Desktop:
+
+3 card mỗi hàng
+
+Tablet:
+
+2 card mỗi hàng
+
+Mobile:
+
+1 card mỗi hàng
+
+Navbar mobile không được tràn.
+
+Hero mobile:
+
+Giảm chiều cao.
+Giảm font tiêu đề.
+Thống kê xếp hợp lý.
+Nút không tràn.
+
+Gợi ý:
+
+@media (max-width: 768px) {
+    .main-header {
+        height: auto;
+        min-height: 68px;
+    }
+
+    .header-container {
+        width: min(100% - 24px, 100%);
+    }
+
+    .nav-logo {
+        width: 170px;
+        height: 50px;
+    }
+
+    .hero-wrapper {
+        padding: 16px 12px 36px;
+    }
+
+    .hero {
+        min-height: 620px;
+        border-radius: 18px;
+    }
+
+    .hero-title {
+        font-size: clamp(36px, 10vw, 48px);
+        letter-spacing: -1px;
+    }
+
+    .vehicle-section {
+        padding: 56px 12px 72px;
+    }
+}
+==================================================
+14. ACCESSIBILITY VÀ HIỆU SUẤT
+Không dùng animation quá nhanh.
+Không dùng quá nhiều blur.
+Không thêm JavaScript animation.
+Không làm video nặng hơn.
+Không thay đổi autoplay, muted, loop và playsinline của video.
+Giữ contrast chữ dễ đọc.
+Giữ focus state cho nút và link.
+
+Thêm hỗ trợ giảm chuyển động:
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+==================================================
+15. CÁCH THỰC HIỆN
+
+Hãy thực hiện theo thứ tự:
+
+Đọc file Home JSP hiện tại.
+Đọc file CSS hiện tại.
+Xác định đúng class/id đang có.
+Chỉnh trực tiếp trên code hiện tại.
+Không viết lại toàn bộ trang từ đầu.
+Chỉ thêm wrapper hoặc class giao diện khi cần.
+Giữ nguyên logic JSP.
+Giữ nguyên JSTL/EL.
+Giữ nguyên URL.
+Giữ nguyên toàn bộ chức năng.
+
+Sau khi hoàn thành, hãy trả về:
+
+Danh sách file đã chỉnh sửa.
+Code hoàn chỉnh của từng file đã chỉnh sửa.
+Giải thích ngắn gọn các thay đổi UI.
+Xác nhận không sửa Servlet, DAO, Service, Model hoặc database.
+Xác nhận toàn bộ chức năng cũ vẫn hoạt động.
+Xác nhận Home vẫn hiển thị toàn bộ xe ngay khi mở.
+Xác nhận video, logo, filter, chi tiết xe, chọn xe, ví, profile và logout vẫn hoạt động.
+Xác nhận không có lỗi console hoặc lỗi asset 404.
+
+Hãy ưu tiên giao diện tinh tế, không lạm dụng animation. Chỉ giữ 4 nhóm hiệu ứng chính:
+
+Hero zoom nhẹ
+Hero content fade-up
+Nút có shine effect
+Card xe hover và reveal
