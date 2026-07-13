@@ -42,13 +42,19 @@ BEGIN
     CREATE TABLE Wallet (
         wallet_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         account_id UNIQUEIDENTIFIER NOT NULL,
-        balance DECIMAL(10,2) NOT NULL DEFAULT 0,
+        balance DECIMAL(18,2) NOT NULL DEFAULT 0,
         updated_at DATETIME2,
 
         CONSTRAINT FK_Wallet_Account
             FOREIGN KEY (account_id)
             REFERENCES Account(account_id)
     );
+END;
+GO
+
+IF OBJECT_ID(N'Wallet', N'U') IS NOT NULL
+BEGIN
+    ALTER TABLE Wallet ALTER COLUMN balance DECIMAL(18,2) NOT NULL;
 END;
 GO
 
@@ -60,7 +66,7 @@ BEGIN
     CREATE TABLE Wallet_Transaction (
         transaction_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         wallet_id UNIQUEIDENTIFIER NOT NULL,
-        amount DECIMAL(10,2) NOT NULL,
+        amount DECIMAL(18,2) NOT NULL,
         type VARCHAR(20) NOT NULL,
         description NVARCHAR(MAX),
         created_at DATETIME2 DEFAULT GETDATE(),
@@ -72,6 +78,12 @@ BEGIN
         CONSTRAINT CK_WalletTransaction_Type
             CHECK (type IN ('TOPUP', 'PAYMENT', 'REFUND'))
     );
+END;
+GO
+
+IF OBJECT_ID(N'Wallet_Transaction', N'U') IS NOT NULL
+BEGIN
+    ALTER TABLE Wallet_Transaction ALTER COLUMN amount DECIMAL(18,2) NOT NULL;
 END;
 GO
 

@@ -27,7 +27,7 @@ public class WalletTransaction implements Serializable {
     private String transactionId;
     @Column(name = "wallet_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String walletId;
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 18, scale = 2)
     private Double amount;
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)

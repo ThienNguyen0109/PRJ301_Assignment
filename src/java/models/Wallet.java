@@ -23,7 +23,7 @@ public class Wallet implements Serializable {
     private String walletId;
     @Column(name = "account_id", nullable = false, columnDefinition = "uniqueidentifier")
     private String accountId;
-    @Column(name = "balance", nullable = false, precision = 10, scale = 2)
+    @Column(name = "balance", nullable = false, precision = 18, scale = 2)
     private Double balance;
     @Column(name = "updated_at")
     private Timestamp updatedAt;
