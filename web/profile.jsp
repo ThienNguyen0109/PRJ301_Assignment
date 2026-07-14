@@ -16,7 +16,7 @@
         <title>Profile - E-Vehicle Rental</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
     </head>
-    <body class="customer-page">
+    <body class="customer-page profile-page">
         <c:set var="navName" value="${empty displayName ? (empty sessionScope.user.fullName ? 'User' : sessionScope.user.fullName) : displayName}" />
         <c:set var="navInitial" value="${fn:substring(navName, 0, 1)}" />
         <c:set var="profileSuccessMessage" value="${sessionScope.profileSuccess}" />
@@ -26,47 +26,70 @@
 
         <nav class="customer-navbar">
             <a class="brand-link" href="${pageContext.request.contextPath}?action=home">
-                <span class="brand-logo">EV</span>
-                <span>E-Vehicle Rental System</span>
+                <span class="brand-logo">
+                    <img src="${pageContext.request.contextPath}/assets/images/logo/logo.png" alt="E-Vehicle Rental">
+                </span>
             </a>
             <div class="customer-menu">
                 <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                <a class="active" href="${pageContext.request.contextPath}?action=profile">Profile</a>
-                <span class="nav-user"><span class="nav-avatar"><c:out value="${navInitial}"/></span><c:out value="${navName}"/></span>
+                <details class="nav-account-menu">
+                    <summary class="nav-user active">
+                        <span class="nav-avatar"><c:out value="${navInitial}"/></span>
+                        <span><c:out value="${navName}"/></span>
+                        <span class="nav-caret">▾</span>
+                    </summary>
+                    <div class="nav-dropdown">
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
+                        <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
+                        <a class="active" href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                    </div>
+                </details>
                 <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
             </div>
         </nav>
 
-        <main class="customer-container">
-            <section class="dark-card">
+        <main class="customer-container profile-container">
+            <section class="dark-card profile-hero-card">
                 <div class="profile-header">
                     <div class="profile-avatar"><c:out value="${navInitial}"/></div>
                     <div>
                         <span class="kicker">Customer Profile</span>
-                        <h1 class="hero-title" style="font-size:clamp(34px,5vw,52px); margin-bottom:10px;"><c:out value="${displayName}"/></h1>
+                        <h1 class="hero-title profile-title"><c:out value="${displayName}"/></h1>
                         <p class="hero-copy"><c:out value="${displayEmail}"/></p>
                         <div class="badge-row">
                             <span class="status-badge"><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></span>
-                            <span class="status-badge success"><c:out value="${empty profileUser.status ? 'ACTIVE' : profileUser.status}"/></span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <section class="summary-grid">
-                <article class="summary-tile"><strong><c:out value="${empty totalRentalHistories ? 0 : totalRentalHistories}"/></strong><span>Tổng số đơn thuê</span></article>
-                <article class="summary-tile"><strong data-realtime-wallet-balance><c:choose><c:when test="${not empty wallet}"><fmt:formatNumber value="${wallet.balance}" pattern="#,##0"/> VND</c:when><c:otherwise>0 VND</c:otherwise></c:choose></strong><span>Số dư ví</span></article>
-                <article class="summary-tile"><strong><c:out value="${empty rentalHistories ? 0 : fn:length(rentalHistories)}"/></strong><span>Đơn trong trang hiện tại</span></article>
+                <article class="summary-tile">
+                    <strong><c:out value="${empty totalRentalHistories ? 0 : totalRentalHistories}"/></strong>
+                    <span>Tổng số đơn thuê</span>
+                </article>
+                <article class="summary-tile">
+                    <strong data-realtime-wallet-balance>
+                        <c:choose>
+                            <c:when test="${not empty wallet}"><fmt:formatNumber value="${wallet.balance}" pattern="#,##0"/> VND</c:when>
+                            <c:otherwise>0 VND</c:otherwise>
+                        </c:choose>
+                    </strong>
+                    <span>Số dư ví</span>
+                </article>
+                <article class="summary-tile">
+                    <strong><c:out value="${empty rentalHistories ? 0 : fn:length(rentalHistories)}"/></strong>
+                    <span>Đơn trong trang hiện tại</span>
+                </article>
             </section>
 
             <c:if test="${not empty profileSuccessMessage}">
-                <div class="field-success" style="margin-top:18px;"><c:out value="${profileSuccessMessage}"/></div>
+                <div class="field-success profile-message"><c:out value="${profileSuccessMessage}"/></div>
             </c:if>
             <c:if test="${not empty profileErrorMessage}">
-                <div class="error-message" style="margin-top:18px;"><c:out value="${profileErrorMessage}"/></div>
+                <div class="error-message profile-message"><c:out value="${profileErrorMessage}"/></div>
             </c:if>
+
             <c:if test="${empty profileUser.phone}">
                 <section class="glass-card phone-update-card" id="phone-update">
                     <div class="section-head">
@@ -79,14 +102,14 @@
                     <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form">
                         <div class="form-row">
                             <label for="phone">Số điện thoại</label>
-                            <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" placeholder="Nhập số điện thoại 10-11 chữ số" required>
+                            <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại 10 chữ số" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required>
                         </div>
                         <button class="btn-gold" type="submit">Cập nhật số điện thoại</button>
                     </form>
                 </section>
             </c:if>
 
-            <div class="profile-grid" style="margin-top:24px;">
+            <div class="profile-grid profile-main-grid">
                 <section class="glass-card">
                     <div class="section-head">
                         <div>
@@ -96,17 +119,16 @@
                         </div>
                     </div>
                     <div class="info-list">
-                        <div class="info-row"><span>Full Name</span><strong><c:out value="${displayName}"/></strong></div>
-                        <div class="info-row"><span>Email</span><strong><c:out value="${displayEmail}"/></strong></div>
-                        <div class="info-row"><span>Phone</span><strong><c:out value="${empty profileUser.phone ? 'Chưa cập nhật' : profileUser.phone}"/></strong></div>
-                        <div class="info-row"><span>Role</span><strong><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></strong></div>
-                        <div class="info-row"><span>Status</span><strong><c:out value="${empty profileUser.status ? 'ACTIVE' : profileUser.status}"/></strong></div>
+                        <div class="info-row"><span>Họ và tên</span><strong><c:out value="${empty displayName ? 'Chưa cập nhật' : displayName}"/></strong></div>
+                        <div class="info-row"><span>Email</span><strong><c:out value="${empty displayEmail ? 'Chưa cập nhật' : displayEmail}"/></strong></div>
+                        <div class="info-row"><span>Số điện thoại</span><strong><c:out value="${empty profileUser.phone ? 'Chưa cập nhật' : profileUser.phone}"/></strong></div>
+                        <div class="info-row"><span>Vai trò</span><strong><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></strong></div>
                     </div>
                     <c:if test="${not empty profileUser.phone}">
                         <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form compact">
                             <div class="form-row">
                                 <label for="profilePhone">Cập nhật số điện thoại</label>
-                                <input id="profilePhone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10,11}" maxlength="11" required>
+                                <input id="profilePhone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required>
                             </div>
                             <button class="btn-gold" type="submit">Lưu thay đổi</button>
                         </form>
@@ -121,10 +143,6 @@
                             <c:when test="${not empty wallet}"><fmt:formatNumber value="${wallet.balance}" pattern="#,##0.00" /> VND</c:when>
                             <c:otherwise>0 VND</c:otherwise>
                         </c:choose>
-                    </div>
-                    <div class="wallet-meta">
-                        <span>Chủ ví: <c:out value="${displayName}"/></span>
-                        <span>Wallet ID: <c:out value="${empty wallet.walletId ? 'Chưa tạo ví' : wallet.walletId}"/></span>
                     </div>
                     <div class="hero-actions">
                         <a class="btn-gold" href="${pageContext.request.contextPath}?action=wallet">Quản lý ví</a>
@@ -160,12 +178,28 @@
                                 <tbody>
                                     <c:forEach var="rental" items="${rentalHistories}">
                                         <tr>
-                                            <td><div class="code-text"><c:out value="${rental.rentalId}"/></div><div class="muted"><fmt:formatDate value="${rental.createdAt}" pattern="dd/MM/yyyy HH:mm"/></div></td>
-                                            <td><strong><c:out value="${rental.vehicleModel}"/></strong><div class="muted"><c:out value="${rental.licensePlate}"/> · <c:out value="${rental.stationName}"/></div></td>
+                                            <td>
+                                                <div class="code-text"><c:out value="${rental.rentalId}"/></div>
+                                                <div class="muted"><fmt:formatDate value="${rental.createdAt}" pattern="dd/MM/yyyy HH:mm"/></div>
+                                            </td>
+                                            <td>
+                                                <strong><c:out value="${rental.vehicleModel}"/></strong>
+                                                <div class="muted"><c:out value="${rental.licensePlate}"/> · <c:out value="${rental.stationName}"/></div>
+                                            </td>
                                             <td><c:out value="${rental.startDate}"/> - <c:out value="${rental.endDate}"/><div class="muted">${rental.totalDays} ngày</div></td>
-                                            <td><c:choose><c:when test="${not empty rental.actualReturnDate}"><c:out value="${rental.actualReturnDate}"/></c:when><c:otherwise>Chưa trả xe</c:otherwise></c:choose></td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty rental.actualReturnDate}"><c:out value="${rental.actualReturnDate}"/></c:when>
+                                                    <c:otherwise>Chưa trả xe</c:otherwise>
+                                                </c:choose>
+                                            </td>
                                             <td><fmt:formatNumber value="${rental.totalAmount}" pattern="#,##0"/> VND</td>
-                                            <td><c:choose><c:when test="${rental.extraChargeTotal gt 0}"><fmt:formatNumber value="${rental.extraChargeTotal}" pattern="#,##0"/> VND</c:when><c:otherwise>0 VND</c:otherwise></c:choose></td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${rental.extraChargeTotal gt 0}"><fmt:formatNumber value="${rental.extraChargeTotal}" pattern="#,##0"/> VND</c:when>
+                                                    <c:otherwise>0 VND</c:otherwise>
+                                                </c:choose>
+                                            </td>
                                             <td>
                                                 <c:set var="statusClass" value="status-booked"/>
                                                 <c:if test="${rental.status.value eq 'RENTED'}"><c:set var="statusClass" value="status-rented"/></c:if>

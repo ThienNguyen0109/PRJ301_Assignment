@@ -51,7 +51,8 @@
                         </div>
                         <div class="admin-field">
                             <label>Price Per Day</label>
-                            <input type="number" name="pricePerDay" min="1000" step="1000" value="${model.pricePerDay}" required>
+                            <input class="money-display-input" id="pricePerDayDisplay" type="text" inputmode="numeric" value="${model.pricePerDay}" data-money-target="pricePerDay" data-money-min="1000" required>
+                            <input type="hidden" id="pricePerDay" name="pricePerDay" value="${model.pricePerDay}">
                         </div>
                         <div class="admin-field full">
                             <label>Description</label>
@@ -67,5 +68,6 @@
         </div>
     </main>
 </div>
+<script src="${pageContext.request.contextPath}/assets/js/money-input.js"></script>
 </body>
 </html>

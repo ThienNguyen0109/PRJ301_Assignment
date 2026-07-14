@@ -13,36 +13,46 @@
     </div>
 
     <nav class="admin-nav-group">
-        <div class="admin-nav-label">Overview</div>
-        <a class="admin-nav-link ${activeModule eq 'dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-dashboard"><span class="admin-nav-icon">D</span>Dashboard</a>
-        <a class="admin-nav-link ${activeModule eq 'financial' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-financial-reports"><span class="admin-nav-icon">F</span>Financial Reports</a>
-        <a class="admin-nav-link ${activeModule eq 'station-performance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-station-performance"><span class="admin-nav-icon">S</span>Station Performance</a>
-        <a class="admin-nav-link ${activeModule eq 'model-performance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-model-performance"><span class="admin-nav-icon">M</span>Model Performance</a>
+        <details class="admin-nav-section" ${activeModule eq 'dashboard' or activeModule eq 'financial' or activeModule eq 'station-performance' or activeModule eq 'model-performance' ? 'open' : ''}>
+            <summary class="admin-nav-label">Overview <span class="admin-nav-caret"></span></summary>
+            <a class="admin-nav-link ${activeModule eq 'dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-dashboard"><span class="admin-nav-icon">D</span>Dashboard</a>
+            <a class="admin-nav-link ${activeModule eq 'financial' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-financial-reports"><span class="admin-nav-icon">F</span>Financial Reports</a>
+            <a class="admin-nav-link ${activeModule eq 'station-performance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-station-performance"><span class="admin-nav-icon">S</span>Station Performance</a>
+            <a class="admin-nav-link ${activeModule eq 'model-performance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-model-performance"><span class="admin-nav-icon">M</span>Model Performance</a>
+        </details>
 
-        <div class="admin-nav-label">Master Data</div>
-        <a class="admin-nav-link ${activeModule eq 'accounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-accounts"><span class="admin-nav-icon">A</span>Accounts</a>
-        <a class="admin-nav-link ${activeModule eq 'stations' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-stations"><span class="admin-nav-icon">ST</span>Stations</a>
-        <a class="admin-nav-link ${activeModule eq 'categories' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-categories"><span class="admin-nav-icon">C</span>Categories</a>
-        <a class="admin-nav-link ${activeModule eq 'vehicle-models' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicle-models"><span class="admin-nav-icon">VM</span>Vehicle Models</a>
-        <a class="admin-nav-link ${activeModule eq 'vehicle-model-images' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicle-model-images"><span class="admin-nav-icon">IM</span>Model Images</a>
-        <a class="admin-nav-link ${activeModule eq 'vehicles' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicles"><span class="admin-nav-icon">V</span>Vehicles</a>
-        <a class="admin-nav-link ${activeModule eq 'discounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-discounts"><span class="admin-nav-icon">%</span>Discounts</a>
+        <details class="admin-nav-section" ${activeModule eq 'accounts' or activeModule eq 'stations' or activeModule eq 'categories' or activeModule eq 'vehicle-models' or activeModule eq 'vehicle-model-images' or activeModule eq 'vehicles' or activeModule eq 'discounts' ? 'open' : ''}>
+            <summary class="admin-nav-label">Master Data <span class="admin-nav-caret"></span></summary>
+            <a class="admin-nav-link ${activeModule eq 'accounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-accounts"><span class="admin-nav-icon">A</span>Accounts</a>
+            <a class="admin-nav-link ${activeModule eq 'stations' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-stations"><span class="admin-nav-icon">ST</span>Stations</a>
+            <a class="admin-nav-link ${activeModule eq 'categories' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-categories"><span class="admin-nav-icon">C</span>Categories</a>
+            <a class="admin-nav-link ${activeModule eq 'vehicle-models' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicle-models"><span class="admin-nav-icon">VM</span>Vehicle Models</a>
+            <a class="admin-nav-link ${activeModule eq 'vehicle-model-images' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicle-model-images"><span class="admin-nav-icon">IM</span>Model Images</a>
+            <a class="admin-nav-link ${activeModule eq 'vehicles' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-vehicles"><span class="admin-nav-icon">V</span>Vehicles</a>
+            <a class="admin-nav-link ${activeModule eq 'discounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-discounts"><span class="admin-nav-icon">%</span>Discounts</a>
+        </details>
 
-        <div class="admin-nav-label">Transactions</div>
-        <a class="admin-nav-link ${activeModule eq 'rentals' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rentals"><span class="admin-nav-icon">R</span>Rentals</a>
-        <a class="admin-nav-link ${activeModule eq 'rental-status-history' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rental-status-history"><span class="admin-nav-icon">H</span>Status History</a>
-        <a class="admin-nav-link ${activeModule eq 'payments' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-payments"><span class="admin-nav-icon">P</span>Payments</a>
-        <a class="admin-nav-link ${activeModule eq 'extra-charges' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-extra-charges"><span class="admin-nav-icon">EC</span>Extra Charges</a>
-        <a class="admin-nav-link ${activeModule eq 'rental-discounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rental-discounts"><span class="admin-nav-icon">RD</span>Rental Discounts</a>
-        <a class="admin-nav-link ${activeModule eq 'wallets' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallets"><span class="admin-nav-icon">W</span>Wallets</a>
-        <a class="admin-nav-link ${activeModule eq 'wallet-transactions' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallet-transactions"><span class="admin-nav-icon">WT</span>Wallet Transactions</a>
+        <details class="admin-nav-section" ${activeModule eq 'rentals' or activeModule eq 'rental-status-history' or activeModule eq 'payments' or activeModule eq 'extra-charges' or activeModule eq 'rental-discounts' or activeModule eq 'wallets' or activeModule eq 'wallet-transactions' ? 'open' : ''}>
+            <summary class="admin-nav-label">Transactions <span class="admin-nav-caret"></span></summary>
+            <a class="admin-nav-link ${activeModule eq 'rentals' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rentals"><span class="admin-nav-icon">R</span>Rentals</a>
+            <a class="admin-nav-link ${activeModule eq 'rental-status-history' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rental-status-history"><span class="admin-nav-icon">H</span>Status History</a>
+            <a class="admin-nav-link ${activeModule eq 'payments' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-payments"><span class="admin-nav-icon">P</span>Payments</a>
+            <a class="admin-nav-link ${activeModule eq 'extra-charges' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-extra-charges"><span class="admin-nav-icon">EC</span>Extra Charges</a>
+            <a class="admin-nav-link ${activeModule eq 'rental-discounts' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-rental-discounts"><span class="admin-nav-icon">RD</span>Rental Discounts</a>
+            <a class="admin-nav-link ${activeModule eq 'wallets' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallets"><span class="admin-nav-icon">W</span>Wallets</a>
+            <a class="admin-nav-link ${activeModule eq 'wallet-transactions' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-wallet-transactions"><span class="admin-nav-icon">WT</span>Wallet Transactions</a>
+        </details>
 
-        <div class="admin-nav-label">Operations</div>
-        <a class="admin-nav-link ${activeModule eq 'incidents' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-incidents"><span class="admin-nav-icon">I</span>Incidents</a>
-        <a class="admin-nav-link ${activeModule eq 'maintenance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-maintenance"><span class="admin-nav-icon">MT</span>Maintenance</a>
+        <details class="admin-nav-section" ${activeModule eq 'incidents' or activeModule eq 'maintenance' ? 'open' : ''}>
+            <summary class="admin-nav-label">Operations <span class="admin-nav-caret"></span></summary>
+            <a class="admin-nav-link ${activeModule eq 'incidents' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-incidents"><span class="admin-nav-icon">I</span>Incidents</a>
+            <a class="admin-nav-link ${activeModule eq 'maintenance' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-maintenance"><span class="admin-nav-icon">MT</span>Maintenance</a>
+        </details>
 
-        <div class="admin-nav-label">Account</div>
-        <a class="admin-nav-link ${activeModule eq 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-profile"><span class="admin-nav-icon">U</span>Profile</a>
-        <a class="admin-nav-link logout" href="${pageContext.request.contextPath}?action=logout"><span class="admin-nav-icon">X</span>Logout</a>
+        <details class="admin-nav-section" ${activeModule eq 'profile' ? 'open' : ''}>
+            <summary class="admin-nav-label">Account <span class="admin-nav-caret"></span></summary>
+            <a class="admin-nav-link ${activeModule eq 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}?action=admin-profile"><span class="admin-nav-icon">U</span>Profile</a>
+            <a class="admin-nav-link logout" href="${pageContext.request.contextPath}?action=logout"><span class="admin-nav-icon">X</span>Logout</a>
+        </details>
     </nav>
 </aside>

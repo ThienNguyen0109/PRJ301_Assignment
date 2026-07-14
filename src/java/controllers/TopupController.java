@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 @WebServlet(name = "TopupController", urlPatterns = {"/topup"})
 public class TopupController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(TopupController.class.getName());
+    private static final long MIN_TOPUP_AMOUNT = 10000L;
+    private static final long MAX_TOPUP_AMOUNT = 10000000L;
     private IWalletDAO walletDAO = new WalletDAO();
 
     @Override
@@ -51,11 +53,11 @@ public class TopupController extends HttpServlet {
             if (amountStr == null || amountStr.trim().isEmpty()) {
                 error = "Vui lòng nhập số tiền";
             } else {
-                long amount = Long.parseLong(amountStr);
+                long amount = Long.parseLong(normalizeMoney(amountStr));
                 
                 // Validate amount
-                if (!VNPayService.isValidAmount(amount)) {
-                    error = "Số tiền nạp phải từ 10,000 đến 100,000,000 VND";
+                if (amount < MIN_TOPUP_AMOUNT || amount > MAX_TOPUP_AMOUNT) {
+                    error = "Số tiền nạp phải từ 10,000 đến 10,000,000 VND";
                 } else {
                     // Get user and wallet info
                     Account user = (Account) session.getAttribute("user");
@@ -123,6 +125,10 @@ public class TopupController extends HttpServlet {
             ip = request.getRemoteAddr();
         }
         return ip;
+    }
+
+    private String normalizeMoney(String value) {
+        return value == null ? "" : value.replaceAll("[^0-9]", "");
     }
 
     @Override

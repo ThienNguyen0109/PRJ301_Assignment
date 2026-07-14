@@ -38,8 +38,8 @@ public class ProfileController extends HttpServlet {
             return;
         }
 
-        if (!phone.matches("\\d{10,11}")) {
-            redirectPhoneUpdateError(request, response, session, returnTo, "Số điện thoại phải gồm 10 đến 11 chữ số.");
+        if (!phone.matches("\\d{10}")) {
+            redirectPhoneUpdateError(request, response, session, returnTo, "Số điện thoại phải gồm đúng 10 chữ số.");
             return;
         }
 

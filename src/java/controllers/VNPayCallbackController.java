@@ -131,7 +131,7 @@ public class VNPayCallbackController extends HttpServlet {
         if ("00".equals(responseCode)) {
             try {
                 BookingDetail detail = bookingService.completeVNPayBooking(customer, quote, orderId, transactionNo);
-                EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
+                sendBookingEmailSafely(customer, detail);
                 session.setAttribute("bookingDetail", detail);
                 clearBookingSession(session);
                 response.sendRedirect(request.getContextPath() + "?action=booking-detail");
@@ -212,6 +212,17 @@ public class VNPayCallbackController extends HttpServlet {
 
     private String encode(String value) throws IOException {
         return java.net.URLEncoder.encode(value == null ? "" : value, "UTF-8");
+    }
+
+    private void sendBookingEmailSafely(Account customer, BookingDetail detail) {
+        try {
+            boolean sent = EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
+            if (!sent) {
+                LOGGER.log(Level.WARNING, "Booking was completed but confirmation email was not sent.");
+            }
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.WARNING, "Booking was completed but confirmation email failed.", ex);
+        }
     }
 }
 

@@ -16,21 +16,30 @@
         <title>Ví - E-Vehicle Rental</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
     </head>
-    <body class="customer-page">
+    <body class="customer-page wallet-page">
         <c:set var="navName" value="${empty sessionScope.user.fullName ? 'User' : sessionScope.user.fullName}" />
         <c:set var="navInitial" value="${fn:substring(navName, 0, 1)}" />
 
         <nav class="customer-navbar">
             <a class="brand-link" href="${pageContext.request.contextPath}?action=home">
-                <span class="brand-logo">EV</span>
-                <span>E-Vehicle Rental System</span>
+                <span class="brand-logo">
+                    <img src="${pageContext.request.contextPath}/assets/images/logo/logo.png" alt="E-Vehicle Rental">
+                </span>
             </a>
             <div class="customer-menu">
                 <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                <a class="active" href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
-                <span class="nav-user"><span class="nav-avatar"><c:out value="${navInitial}"/></span><c:out value="${navName}"/></span>
+                <details class="nav-account-menu">
+                    <summary class="nav-user active">
+                        <span class="nav-avatar"><c:out value="${navInitial}"/></span>
+                        <span><c:out value="${navName}"/></span>
+                        <span class="nav-caret">▾</span>
+                    </summary>
+                    <div class="nav-dropdown">
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
+                        <a class="active" href="${pageContext.request.contextPath}?action=wallet">Ví</a>
+                        <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                    </div>
+                </details>
                 <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
             </div>
         </nav>
@@ -45,11 +54,6 @@
                             <c:when test="${not empty wallet}"><fmt:formatNumber value="${wallet.balance}" pattern="#,##0.00" /> VND</c:when>
                             <c:otherwise>0 VND</c:otherwise>
                         </c:choose>
-                    </div>
-                    <div class="wallet-meta">
-                        <span>Chủ ví: <c:out value="${navName}"/></span>
-                        <span>Wallet ID: <c:choose><c:when test="${not empty wallet.walletId}"><c:out value="${fn:substring(wallet.walletId, 0, 8)}"/>...</c:when><c:otherwise>Chưa tạo ví</c:otherwise></c:choose></span>
-                        <span>Cập nhật: <c:choose><c:when test="${not empty wallet.updatedAt}"><fmt:formatDate value="${wallet.updatedAt}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise>Theo thời gian giao dịch</c:otherwise></c:choose></span>
                     </div>
                     <div class="hero-actions">
                         <a class="btn-gold" href="#topupForm">Nạp tiền</a>
@@ -68,6 +72,10 @@
 
                     <c:if test="${topupSuccess}">
                         <div class="alert success">Nạp tiền thành công. Đã cộng <fmt:formatNumber value="${topupSuccessAmount}" pattern="#,##0" /> VND vào ví.</div>
+                    </c:if>
+
+                    <c:if test="${not empty error}">
+                        <div class="alert error"><c:out value="${error}"/></div>
                     </c:if>
 
                     <c:if test="${not empty paymentError}">
@@ -95,9 +103,10 @@
                         </div>
 
                         <div class="field">
-                            <label for="amount">Hoặc nhập số tiền (VND) *</label>
-                            <input class="wallet-input" type="number" id="amount" name="amount" placeholder="Nhập số tiền từ 10.000 đến 100.000.000"
-                                   min="10000" max="100000000" step="1000" required>
+                            <label for="amountDisplay">Hoặc nhập số tiền (VND) *</label>
+                            <input class="wallet-input money-display-input" type="text" id="amountDisplay" inputmode="numeric" value="${amount}" placeholder="Nhập số tiền từ 10.000 đến 10.000.000"
+                                   data-money-target="amount" data-money-min="10000" data-money-max="10000000" required>
+                            <input type="hidden" id="amount" name="amount" value="${amount}">
                         </div>
 
                         <button type="submit" class="btn-gold" style="width:100%; margin-top:14px;">Nạp tiền bằng VNPay</button>
@@ -189,9 +198,18 @@
             </footer>
         </main>
 
+        <script src="${pageContext.request.contextPath}/assets/js/money-input.js"></script>
         <script>
             function setAmount(amount) {
-                document.getElementById('amount').value = amount;
+                var display = document.getElementById('amountDisplay');
+                var hidden = document.getElementById('amount');
+                if (display && hidden) {
+                    hidden.value = amount;
+                    display.value = window.formatMoneyInputValue ? window.formatMoneyInputValue(amount) : amount;
+                    if (window.syncMoneyInput) {
+                        window.syncMoneyInput(display);
+                    }
+                }
             }
 
             (function () {
@@ -225,6 +243,14 @@
                     filtered.slice((page - 1) * pageSize, page * pageSize).forEach(row => row.style.display = '');
                     count.textContent = filtered.length ? `Hiển thị ${(page - 1) * pageSize + 1} - ${Math.min(page * pageSize, filtered.length)} / ${filtered.length} giao dịch` : 'Không có giao dịch phù hợp';
                     pagination.innerHTML = '';
+                    const previous = document.createElement('button');
+                    previous.type = 'button';
+                    previous.className = 'page-link' + (page <= 1 ? ' disabled' : '');
+                    previous.textContent = 'Trước';
+                    previous.disabled = page <= 1;
+                    previous.onclick = function () { if (page > 1) { page--; render(); } };
+                    pagination.appendChild(previous);
+
                     for (let i = 1; i <= totalPages; i++) {
                         const button = document.createElement('button');
                         button.type = 'button';
@@ -233,6 +259,14 @@
                         button.onclick = function () { page = i; render(); };
                         pagination.appendChild(button);
                     }
+
+                    const next = document.createElement('button');
+                    next.type = 'button';
+                    next.className = 'page-link' + (page >= totalPages ? ' disabled' : '');
+                    next.textContent = 'Sau';
+                    next.disabled = page >= totalPages;
+                    next.onclick = function () { if (page < totalPages) { page++; render(); } };
+                    pagination.appendChild(next);
                 }
 
                 search.addEventListener('input', applyFilter);

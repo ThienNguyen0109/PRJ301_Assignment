@@ -2,6 +2,7 @@ package controllers;
 
 import daos.IVehicleSearchDAO;
 import daos.VehicleSearchDAO;
+import daos.AccountDAO;
 import daos.CustomerRentalHistoryDAO;
 import daos.WalletDAO;
 import daos.WalletTransactionDAO;
@@ -41,6 +42,7 @@ public class PageController extends HttpServlet {
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO walletTransactionDAO = new WalletTransactionDAO();
     private CustomerRentalHistoryDAO customerRentalHistoryDAO = new CustomerRentalHistoryDAO();
+    private AccountDAO accountDAO = new AccountDAO();
     private BookingService bookingService = new BookingService();
 
     @Override
@@ -280,6 +282,13 @@ public class PageController extends HttpServlet {
 
     private void prepareProfilePage(HttpServletRequest request, HttpSession session) {
         Account user = (Account) session.getAttribute("user");
+        Account latestUser = accountDAO.getAccountByEmail(user.getEmail());
+        if (latestUser != null) {
+            user = latestUser;
+            session.setAttribute("user", latestUser);
+            session.setAttribute("userName", latestUser.getFullName());
+            session.setAttribute("userEmail", latestUser.getEmail());
+        }
         long totalRentalHistories = customerRentalHistoryDAO.countByCustomerId(user.getAccountId());
         int totalRentalPages = (int) Math.ceil(totalRentalHistories / (double) RENTAL_HISTORY_PAGE_SIZE);
         if (totalRentalPages < 1) {
@@ -292,8 +301,8 @@ public class PageController extends HttpServlet {
         int offset = (rentalPage - 1) * RENTAL_HISTORY_PAGE_SIZE;
 
         request.setAttribute("profileUser", user);
-        request.setAttribute("displayName", firstNonBlank((String) session.getAttribute("userName"), user.getFullName()));
-        request.setAttribute("displayEmail", firstNonBlank((String) session.getAttribute("userEmail"), user.getEmail()));
+        request.setAttribute("displayName", firstNonBlank(user.getFullName(), (String) session.getAttribute("userName")));
+        request.setAttribute("displayEmail", firstNonBlank(user.getEmail(), (String) session.getAttribute("userEmail")));
         request.setAttribute("wallet", walletDAO.getWalletByAccountId(user.getAccountId()));
         request.setAttribute("rentalHistories", customerRentalHistoryDAO.findByCustomerId(
                 user.getAccountId(), offset, RENTAL_HISTORY_PAGE_SIZE));

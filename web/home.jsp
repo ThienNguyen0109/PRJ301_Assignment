@@ -30,10 +30,18 @@
             </a>
             <div class="customer-menu">
                 <a class="active" href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
-                <span class="nav-user"><span class="nav-avatar"><c:out value="${navInitial}"/></span><c:out value="${navName}"/></span>
+                <details class="nav-account-menu">
+                    <summary class="nav-user">
+                        <span class="nav-avatar"><c:out value="${navInitial}"/></span>
+                        <span><c:out value="${navName}"/></span>
+                        <span class="nav-caret">▾</span>
+                    </summary>
+                    <div class="nav-dropdown">
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
+                        <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
+                        <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                    </div>
+                </details>
                 <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
             </div>
         </nav>

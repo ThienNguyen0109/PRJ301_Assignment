@@ -74,8 +74,9 @@
                                             <select class="form-select" id="severity" name="severity" style="margin:8px 0 16px">
                                                 <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option>
                                             </select>
-                                            <label for="damageFee"><strong>Damage Fee (VND)</strong></label>
-                                            <input class="form-control" id="damageFee" name="damageFee" type="number" min="0" step="1000" value="0" style="margin:8px 0 16px">
+                                            <label for="damageFeeDisplay"><strong>Damage Fee (VND)</strong></label>
+                                            <input class="form-control money-display-input" id="damageFeeDisplay" type="text" inputmode="numeric" value="0" data-money-target="damageFee" data-money-min="0" style="margin:8px 0 16px">
+                                            <input type="hidden" id="damageFee" name="damageFee" value="0">
                                         </div>
                                         <div id="extraChargePaymentBlock" style="margin-bottom:16px">
                                             <label for="extraChargePaymentMethod"><strong>Extra Charge Payment</strong></label>
@@ -114,6 +115,7 @@
             <div class="modal-footer"><button class="btn btn-light" type="button" onclick="closeReturnModal()">Cancel</button><button class="btn btn-primary" type="button" onclick="document.getElementById('returnForm').submit()">Confirm Return</button></div>
         </div>
     </div>
+    <script src="${pageContext.request.contextPath}/assets/js/money-input.js"></script>
     <script>
         function toggleDamageFields() {
             var damaged = document.getElementById('condition').value === 'DAMAGED';
@@ -121,7 +123,7 @@
             fields.hidden = !damaged;
             document.getElementById('damageDescription').required = damaged;
             document.getElementById('severity').required = damaged;
-            document.getElementById('damageFee').required = damaged;
+            document.getElementById('damageFeeDisplay').required = damaged;
         }
         function openReturnModal() {
             var form = document.getElementById('returnForm');

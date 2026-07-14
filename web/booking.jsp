@@ -221,7 +221,7 @@
                     <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST">
                         <input type="hidden" name="returnTo" value="${bookingReturnUrl}">
                         <label for="bookingPhone">Số điện thoại</label>
-                        <input id="bookingPhone" type="tel" name="phone" pattern="[0-9]{10,11}" maxlength="11" placeholder="Nhập số điện thoại 10-11 chữ số" required autofocus>
+                        <input id="bookingPhone" type="tel" name="phone" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại 10 chữ số" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required autofocus>
                         <c:if test="${not empty bookingPhoneError}">
                             <div class="field-error">${bookingPhoneError}</div>
                         </c:if>

@@ -72,7 +72,7 @@ public class BookingController extends HttpServlet {
             PaymentMethod paymentMethod = PaymentMethod.fromValue(paymentMethodValue);
             if (paymentMethod == PaymentMethod.WALLET) {
                 BookingDetail detail = bookingService.payByWallet(customer, quote);
-                EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
+                sendBookingEmailSafely(customer, detail);
                 session.setAttribute("bookingDetail", detail);
                 response.sendRedirect(request.getContextPath() + "?action=booking-detail");
                 return;
@@ -154,6 +154,17 @@ public class BookingController extends HttpServlet {
             return fresh;
         }
         return customer;
+    }
+
+    private void sendBookingEmailSafely(Account customer, BookingDetail detail) {
+        try {
+            boolean sent = EmailService.sendBookingConfirmationEmail(customer.getEmail(), customer, detail);
+            if (!sent) {
+                LOGGER.log(Level.WARNING, "Booking was created but confirmation email was not sent.");
+            }
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.WARNING, "Booking was created but confirmation email failed.", ex);
+        }
     }
 
     private boolean isBlank(String value) {

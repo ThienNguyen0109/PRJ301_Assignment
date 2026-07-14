@@ -102,7 +102,7 @@ public class BookingService {
             createRentalStatusHistory(em, rental.getRentalId(), RentalStatus.BOOKED);
 
             tx.commit();
-            publishBookingSuccess(customer.getAccountId(), freshQuote, PaymentMethod.WALLET);
+            publishBookingSuccessSafely(customer.getAccountId(), freshQuote, PaymentMethod.WALLET);
             return buildDetail(rental.getRentalId(), payment.getPaymentId(), PaymentMethod.WALLET,
                     PaymentStatus.SUCCESS, "WALLET", freshQuote);
         } catch (SQLException ex) {
@@ -178,7 +178,7 @@ public class BookingService {
             updateVehicleStatus(em, quote.getVehicleId(), VehicleStatus.RENTED);
 
             tx.commit();
-            publishBookingSuccess(customer.getAccountId(), quote, PaymentMethod.VNPAY);
+            publishBookingSuccessSafely(customer.getAccountId(), quote, PaymentMethod.VNPAY);
             return buildDetail(payment.getRentalId(), payment.getPaymentId(), PaymentMethod.VNPAY,
                     PaymentStatus.SUCCESS, transactionNo, quote);
         } catch (SQLException ex) {
@@ -475,6 +475,14 @@ public class BookingService {
                 vehicleName + " availability has been updated.");
         RealtimeEventPublisher.customer(customerId, "RENTAL_BOOKED", "Booking confirmed",
                 "Your booking has been confirmed.");
+    }
+
+    private void publishBookingSuccessSafely(String customerId, BookingQuote quote, PaymentMethod method) {
+        try {
+            publishBookingSuccess(customerId, quote, method);
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.WARNING, "Booking was committed but realtime notification failed.", ex);
+        }
     }
 
     private void validateDates(Date startDate, Date endDate) throws SQLException {

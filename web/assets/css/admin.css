@@ -69,14 +69,57 @@ button, input, select { font: inherit; }
 .admin-user strong { display: block; color: #fff; font-size: 14px; }
 .admin-user span { display: block; margin-top: 5px; color: #93a4bd; font-size: 12px; }
 .admin-nav-group { padding: 10px 14px 6px; }
+.admin-nav-section {
+    margin: 7px 0;
+    border: 1px solid rgba(148, 163, 184, .08);
+    border-radius: 13px;
+    background: rgba(15, 23, 42, .28);
+    overflow: hidden;
+}
+
+.admin-nav-section[open] {
+    background: rgba(15, 23, 42, .44);
+    border-color: rgba(59, 130, 246, .16);
+}
+
+.admin-nav-section summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.admin-nav-section summary::-webkit-details-marker {
+    display: none;
+}
+
 .admin-nav-label {
-    padding: 14px 8px 8px;
+    padding: 13px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     color: #64748b;
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 1.2px;
     text-transform: uppercase;
 }
+
+.admin-nav-caret {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #94a3b8;
+    border-bottom: 2px solid #94a3b8;
+    transform: rotate(45deg);
+    transition: transform .2s ease;
+}
+
+.admin-nav-section[open] .admin-nav-label {
+    color: #cbd5e1;
+}
+
+.admin-nav-section[open] .admin-nav-caret {
+    transform: rotate(225deg);
+}
+
 .admin-nav-link {
     min-height: 42px;
     margin: 3px 0;
@@ -90,6 +133,10 @@ button, input, select { font: inherit; }
     font-size: 13px;
     font-weight: 750;
     transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.admin-nav-section .admin-nav-link {
+    margin: 3px 8px 8px;
 }
 .admin-nav-link:hover {
     color: #fff;

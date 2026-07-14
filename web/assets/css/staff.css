@@ -125,13 +125,29 @@ button, input, select, textarea { font: inherit; }
 .btn-sm { min-height: 34px; padding: 7px 10px; }
 .action-group { display: flex; gap: 7px; flex-wrap: wrap; }
 
-.table-responsive { width: 100%; overflow-x: auto; }
-.staff-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.table-responsive { width: 100%; overflow-x: visible; }
+.staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 0;
+    table-layout: fixed;
+}
 .staff-table th {
     padding: 12px 14px; color: #4b5563; background: #f9fafb; border-bottom: 1px solid var(--staff-border);
     text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .4px;
 }
-.staff-table td { padding: 13px 14px; color: #4b5563; border-bottom: 1px solid #eef0f3; font-size: 13px; }
+.staff-table td {
+    padding: 13px 14px;
+    color: #4b5563;
+    border-bottom: 1px solid #eef0f3;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.staff-table th {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
 .staff-table tbody tr:hover td { background: #f8fbff; }
 .staff-table strong { color: #111827; }
 .badge {
