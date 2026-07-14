@@ -99,6 +99,30 @@ body.customer-page::after {
     justify-content: flex-end;
 }
 
+.language-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--line);
+}
+
+.language-switch a {
+    min-width: 34px;
+    text-align: center;
+    padding: 7px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.language-switch a.active {
+    color: #07111f;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    border-color: rgba(244,201,93,.5);
+}
+
 .customer-menu a {
     color: rgba(248, 250, 252, 0.86);
     text-decoration: none;
@@ -461,14 +485,16 @@ body.customer-page::after {
 }
 
 .nav-caret {
-    color: rgba(248, 250, 252, 0.72);
-    font-size: 12px;
-    line-height: 1;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid rgba(248, 250, 252, 0.72);
+    border-bottom: 2px solid rgba(248, 250, 252, 0.72);
+    transform: rotate(45deg);
     transition: transform 0.2s ease;
 }
 
 .nav-account-menu[open] .nav-caret {
-    transform: rotate(180deg);
+    transform: rotate(225deg);
 }
 
 .nav-dropdown {

@@ -1,4 +1,4 @@
-﻿<%--
+<%--
     Document   : home
     Created on : June 5, 2026
     Author     : thien
@@ -8,12 +8,13 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ include file="/WEB-INF/jspf/customer-i18n.jspf" %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Trang Chủ - E-Vehicle Rental</title>
+        <title><fmt:message key="home.title"/></title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
     </head>
     <body class="customer-page">
@@ -29,20 +30,21 @@
                 </span>
             </a>
             <div class="customer-menu">
-                <a class="active" href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a class="active" href="${pageContext.request.contextPath}?action=home"><fmt:message key="nav.home"/></a>
                 <details class="nav-account-menu">
                     <summary class="nav-user">
                         <span class="nav-avatar"><c:out value="${navInitial}"/></span>
                         <span><c:out value="${navName}"/></span>
-                        <span class="nav-caret">▾</span>
+                        <span class="nav-caret"></span>
                     </summary>
                     <div class="nav-dropdown">
-                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                        <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                        <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history"><fmt:message key="nav.myBookings"/></a>
+                        <a href="${pageContext.request.contextPath}?action=wallet"><fmt:message key="nav.wallet"/></a>
+                        <a href="${pageContext.request.contextPath}?action=profile"><fmt:message key="nav.profile"/></a>
                     </div>
                 </details>
-                <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+                <%@ include file="/WEB-INF/jspf/customer-language-switch.jspf" %>
+                <a class="logout-link" href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout"/></a>
             </div>
         </nav>
 
@@ -54,17 +56,17 @@
                     </video>
                 </div>
                 <div class="hero-content">
-                    <span class="kicker hero-badge">Premium Electric Mobility</span>
-                    <h1 class="hero-title">Thuê xe điện linh hoạt <span class="highlight">cho mọi hành trình.</span></h1>
-                    <p class="hero-copy hero-description">Chọn trạm, chọn mẫu xe và đặt xe chỉ trong vài bước. Tận hưởng trải nghiệm thuê xe điện sạch, nhanh và hiện đại.</p>
+                    <span class="kicker hero-badge"><fmt:message key="home.heroKicker"/></span>
+                    <h1 class="hero-title"><fmt:message key="home.heroTitle"/> <span class="highlight"><fmt:message key="home.heroHighlight"/></span></h1>
+                    <p class="hero-copy hero-description"><fmt:message key="home.heroCopy"/></p>
                     <div class="hero-actions">
-                        <a class="btn-gold" href="#search-section">Tìm xe ngay</a>
-                        <a class="btn-ghost" href="#vehicle-list">Xem các trạm</a>
+                        <a class="btn-gold" href="#search-section"><fmt:message key="home.findNow"/></a>
+                        <a class="btn-ghost" href="#vehicle-list"><fmt:message key="home.viewStations"/></a>
                     </div>
                     <div class="hero-stats">
-                        <div class="stat-tile"><strong>${empty stations ? 0 : fn:length(stations)}</strong><span>Số trạm</span></div>
-                        <div class="stat-tile"><strong>${empty categories ? 0 : fn:length(categories)}</strong><span>Nhóm xe</span></div>
-                        <div class="stat-tile"><strong>24/7</strong><span>Hỗ trợ đặt xe</span></div>
+                        <div class="stat-tile"><strong>${empty stations ? 0 : fn:length(stations)}</strong><span><fmt:message key="home.stationCount"/></span></div>
+                        <div class="stat-tile"><strong>${empty categories ? 0 : fn:length(categories)}</strong><span><fmt:message key="home.categoryCount"/></span></div>
+                        <div class="stat-tile"><strong>24/7</strong><span><fmt:message key="home.support"/></span></div>
                     </div>
                 </div>
             </section>
@@ -72,9 +74,9 @@
             <section id="search-section" class="glass-card search-panel">
                 <div class="section-head">
                     <div>
-                        <span class="kicker">Search Vehicle</span>
-                        <h2>Tìm xe điện</h2>
-                        <p>Chọn trạm hoặc loại xe để xem các mẫu xe đang có. Ngày thuê sẽ được kiểm tra ở bước chọn xe.</p>
+                        <span class="kicker"><fmt:message key="home.searchKicker"/></span>
+                        <h2><fmt:message key="home.searchTitle"/></h2>
+                        <p><fmt:message key="home.searchCopy"/></p>
                     </div>
                 </div>
 
@@ -89,7 +91,7 @@
                         <div class="input-wrap">
                             <span class="input-icon">ST</span>
                             <select id="stationId" name="stationId">
-                                <option value="">Tất cả trạm</option>
+                                <option value=""><fmt:message key="home.allStations"/></option>
                                 <c:forEach var="station" items="${stations}">
                                     <option value="${station.stationId}" ${station.stationId eq selectedStationId ? 'selected' : ''}>
                                         <c:out value="${station.name}"/>
@@ -104,7 +106,7 @@
                         <div class="input-wrap">
                             <span class="input-icon">CT</span>
                             <select id="categoryId" name="categoryId">
-                                <option value="">Tất cả loại xe</option>
+                                <option value=""><fmt:message key="home.allCategories"/></option>
                                 <c:forEach var="category" items="${categories}">
                                     <option value="${category.categoryId}" ${category.categoryId eq selectedCategoryId ? 'selected' : ''}>
                                         <c:out value="${category.name}"/>
@@ -129,7 +131,7 @@
                         <a class="category-pill" href="${categoryUrl}"><c:out value="${category.name}"/></a>
                     </c:forEach>
                     <c:if test="${searchPerformed}">
-                        <a class="category-pill" href="${pageContext.request.contextPath}?action=home">Xóa bộ lọc</a>
+                        <a class="category-pill" href="${pageContext.request.contextPath}?action=home"><fmt:message key="home.clearFilter"/></a>
                     </c:if>
                 </div>
             </section>
@@ -138,9 +140,9 @@
                 <section id="vehicle-list" class="glass-card vehicle-section">
                     <div class="section-head">
                         <div>
-                            <span class="kicker">Available Models</span>
-                            <h2>Mẫu xe tại các trạm</h2>
-                            <p>Chọn mẫu xe rồi nhập ngày thuê để hệ thống kiểm tra xe trống chính xác.</p>
+                            <span class="kicker"><fmt:message key="home.availableKicker"/></span>
+                            <h2><fmt:message key="home.availableTitle"/></h2>
+                            <p><fmt:message key="home.availableCopy"/></p>
                         </div>
                     </div>
                     <div class="vehicle-grid">
@@ -158,12 +160,12 @@
                 <section id="vehicle-list" class="glass-card vehicle-section">
                     <div class="section-head">
                         <div>
-                            <span class="kicker">Search Results</span>
-                            <h2>Kết quả tìm kiếm</h2>
+                            <span class="kicker"><fmt:message key="home.resultsKicker"/></span>
+                            <h2><fmt:message key="home.resultsTitle"/></h2>
                             <p>
                                 <c:choose>
                                     <c:when test="${empty selectedStationId and empty selectedCategoryId}">
-                                        <span class="filter-chip">Tất cả xe có sẵn</span>
+                                        <span class="filter-chip"><fmt:message key="home.allAvailable"/></span>
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="station" items="${stations}">
@@ -190,7 +192,7 @@
                             <%@ include file="WEB-INF/jspf/home-pagination.jspf" %>
                         </c:when>
                         <c:when test="${empty searchError}">
-                            <div class="empty-state">Không tìm thấy mẫu xe phù hợp với bộ lọc đã chọn.</div>
+                            <div class="empty-state"><fmt:message key="home.noResults"/></div>
                         </c:when>
                     </c:choose>
                 </section>
@@ -199,22 +201,22 @@
             <section class="glass-card benefit-section">
                 <div class="section-head">
                     <div>
-                        <span class="kicker">Why Choose Us</span>
-                        <h2>Vì sao chọn E-Vehicle Rental?</h2>
+                        <span class="kicker"><fmt:message key="home.whyKicker"/></span>
+                        <h2><fmt:message key="home.whyTitle"/></h2>
                     </div>
                 </div>
                 <div class="why-grid">
-                    <article class="benefit-card"><h3>Nhiều trạm nhận xe</h3><p>Dễ dàng chọn trạm phù hợp với lịch trình di chuyển của bạn.</p></article>
-                    <article class="benefit-card"><h3>Wallet hoặc VNPay</h3><p>Thanh toán linh hoạt, theo dõi giao dịch rõ ràng trong ví.</p></article>
-                    <article class="benefit-card"><h3>Thân thiện môi trường</h3><p>Các dòng xe điện sạch, tiết kiệm và phù hợp di chuyển đô thị.</p></article>
-                    <article class="benefit-card"><h3>Quy trình đơn giản</h3><p>Đặt xe, nhận xe và trả xe theo flow rõ ràng, dễ thao tác.</p></article>
+                    <article class="benefit-card"><h3><fmt:message key="home.benefitStationsTitle"/></h3><p><fmt:message key="home.benefitStationsCopy"/></p></article>
+                    <article class="benefit-card"><h3><fmt:message key="home.benefitPaymentTitle"/></h3><p><fmt:message key="home.benefitPaymentCopy"/></p></article>
+                    <article class="benefit-card"><h3><fmt:message key="home.benefitEcoTitle"/></h3><p><fmt:message key="home.benefitEcoCopy"/></p></article>
+                    <article class="benefit-card"><h3><fmt:message key="home.benefitSimpleTitle"/></h3><p><fmt:message key="home.benefitSimpleCopy"/></p></article>
                 </div>
             </section>
 
             <footer class="footer-card">
                 <div><strong>E-Vehicle Rental System</strong><br>Premium electric mobility for students and city riders.</div>
-                <div>Liên hệ<br>hotro@evehicle.vn</div>
-                <div>Hỗ trợ<br>Wallet, VNPay, Booking</div>
+                <div><fmt:message key="footer.contact"/><br>hotro@evehicle.vn</div>
+                <div><fmt:message key="footer.support"/><br>Wallet, VNPay, Booking</div>
                 <div>© 2026 E-Vehicle Rental System</div>
             </footer>
         </main>
@@ -223,12 +225,12 @@
             <div class="customer-modal-backdrop" id="phoneUpdateModal" role="dialog" aria-modal="true" aria-labelledby="phoneUpdateTitle">
                 <div class="customer-modal">
                     <button class="modal-close" type="button" aria-label="Đóng thông báo" onclick="closePhoneUpdateModal()">x</button>
-                    <span class="kicker">Complete Profile</span>
-                    <h2 id="phoneUpdateTitle">Cập nhật số điện thoại</h2>
-                    <p>Bạn đã đăng nhập bằng Google thành công. Hãy cập nhật số điện thoại để staff có thể xác minh khi nhận xe và để quá trình booking diễn ra trọn vẹn.</p>
+                    <span class="kicker"><fmt:message key="home.phonePromptKicker"/></span>
+                    <h2 id="phoneUpdateTitle"><fmt:message key="home.phonePromptTitle"/></h2>
+                    <p><fmt:message key="home.phonePromptCopy"/></p>
                     <div class="modal-actions">
-                        <a class="btn-gold" href="${pageContext.request.contextPath}?action=profile#phone-update">Cập nhật ngay</a>
-                        <button class="btn-ghost" type="button" onclick="closePhoneUpdateModal()">Để sau</button>
+                        <a class="btn-gold" href="${pageContext.request.contextPath}?action=profile#phone-update"><fmt:message key="home.updateNow"/></a>
+                        <button class="btn-ghost" type="button" onclick="closePhoneUpdateModal()"><fmt:message key="home.later"/></button>
                     </div>
                 </div>
             </div>

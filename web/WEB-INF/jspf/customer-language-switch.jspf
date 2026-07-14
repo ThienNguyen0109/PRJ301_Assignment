@@ -1,0 +1,12 @@
+<c:url var="switchToViUrl" value="/">
+    <c:param name="action" value="set-language" />
+    <c:param name="lang" value="vi" />
+</c:url>
+<c:url var="switchToEnUrl" value="/">
+    <c:param name="action" value="set-language" />
+    <c:param name="lang" value="en" />
+</c:url>
+<div class="language-switch" aria-label="Language">
+    <a class="${currentLang ne 'en' ? 'active' : ''}" href="${switchToViUrl}">VI</a>
+    <a class="${currentLang eq 'en' ? 'active' : ''}" href="${switchToEnUrl}">EN</a>
+</div>

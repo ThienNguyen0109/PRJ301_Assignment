@@ -1,0 +1,3 @@
+<c:set var="currentLang" value="${empty sessionScope.lang ? 'vi' : sessionScope.lang}" />
+<fmt:setLocale value="${currentLang eq 'en' ? 'en_US' : 'vi_VN'}" />
+<fmt:setBundle basename="i18n.messages" />

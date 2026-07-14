@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ include file="/WEB-INF/jspf/customer-i18n.jspf" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -115,6 +116,9 @@
                 box-shadow: 0 0 0 4px rgba(218,183,99,0.14);
             }
             .booking-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+            .language-switch { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); }
+            .language-switch a { min-width: 34px; padding: 7px 9px; text-align: center; font-size: 12px; font-weight: 900; }
+            .language-switch a.active { color: #09111f; background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%); }
             @media (max-width: 760px) {
                 .navbar { padding: 14px 18px; align-items: flex-start; gap: 12px; flex-direction: column; }
                 .navbar-menu { width: 100%; justify-content: space-between; }
@@ -128,9 +132,10 @@
         <div class="navbar">
             <h1>🚗 E-Vehicle Rental System</h1>
             <div class="navbar-menu">
-                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
-                <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
-                <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
+                <a href="${pageContext.request.contextPath}?action=home"><fmt:message key="nav.home"/></a>
+                <a href="${pageContext.request.contextPath}?action=profile"><fmt:message key="nav.profile"/></a>
+                <%@ include file="/WEB-INF/jspf/customer-language-switch.jspf" %>
+                <a href="${pageContext.request.contextPath}/logout" class="logout-btn"><fmt:message key="nav.logout"/></a>
             </div>
         </div>
 

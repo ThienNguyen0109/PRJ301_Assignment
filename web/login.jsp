@@ -1,10 +1,13 @@
-﻿<%--
+<%--
     Document   : login
     Created on : May 28, 2026
     Author     : thien
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ include file="/WEB-INF/jspf/customer-i18n.jspf" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -292,6 +295,33 @@
             @keyframes lightSweep { 0%, 46% { opacity: 0; transform: translateX(-55%) rotate(.001deg); } 58% { opacity: .65; } 76%, 100% { opacity: 0; transform: translateX(55%) rotate(.001deg); } }
 
             @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
+
+            .language-switch {
+                position: absolute;
+                top: 18px;
+                right: 18px;
+                display: inline-flex;
+                gap: 4px;
+                padding: 4px;
+                border-radius: 999px;
+                background: rgba(255,255,255,.12);
+                border: 1px solid rgba(255,255,255,.2);
+            }
+            .language-switch a {
+                min-width: 34px;
+                padding: 7px 9px;
+                border-radius: 999px;
+                color: rgba(248,250,252,.78);
+                text-decoration: none;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+            }
+            .login-container .language-switch a { color: #334155; }
+            .language-switch a.active {
+                color: #09111f;
+                background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%);
+            }
             @media (max-width: 860px) { .login-shell { grid-template-columns: 1fr; } .brand-panel { min-height: auto; } .brand-mark { margin-bottom: 34px; } }
             @media (max-width: 520px) { body { padding: 16px; } .brand-panel, .login-container { padding: 26px; } .brand-title { font-size: 30px; } }
 
@@ -434,6 +464,33 @@
                 box-shadow: 0 12px 30px rgba(15,23,42,.08);
             }
 
+
+            .language-switch {
+                position: absolute;
+                top: 18px;
+                right: 18px;
+                display: inline-flex;
+                gap: 4px;
+                padding: 4px;
+                border-radius: 999px;
+                background: rgba(255,255,255,.12);
+                border: 1px solid rgba(255,255,255,.2);
+            }
+            .language-switch a {
+                min-width: 34px;
+                padding: 7px 9px;
+                border-radius: 999px;
+                color: rgba(248,250,252,.78);
+                text-decoration: none;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+            }
+            .login-container .language-switch a { color: #334155; }
+            .language-switch a.active {
+                color: #09111f;
+                background: linear-gradient(135deg, #f8df9d 0%, #d6a94e 100%);
+            }
             @media (max-width: 860px) {
                 .login-shell {
                     grid-template-columns: 1fr;
@@ -454,19 +511,20 @@
                 <div class="brand-mark">
                     <img src="<%= request.getContextPath() %>/assets/images/logo/logo.png" alt="E-Vehicle Rental">
                 </div>
-                <div class="brand-kicker">Premium Electric Mobility</div>
-                <h2 class="brand-title">Di chuyển xanh <span class="accent">chuẩn cao cấp.</span></h2>
-                <p class="brand-copy">Đăng nhập để quản lý ví, thuê xe điện và theo dõi mọi giao dịch trong một không gian hiện đại.</p>
+                <div class="brand-kicker"><fmt:message key="auth.kicker"/></div>
+                <h2 class="brand-title"><fmt:message key="auth.titleLine1"/> <span class="accent"><fmt:message key="auth.titleLine2"/></span></h2>
+                <p class="brand-copy"><fmt:message key="auth.copy"/></p>
                 <div class="brand-points">
-                    <span>Ví điện tử</span>
-                    <span>Đặt xe nhanh</span>
-                    <span>Trạm gần bạn</span>
+                    <span><fmt:message key="auth.pointWallet"/></span>
+                    <span><fmt:message key="auth.pointBooking"/></span>
+                    <span><fmt:message key="auth.pointStation"/></span>
                 </div>
             </section>
 
             <div class="login-container">
-                <h1>Đăng Nhập</h1>
-                <p class="subtitle">E-Vehicle Rental System</p>
+                <%@ include file="/WEB-INF/jspf/customer-language-switch.jspf" %>
+                <h1><fmt:message key="auth.loginTitle"/></h1>
+                <p class="subtitle"><fmt:message key="auth.subtitle"/></p>
 
                 <%
                     Object successMsg = session.getAttribute("registrationSuccess");
@@ -497,31 +555,31 @@
 
                 <form action="login" method="POST" accept-charset="UTF-8">
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="Nhập email của bạn" required value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>">
+                        <label for="email"><fmt:message key="auth.email"/></label>
+                        <input type="email" id="email" name="email" placeholder="Email" required value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>">
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Mật Khẩu</label>
-                        <input type="password" id="password" name="password" placeholder="Nhập mật khẩu của bạn" required>
+                        <label for="password"><fmt:message key="auth.password"/></label>
+                        <input type="password" id="password" name="password" placeholder="Password" required>
                     </div>
 
                     <div class="helper-row">
-                        <a href="<%= request.getContextPath() %>?action=reset-password">Quên mật khẩu?</a>
+                        <a href="<%= request.getContextPath() %>?action=reset-password"><fmt:message key="auth.forgotPassword"/></a>
                     </div>
 
-                    <button type="submit" class="login-btn">Đăng Nhập</button>
+                    <button type="submit" class="login-btn"><fmt:message key="auth.loginButton"/></button>
                 </form>
 
-                <div class="divider">hoặc</div>
+                <div class="divider"><fmt:message key="auth.or"/></div>
 
                 <a class="google-login-btn" href="<%= request.getContextPath() %>?action=google-login">
                     <span class="google-icon">G</span>
-                    Đăng nhập bằng Google
+                    <fmt:message key="auth.googleLogin"/>
                 </a>
 
                 <div class="footer-links">
-                    <a href="<%= request.getContextPath() %>?action=register">Đăng ký tài khoản</a>
+                    <a href="<%= request.getContextPath() %>?action=register"><fmt:message key="auth.registerLink"/></a>
                 </div>
             </div>
         </div>

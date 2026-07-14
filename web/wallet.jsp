@@ -1,4 +1,4 @@
-﻿<%--
+<%--
     Document   : wallet
     Created on : June 5, 2026
     Author     : thien
@@ -8,12 +8,13 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ include file="/WEB-INF/jspf/customer-i18n.jspf" %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Ví - E-Vehicle Rental</title>
+        <title><fmt:message key="wallet.title"/></title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
     </head>
     <body class="customer-page wallet-page">
@@ -27,28 +28,29 @@
                 </span>
             </a>
             <div class="customer-menu">
-                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=home"><fmt:message key="nav.home"/></a>
                 <details class="nav-account-menu">
                     <summary class="nav-user active">
                         <span class="nav-avatar"><c:out value="${navInitial}"/></span>
                         <span><c:out value="${navName}"/></span>
-                        <span class="nav-caret">▾</span>
+                        <span class="nav-caret"></span>
                     </summary>
                     <div class="nav-dropdown">
-                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                        <a class="active" href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                        <a href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history"><fmt:message key="nav.myBookings"/></a>
+                        <a class="active" href="${pageContext.request.contextPath}?action=wallet"><fmt:message key="nav.wallet"/></a>
+                        <a href="${pageContext.request.contextPath}?action=profile"><fmt:message key="nav.profile"/></a>
                     </div>
                 </details>
-                <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+                <%@ include file="/WEB-INF/jspf/customer-language-switch.jspf" %>
+                <a class="logout-link" href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout"/></a>
             </div>
         </nav>
 
         <main class="customer-container">
             <section class="wallet-grid">
                 <div class="wallet-balance-card">
-                    <span class="kicker">Premium Wallet</span>
-                    <p class="muted">Số dư hiện tại</p>
+                    <span class="kicker"><fmt:message key="wallet.kicker"/></span>
+                    <p class="muted"><fmt:message key="wallet.currentBalance"/></p>
                     <div class="wallet-balance" data-realtime-wallet-balance>
                         <c:choose>
                             <c:when test="${not empty wallet}"><fmt:formatNumber value="${wallet.balance}" pattern="#,##0.00" /> VND</c:when>
@@ -56,8 +58,8 @@
                         </c:choose>
                     </div>
                     <div class="hero-actions">
-                        <a class="btn-gold" href="#topupForm">Nạp tiền</a>
-                        <a class="btn-ghost" href="#transactionHistory">Lịch sử giao dịch</a>
+                        <a class="btn-gold" href="#topupForm"><fmt:message key="wallet.topup"/></a>
+                        <a class="btn-ghost" href="#transactionHistory"><fmt:message key="wallet.history"/></a>
                     </div>
                 </div>
 
@@ -65,13 +67,13 @@
                     <div class="section-head">
                         <div>
                             <span class="kicker">Top Up</span>
-                            <h2>Nạp tiền vào ví</h2>
-                            <p>Chọn số tiền hoặc nhập số tiền tùy chỉnh, sau đó thanh toán qua VNPay.</p>
+                            <h2><fmt:message key="wallet.topupTitle"/></h2>
+                            <p><fmt:message key="wallet.topupCopy"/></p>
                         </div>
                     </div>
 
                     <c:if test="${topupSuccess}">
-                        <div class="alert success">Nạp tiền thành công. Đã cộng <fmt:formatNumber value="${topupSuccessAmount}" pattern="#,##0" /> VND vào ví.</div>
+                        <div class="alert success"><fmt:message key="wallet.topupSuccess"/> <fmt:formatNumber value="${topupSuccessAmount}" pattern="#,##0" /> VND <fmt:message key="wallet.toWallet"/></div>
                     </c:if>
 
                     <c:if test="${not empty error}">
@@ -81,19 +83,19 @@
                     <c:if test="${not empty paymentError}">
                         <div class="alert error">
                             <c:choose>
-                                <c:when test="${paymentError eq 'payment_failed'}">Thanh toán thất bại. Vui lòng thử lại.</c:when>
-                                <c:when test="${paymentError eq 'invalid_hash'}">Lỗi xác thực. Vui lòng thử lại.</c:when>
-                                <c:when test="${paymentError eq 'order_mismatch'}">Mã đơn hàng không khớp. Vui lòng thử lại.</c:when>
-                                <c:when test="${paymentError eq 'update_failed'}">Lỗi cập nhật ví. Vui lòng liên hệ hỗ trợ.</c:when>
-                                <c:when test="${paymentError eq 'system_error'}">Lỗi hệ thống. Vui lòng thử lại.</c:when>
-                                <c:otherwise>Không thể xử lý giao dịch. Vui lòng thử lại.</c:otherwise>
+                                <c:when test="${paymentError eq 'payment_failed'}"><fmt:message key="wallet.paymentFailed"/></c:when>
+                                <c:when test="${paymentError eq 'invalid_hash'}"><fmt:message key="wallet.invalidHash"/></c:when>
+                                <c:when test="${paymentError eq 'order_mismatch'}"><fmt:message key="wallet.orderMismatch"/></c:when>
+                                <c:when test="${paymentError eq 'update_failed'}"><fmt:message key="wallet.updateFailed"/></c:when>
+                                <c:when test="${paymentError eq 'system_error'}"><fmt:message key="wallet.systemError"/></c:when>
+                                <c:otherwise><fmt:message key="wallet.cannotProcess"/></c:otherwise>
                             </c:choose>
                         </div>
                     </c:if>
 
                     <form action="${pageContext.request.contextPath}/topup" method="POST">
                         <div class="field">
-                            <label>Chọn nhanh số tiền</label>
+                            <label><fmt:message key="wallet.quickAmount"/></label>
                             <div class="preset-grid">
                                 <button type="button" class="preset-btn" onclick="setAmount(100000)">100.000</button>
                                 <button type="button" class="preset-btn" onclick="setAmount(200000)">200.000</button>
@@ -103,13 +105,13 @@
                         </div>
 
                         <div class="field">
-                            <label for="amountDisplay">Hoặc nhập số tiền (VND) *</label>
-                            <input class="wallet-input money-display-input" type="text" id="amountDisplay" inputmode="numeric" value="${amount}" placeholder="Nhập số tiền từ 10.000 đến 10.000.000"
+                            <label for="amountDisplay"><fmt:message key="wallet.customAmount"/></label>
+                            <input class="wallet-input money-display-input" type="text" id="amountDisplay" inputmode="numeric" value="${amount}" placeholder="10,000 - 10,000,000"
                                    data-money-target="amount" data-money-min="10000" data-money-max="10000000" required>
                             <input type="hidden" id="amount" name="amount" value="${amount}">
                         </div>
 
-                        <button type="submit" class="btn-gold" style="width:100%; margin-top:14px;">Nạp tiền bằng VNPay</button>
+                        <button type="submit" class="btn-gold" style="width:100%; margin-top:14px;"><fmt:message key="wallet.payVnpay"/></button>
                     </form>
                 </section>
             </section>
@@ -118,8 +120,8 @@
                 <div class="section-head">
                     <div>
                         <span class="kicker">Transaction History</span>
-                        <h2>Lịch sử giao dịch</h2>
-                        <p>TOPUP là nạp tiền, PAYMENT là thanh toán thuê xe, REFUND là hoàn tiền.</p>
+                        <h2><fmt:message key="wallet.history"/></h2>
+                        <p><fmt:message key="wallet.historyCopy"/></p>
                     </div>
                 </div>
 
@@ -139,10 +141,10 @@
                                 <thead>
                                     <tr>
                                         <th>Transaction ID</th>
-                                        <th>Loại giao dịch</th>
-                                        <th>Số tiền</th>
-                                        <th>Mô tả</th>
-                                        <th>Ngày tạo</th>
+                                        <th><fmt:message key="wallet.type"/></th>
+                                        <th><fmt:message key="wallet.amount"/></th>
+                                        <th><fmt:message key="wallet.description"/></th>
+                                        <th><fmt:message key="wallet.createdAt"/></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -170,7 +172,7 @@
                         <div class="pagination-bar"><span id="transactionCount"></span><div class="pagination-actions" id="transactionPagination"></div></div>
                     </c:when>
                     <c:otherwise>
-                        <div class="empty-state">Chưa có giao dịch nào trong ví của bạn.</div>
+                        <div class="empty-state"><fmt:message key="wallet.noTransactions"/></div>
                     </c:otherwise>
                 </c:choose>
             </section>
@@ -179,14 +181,14 @@
                 <div class="section-head">
                     <div>
                         <span class="kicker">Wallet Information</span>
-                        <h2>Thông tin loại giao dịch</h2>
+                        <h2><fmt:message key="wallet.infoTitle"/></h2>
                     </div>
                 </div>
                 <div class="why-grid">
-                    <article class="benefit-card"><h3>TOPUP</h3><p>Nạp tiền vào ví thông qua VNPay.</p></article>
-                    <article class="benefit-card"><h3>PAYMENT</h3><p>Thanh toán đơn thuê xe bằng số dư ví.</p></article>
-                    <article class="benefit-card"><h3>REFUND</h3><p>Hoàn tiền khi hệ thống xử lý giao dịch hoàn trả.</p></article>
-                    <article class="benefit-card"><h3>Bảo mật</h3><p>Theo dõi dòng tiền rõ ràng theo từng giao dịch.</p></article>
+                    <article class="benefit-card"><h3>TOPUP</h3><p><fmt:message key="wallet.topupInfo"/></p></article>
+                    <article class="benefit-card"><h3>PAYMENT</h3><p><fmt:message key="wallet.paymentInfo"/></p></article>
+                    <article class="benefit-card"><h3>REFUND</h3><p><fmt:message key="wallet.refundInfo"/></p></article>
+                    <article class="benefit-card"><h3>Bảo mật</h3><p><fmt:message key="wallet.securityInfo"/></p></article>
                 </div>
             </section>
 

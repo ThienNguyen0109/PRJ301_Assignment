@@ -1,4 +1,4 @@
-﻿<%--
+<%--
     Document   : profile
     Created on : June 8, 2026
     Author     : thien
@@ -8,12 +8,13 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ include file="/WEB-INF/jspf/customer-i18n.jspf" %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Profile - E-Vehicle Rental</title>
+        <title><fmt:message key="profile.title"/></title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
     </head>
     <body class="customer-page profile-page">
@@ -31,20 +32,21 @@
                 </span>
             </a>
             <div class="customer-menu">
-                <a href="${pageContext.request.contextPath}?action=home">Trang Chủ</a>
+                <a href="${pageContext.request.contextPath}?action=home"><fmt:message key="nav.home"/></a>
                 <details class="nav-account-menu">
                     <summary class="nav-user active">
                         <span class="nav-avatar"><c:out value="${navInitial}"/></span>
                         <span><c:out value="${navName}"/></span>
-                        <span class="nav-caret">▾</span>
+                        <span class="nav-caret"></span>
                     </summary>
                     <div class="nav-dropdown">
-                        <a href="${pageContext.request.contextPath}?action=profile#rental-history">Đơn Thuê Của Tôi</a>
-                        <a href="${pageContext.request.contextPath}?action=wallet">Ví</a>
-                        <a class="active" href="${pageContext.request.contextPath}?action=profile">Profile</a>
+                        <a href="${pageContext.request.contextPath}?action=profile#rental-history"><fmt:message key="nav.myBookings"/></a>
+                        <a href="${pageContext.request.contextPath}?action=wallet"><fmt:message key="nav.wallet"/></a>
+                        <a class="active" href="${pageContext.request.contextPath}?action=profile"><fmt:message key="nav.profile"/></a>
                     </div>
                 </details>
-                <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+                <%@ include file="/WEB-INF/jspf/customer-language-switch.jspf" %>
+                <a class="logout-link" href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout"/></a>
             </div>
         </nav>
 
@@ -53,7 +55,7 @@
                 <div class="profile-header">
                     <div class="profile-avatar"><c:out value="${navInitial}"/></div>
                     <div>
-                        <span class="kicker">Customer Profile</span>
+                        <span class="kicker"><fmt:message key="profile.kicker"/></span>
                         <h1 class="hero-title profile-title"><c:out value="${displayName}"/></h1>
                         <p class="hero-copy"><c:out value="${displayEmail}"/></p>
                         <div class="badge-row">
@@ -66,7 +68,7 @@
             <section class="summary-grid">
                 <article class="summary-tile">
                     <strong><c:out value="${empty totalRentalHistories ? 0 : totalRentalHistories}"/></strong>
-                    <span>Tổng số đơn thuê</span>
+                    <span><fmt:message key="profile.totalRentals"/></span>
                 </article>
                 <article class="summary-tile">
                     <strong data-realtime-wallet-balance>
@@ -75,11 +77,11 @@
                             <c:otherwise>0 VND</c:otherwise>
                         </c:choose>
                     </strong>
-                    <span>Số dư ví</span>
+                    <span><fmt:message key="profile.walletBalance"/></span>
                 </article>
                 <article class="summary-tile">
                     <strong><c:out value="${empty rentalHistories ? 0 : fn:length(rentalHistories)}"/></strong>
-                    <span>Đơn trong trang hiện tại</span>
+                    <span><fmt:message key="profile.currentPageOrders"/></span>
                 </article>
             </section>
 
@@ -94,17 +96,17 @@
                 <section class="glass-card phone-update-card" id="phone-update">
                     <div class="section-head">
                         <div>
-                            <span class="kicker">Phone Required</span>
-                            <h2>Cập nhật số điện thoại</h2>
-                            <p>Bạn cần số điện thoại để staff xác minh khi nhận xe và để hệ thống cho phép thanh toán booking.</p>
+                            <span class="kicker"><fmt:message key="profile.phoneRequired"/></span>
+                            <h2><fmt:message key="profile.updatePhone"/></h2>
+                            <p><fmt:message key="profile.phoneCopy"/></p>
                         </div>
                     </div>
                     <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form">
                         <div class="form-row">
                             <label for="phone">Số điện thoại</label>
-                            <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại 10 chữ số" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required>
+                            <input id="phone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="0123456789" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required>
                         </div>
-                        <button class="btn-gold" type="submit">Cập nhật số điện thoại</button>
+                        <button class="btn-gold" type="submit"><fmt:message key="profile.updatePhone"/></button>
                     </form>
                 </section>
             </c:if>
@@ -114,23 +116,32 @@
                     <div class="section-head">
                         <div>
                             <span class="kicker">Personal Information</span>
-                            <h2>Thông tin cá nhân</h2>
-                            <p>Email và vai trò đang được quản lý theo tài khoản đăng nhập hiện tại.</p>
+                            <h2><fmt:message key="profile.personalInfo"/></h2>
+                            <p><fmt:message key="profile.personalCopy"/></p>
                         </div>
                     </div>
                     <div class="info-list">
-                        <div class="info-row"><span>Họ và tên</span><strong><c:out value="${empty displayName ? 'Chưa cập nhật' : displayName}"/></strong></div>
-                        <div class="info-row"><span>Email</span><strong><c:out value="${empty displayEmail ? 'Chưa cập nhật' : displayEmail}"/></strong></div>
-                        <div class="info-row"><span>Số điện thoại</span><strong><c:out value="${empty profileUser.phone ? 'Chưa cập nhật' : profileUser.phone}"/></strong></div>
-                        <div class="info-row"><span>Vai trò</span><strong><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></strong></div>
+                        <div class="info-row">
+                            <span><fmt:message key="profile.fullName"/></span>
+                            <strong><c:choose><c:when test="${empty displayName}"><fmt:message key="profile.notUpdated"/></c:when><c:otherwise><c:out value="${displayName}"/></c:otherwise></c:choose></strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Email</span>
+                            <strong><c:choose><c:when test="${empty displayEmail}"><fmt:message key="profile.notUpdated"/></c:when><c:otherwise><c:out value="${displayEmail}"/></c:otherwise></c:choose></strong>
+                        </div>
+                        <div class="info-row">
+                            <span><fmt:message key="profile.phone"/></span>
+                            <strong><c:choose><c:when test="${empty profileUser.phone}"><fmt:message key="profile.notUpdated"/></c:when><c:otherwise><c:out value="${profileUser.phone}"/></c:otherwise></c:choose></strong>
+                        </div>
+                        <div class="info-row"><span><fmt:message key="profile.role"/></span><strong><c:out value="${empty profileUser.role ? 'CUSTOMER' : profileUser.role.value}"/></strong></div>
                     </div>
                     <c:if test="${not empty profileUser.phone}">
                         <form action="${pageContext.request.contextPath}/profile/update-phone" method="POST" class="booking-form phone-update-form compact">
                             <div class="form-row">
-                                <label for="profilePhone">Cập nhật số điện thoại</label>
+                                <label for="profilePhone"><fmt:message key="profile.updatePhone"/></label>
                                 <input id="profilePhone" type="tel" name="phone" value="${profileUser.phone}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="tel" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required>
                             </div>
-                            <button class="btn-gold" type="submit">Lưu thay đổi</button>
+                            <button class="btn-gold" type="submit"><fmt:message key="profile.saveChanges"/></button>
                         </form>
                     </c:if>
                 </section>
@@ -145,8 +156,8 @@
                         </c:choose>
                     </div>
                     <div class="hero-actions">
-                        <a class="btn-gold" href="${pageContext.request.contextPath}?action=wallet">Quản lý ví</a>
-                        <a class="btn-ghost" href="${pageContext.request.contextPath}?action=home">Tìm xe</a>
+                        <a class="btn-gold" href="${pageContext.request.contextPath}?action=wallet"><fmt:message key="profile.manageWallet"/></a>
+                        <a class="btn-ghost" href="${pageContext.request.contextPath}?action=home"><fmt:message key="profile.findVehicle"/></a>
                     </div>
                 </aside>
             </div>
@@ -155,8 +166,8 @@
                 <div class="section-head">
                     <div>
                         <span class="kicker">My Bookings</span>
-                        <h2>Lịch sử đặt xe</h2>
-                        <p>Theo dõi các đơn thuê, trạng thái và chi phí phát sinh nếu có.</p>
+                        <h2><fmt:message key="profile.bookingHistory"/></h2>
+                        <p><fmt:message key="profile.bookingCopy"/></p>
                     </div>
                 </div>
 
@@ -166,13 +177,13 @@
                             <table class="customer-table">
                                 <thead>
                                     <tr>
-                                        <th>Mã đơn</th>
-                                        <th>Xe</th>
-                                        <th>Thời gian thuê</th>
-                                        <th>Ngày trả thực tế</th>
-                                        <th>Tổng tiền</th>
-                                        <th>Phí phát sinh</th>
-                                        <th>Trạng thái</th>
+                                        <th><fmt:message key="profile.rentalId"/></th>
+                                        <th><fmt:message key="profile.vehicle"/></th>
+                                        <th><fmt:message key="profile.rentalPeriod"/></th>
+                                        <th><fmt:message key="profile.actualReturn"/></th>
+                                        <th><fmt:message key="profile.totalAmount"/></th>
+                                        <th><fmt:message key="profile.extraCharges"/></th>
+                                        <th><fmt:message key="profile.status"/></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -190,7 +201,7 @@
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${not empty rental.actualReturnDate}"><c:out value="${rental.actualReturnDate}"/></c:when>
-                                                    <c:otherwise>Chưa trả xe</c:otherwise>
+                                                    <c:otherwise><fmt:message key="profile.notReturned"/></c:otherwise>
                                                 </c:choose>
                                             </td>
                                             <td><fmt:formatNumber value="${rental.totalAmount}" pattern="#,##0"/> VND</td>
@@ -217,18 +228,18 @@
                             <span>Hiển thị ${rentalStartItem} - ${rentalEndItem} / ${totalRentalHistories} đơn đặt xe</span>
                             <div class="pagination">
                                 <c:url var="prevRentalPageUrl" value="/"><c:param name="action" value="profile"/><c:param name="rentalPage" value="${rentalPage - 1}"/></c:url>
-                                <a class="page-link ${rentalPage le 1 ? 'disabled' : ''}" href="${prevRentalPageUrl}#rental-history">Trước</a>
+                                <a class="page-link ${rentalPage le 1 ? 'disabled' : ''}" href="${prevRentalPageUrl}#rental-history"><fmt:message key="common.previous"/></a>
                                 <c:forEach var="pageNo" begin="1" end="${totalRentalPages}">
                                     <c:url var="rentalPageUrl" value="/"><c:param name="action" value="profile"/><c:param name="rentalPage" value="${pageNo}"/></c:url>
                                     <a class="page-link ${pageNo eq rentalPage ? 'active' : ''}" href="${rentalPageUrl}#rental-history">${pageNo}</a>
                                 </c:forEach>
                                 <c:url var="nextRentalPageUrl" value="/"><c:param name="action" value="profile"/><c:param name="rentalPage" value="${rentalPage + 1}"/></c:url>
-                                <a class="page-link ${rentalPage ge totalRentalPages ? 'disabled' : ''}" href="${nextRentalPageUrl}#rental-history">Sau</a>
+                                <a class="page-link ${rentalPage ge totalRentalPages ? 'disabled' : ''}" href="${nextRentalPageUrl}#rental-history"><fmt:message key="common.next"/></a>
                             </div>
                         </div>
                     </c:when>
                     <c:otherwise>
-                        <div class="empty-state">Bạn chưa có đơn đặt xe nào. Hãy chọn một mẫu xe phù hợp và bắt đầu chuyến đi đầu tiên.</div>
+                        <div class="empty-state"><fmt:message key="profile.noBookings"/></div>
                     </c:otherwise>
                 </c:choose>
             </section>
