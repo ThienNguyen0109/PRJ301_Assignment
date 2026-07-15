@@ -79,6 +79,8 @@ public class PageController extends HttpServlet {
             return;
         }
 
+        request.setAttribute("today", java.time.LocalDate.now().toString());
+
         if ("/page/vehicle-options".equals(path)) {
             prepareVehicleOptionsPage(request);
             forward(request, response, "/vehicle-options.jsp");
@@ -129,6 +131,11 @@ public class PageController extends HttpServlet {
 
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
+
+            if (isPastDate(startDate) || isPastDate(endDate)) {
+                request.setAttribute("vehicleOptionsError", BookingService.PAST_DATE_MESSAGE);
+                return;
+            }
 
             if (endDate.before(startDate)) {
                 request.setAttribute("vehicleOptionsError", "Ngày kết thúc phải sau ngày bắt đầu.");
@@ -182,6 +189,11 @@ public class PageController extends HttpServlet {
 
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
+
+            if (isPastDate(startDate) || isPastDate(endDate)) {
+                request.setAttribute("vehicleDetailError", BookingService.PAST_DATE_MESSAGE);
+                return;
+            }
 
             if (endDate.before(startDate)) {
                 request.setAttribute("vehicleDetailError", "Ngày kết thúc phải sau ngày bắt đầu.");
@@ -336,6 +348,10 @@ public class PageController extends HttpServlet {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isPastDate(Date date) {
+        return date != null && date.before(Date.valueOf(java.time.LocalDate.now()));
     }
 
     private String firstNonBlank(String preferred, String fallback) {

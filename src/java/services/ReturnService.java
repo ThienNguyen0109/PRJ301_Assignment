@@ -36,6 +36,8 @@ import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 public class ReturnService {
+    private static final int READY_BATTERY_LEVEL = 80;
+
     private final IReturnDAO returnDAO;
     private final ExtraChargeService extraChargeService = new ExtraChargeService();
 
@@ -69,6 +71,8 @@ public class ReturnService {
             }
 
             boolean damaged = condition == VehicleCondition.DAMAGED;
+            boolean chargingRequired = batteryLevel < READY_BATTERY_LEVEL;
+            boolean maintenanceRequired = damaged || chargingRequired;
             Date actualReturnDate = Date.valueOf(LocalDate.now());
             BigDecimal lateFee = calculateLateFee(rental, vehicle, actualReturnDate);
             vehicle.setBatteryLevel(batteryLevel);
@@ -97,6 +101,12 @@ public class ReturnService {
                 if (damageCharge != null) {
                     extraCharges.add(damageCharge);
                 }
+            } else if (chargingRequired) {
+                em.persist(new VehicleMaintenance(UUID.randomUUID().toString(), vehicle.getVehicleId(),
+                        chargingDescription(batteryLevel, notes), now(), MaintenanceStatus.PENDING));
+            }
+
+            if (maintenanceRequired) {
                 vehicle.setStatus(VehicleStatus.MAINTENANCE);
             } else {
                 vehicle.setStatus(VehicleStatus.AVAILABLE);
@@ -107,7 +117,7 @@ public class ReturnService {
             em.persist(new RentalStatusHistory(UUID.randomUUID().toString(), rental.getRentalId(),
                     RentalStatus.COMPLETED, now()));
             return new ReturnConfirmationResult(damaged, lateFee, normalizedDamageFee, method,
-                    extraChargeOrderId, extraChargeTotal);
+                    extraChargeOrderId, extraChargeTotal, maintenanceRequired, chargingRequired);
         });
         publishReturnEvents(result);
         return result;
@@ -151,6 +161,17 @@ public class ReturnService {
             result += " | Ghi chú: " + notes.trim();
         }
         return result;
+    }
+
+    private String chargingDescription(int batteryLevel, String notes) {
+        StringBuilder description = new StringBuilder();
+        description.append("Battery returned at ").append(batteryLevel)
+                .append("%. Charge to at least ").append(READY_BATTERY_LEVEL)
+                .append("% before publishing vehicle.");
+        if (notes != null && !notes.trim().isEmpty()) {
+            description.append(" | Notes: ").append(notes.trim());
+        }
+        return description.toString();
     }
 
     private BigDecimal calculateLateFee(Rental rental, Vehicle vehicle, Date actualReturnDate) {
@@ -317,6 +338,8 @@ public class ReturnService {
         if (result != null && result.isDamaged()) {
             RealtimeEventPublisher.staff("INCIDENT_CREATED", "Incident report created",
                     "A damaged vehicle was moved to maintenance.");
+        }
+        if (result != null && result.isMaintenanceRequired()) {
             RealtimeEventPublisher.staff("MAINTENANCE_CREATED", "Maintenance required",
                     "A vehicle is waiting for maintenance.");
             RealtimeEventPublisher.admin("VEHICLE_MOVED_TO_MAINTENANCE", "Vehicle maintenance",

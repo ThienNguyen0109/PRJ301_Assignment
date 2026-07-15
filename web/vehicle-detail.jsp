@@ -193,11 +193,11 @@
                                 <div class="date-grid">
                                     <div>
                                         <label for="startDate">Ngày bắt đầu</label>
-                                        <input type="date" id="startDate" name="startDate" value="${startDate}" required>
+                                        <input type="date" id="startDate" name="startDate" value="${startDate}" min="${today}" required>
                                     </div>
                                     <div>
                                         <label for="endDate">Ngày kết thúc</label>
-                                        <input type="date" id="endDate" name="endDate" value="${endDate}" required>
+                                        <input type="date" id="endDate" name="endDate" value="${endDate}" min="${today}" required>
                                     </div>
                                 </div>
                                 <div class="actions">

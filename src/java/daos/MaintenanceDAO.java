@@ -45,7 +45,7 @@ public class MaintenanceDAO implements IMaintenanceDAO {
         Vehicle vehicle = (Vehicle) row[1];
         VehicleModel model = (VehicleModel) row[2];
         return new MaintenanceVehicleDTO(maintenance.getMaintenanceId(), vehicle.getVehicleId(),
-                model.getName(), vehicle.getLicensePlate(), maintenance.getDescription(),
+                model.getName(), vehicle.getLicensePlate(), vehicle.getBatteryLevel(), maintenance.getDescription(),
                 maintenance.getMaintenanceDate(), maintenance.getStatus(), vehicle.getStatus());
     }
 }

@@ -41,6 +41,8 @@ public class BookingService {
     public static final String INSUFFICIENT_WALLET_MESSAGE = "Số dư ví không đủ để thanh toán.";
     public static final String ACTIVE_RENTAL_MESSAGE = "Bạn đang có một đơn thuê đang hoạt động. Vui lòng hoàn tất hoặc hủy đơn hiện tại trước khi đặt xe mới.";
 
+    public static final String PAST_DATE_MESSAGE = "Kh\u00F4ng th\u1EC3 ch\u1ECDn ng\u00E0y trong qu\u00E1 kh\u1EE9.";
+
     public BookingQuote createQuote(String customerId, String vehicleId, Date startDate, Date endDate, String discountCode)
             throws SQLException {
         validateDates(startDate, endDate);
@@ -488,6 +490,10 @@ public class BookingService {
     private void validateDates(Date startDate, Date endDate) throws SQLException {
         if (startDate == null || endDate == null) {
             throw new SQLException("Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
+        }
+        Date today = Date.valueOf(java.time.LocalDate.now());
+        if (startDate.before(today) || endDate.before(today)) {
+            throw new SQLException(PAST_DATE_MESSAGE);
         }
         if (endDate.before(startDate)) {
             throw new SQLException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");

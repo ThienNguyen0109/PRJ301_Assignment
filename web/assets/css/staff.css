@@ -123,6 +123,7 @@ button, input, select, textarea { font: inherit; }
 .btn-danger { color: #fff; background: #dc2626; }
 .btn-warning { color: #7c2d12; background: #fed7aa; border-color: #fdba74; }
 .btn-sm { min-height: 34px; padding: 7px 10px; }
+.form-help { display: block; margin-top: 8px; color: var(--staff-muted); font-size: 12px; }
 .action-group { display: flex; gap: 7px; flex-wrap: wrap; }
 
 .table-responsive { width: 100%; overflow-x: visible; }
@@ -161,6 +162,7 @@ button, input, select, textarea { font: inherit; }
 .badge-no-show { color: #4b5563; background: #e5e7eb; }
 .badge-maintenance { color: #7e22ce; background: #f3e8ff; }
 .badge-pending { color: #a16207; background: #fef3c7; }
+.badge-light { color: #1f2937; background: #eef2ff; }
 
 .message { margin-bottom: 18px; padding: 12px 14px; border-radius: 7px; font-size: 14px; font-weight: 700; }
 .message-success { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; }

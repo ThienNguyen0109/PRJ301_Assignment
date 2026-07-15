@@ -10,6 +10,8 @@ public class ReturnConfirmationResult {
     private final PaymentMethod extraChargePaymentMethod;
     private final String extraChargeOrderId;
     private final BigDecimal extraChargePaymentAmount;
+    private final boolean maintenanceRequired;
+    private final boolean chargingRequired;
 
     public ReturnConfirmationResult(boolean damaged, BigDecimal lateFee,
             PaymentMethod lateFeePaymentMethod, String lateFeeOrderId) {
@@ -18,12 +20,21 @@ public class ReturnConfirmationResult {
 
     public ReturnConfirmationResult(boolean damaged, BigDecimal lateFee, BigDecimal damageFee,
             PaymentMethod extraChargePaymentMethod, String extraChargeOrderId, BigDecimal extraChargePaymentAmount) {
+        this(damaged, lateFee, damageFee, extraChargePaymentMethod, extraChargeOrderId,
+                extraChargePaymentAmount, damaged, false);
+    }
+
+    public ReturnConfirmationResult(boolean damaged, BigDecimal lateFee, BigDecimal damageFee,
+            PaymentMethod extraChargePaymentMethod, String extraChargeOrderId, BigDecimal extraChargePaymentAmount,
+            boolean maintenanceRequired, boolean chargingRequired) {
         this.damaged = damaged;
         this.lateFee = lateFee;
         this.damageFee = damageFee;
         this.extraChargePaymentMethod = extraChargePaymentMethod;
         this.extraChargeOrderId = extraChargeOrderId;
         this.extraChargePaymentAmount = extraChargePaymentAmount;
+        this.maintenanceRequired = maintenanceRequired;
+        this.chargingRequired = chargingRequired;
     }
 
     public boolean isDamaged() {
@@ -36,6 +47,14 @@ public class ReturnConfirmationResult {
 
     public BigDecimal getDamageFee() {
         return damageFee;
+    }
+
+    public boolean isMaintenanceRequired() {
+        return maintenanceRequired;
+    }
+
+    public boolean isChargingRequired() {
+        return chargingRequired;
     }
 
     public PaymentMethod getLateFeePaymentMethod() {

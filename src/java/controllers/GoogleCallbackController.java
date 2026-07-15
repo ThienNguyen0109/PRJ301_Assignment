@@ -44,7 +44,7 @@ public class GoogleCallbackController extends HttpServlet {
         try {
             String redirectUri = RequestUrlUtil.buildUrl(request, "/google-callback");
             Account account = googleAuthService.handleCallback(getServletContext(), code, redirectUri);
-            setLoginSession(session, account);
+            session = createFreshLoginSession(request, account);
             if (account != null && account.getRole() == Role.CUSTOMER && isBlank(account.getPhone())) {
                 session.setAttribute("showPhoneUpdatePrompt", true);
                 response.sendRedirect(request.getContextPath() + "?action=home");
@@ -57,12 +57,18 @@ public class GoogleCallbackController extends HttpServlet {
         }
     }
 
-    private void setLoginSession(HttpSession session, Account account) {
+    private HttpSession createFreshLoginSession(HttpServletRequest request, Account account) {
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+        HttpSession session = request.getSession(true);
         session.setAttribute("user", account);
         session.setAttribute("userId", account.getAccountId());
         session.setAttribute("userEmail", account.getEmail());
         session.setAttribute("userRole", account.getRole().getValue());
         session.setAttribute("userName", account.getFullName());
+        return session;
     }
 
     private String getRedirectPageByRole(Account account) {

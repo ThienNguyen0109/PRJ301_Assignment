@@ -26,6 +26,16 @@ public class MainController extends HttpServlet {
             action = request.getParameter("page");
         }
 
+        if (action == null || action.trim().isEmpty()) {
+            HttpSession session = request.getSession(false);
+            if (session != null && session.getAttribute("user") instanceof Account) {
+                Account user = (Account) session.getAttribute("user");
+                response.sendRedirect(request.getContextPath() + getRedirectActionByRole(user));
+                return;
+            }
+            action = "login";
+        }
+
         if (action != null) {
             if (action.equals("set-language")) {
                 String lang = request.getParameter("lang");

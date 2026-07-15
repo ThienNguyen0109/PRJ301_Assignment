@@ -38,8 +38,11 @@ public class MaintenanceController extends HttpServlet {
         if (requireStaff(request, response) == null) return;
         HttpSession session = request.getSession();
         try {
-            maintenanceService.markCompleted(request.getParameter("maintenanceId"));
+            int batteryLevel = Integer.parseInt(trim(request.getParameter("batteryLevel")));
+            maintenanceService.markCompleted(request.getParameter("maintenanceId"), batteryLevel);
             session.setAttribute("maintenanceSuccess", "Vehicle is available for rental again.");
+        } catch (NumberFormatException ex) {
+            session.setAttribute("maintenanceError", "Battery level must be a valid number from 80 to 100.");
         } catch (IllegalArgumentException | IllegalStateException ex) {
             session.setAttribute("maintenanceError", ex.getMessage());
         } catch (RuntimeException ex) {

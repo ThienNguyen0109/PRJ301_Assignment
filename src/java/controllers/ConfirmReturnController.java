@@ -69,9 +69,13 @@ public class ConfirmReturnController extends HttpServlet {
                 return;
             }
 
-            session.setAttribute("returnSuccess", result.isDamaged()
-                    ? "Vehicle returned and moved to maintenance successfully."
-                    : "Vehicle returned successfully.");
+            String successMessage = "Vehicle returned successfully.";
+            if (result.isDamaged()) {
+                successMessage = "Vehicle returned and moved to maintenance successfully.";
+            } else if (result.isChargingRequired()) {
+                successMessage = "Vehicle returned and moved to maintenance for battery charging.";
+            }
+            session.setAttribute("returnSuccess", successMessage);
         } catch (NumberFormatException ex) {
             session.setAttribute("returnError", "Battery Level and damage fee must be valid numbers.");
         } catch (IllegalArgumentException | IllegalStateException ex) {

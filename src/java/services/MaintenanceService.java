@@ -12,6 +12,8 @@ import realtime.RealtimeEventPublisher;
 import utils.JPAUtil;
 
 public class MaintenanceService {
+    private static final int READY_BATTERY_LEVEL = 80;
+
     private final IMaintenanceDAO maintenanceDAO;
 
     public MaintenanceService() { this(new MaintenanceDAO()); }
@@ -21,9 +23,12 @@ public class MaintenanceService {
         return maintenanceDAO.findPendingMaintenance(keyword);
     }
 
-    public void markCompleted(String maintenanceId) {
+    public void markCompleted(String maintenanceId, int batteryLevel) {
         if (maintenanceId == null || maintenanceId.trim().isEmpty()) {
             throw new IllegalArgumentException("Maintenance ID không được để trống.");
+        }
+        if (batteryLevel < READY_BATTERY_LEVEL || batteryLevel > 100) {
+            throw new IllegalArgumentException("Battery level must be from 80 to 100 before publishing the vehicle.");
         }
         JPAUtil.executeInTransaction(em -> {
             VehicleMaintenance maintenance = maintenanceDAO.findMaintenanceForUpdate(em, maintenanceId.trim());
@@ -37,6 +42,7 @@ public class MaintenanceService {
                 throw new IllegalStateException("Xe không còn ở trạng thái MAINTENANCE.");
             }
             maintenance.setStatus(MaintenanceStatus.COMPLETED);
+            vehicle.setBatteryLevel(batteryLevel);
             vehicle.setStatus(VehicleStatus.AVAILABLE);
             return null;
         });

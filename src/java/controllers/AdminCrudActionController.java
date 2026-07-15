@@ -292,18 +292,13 @@ public class AdminCrudActionController extends HttpServlet {
     private void saveExtraCharge(HttpServletRequest request) {
         String chargeId = trim(request.getParameter("chargeId"));
         if (chargeId.isEmpty()) {
-            extraChargeService.create(
-                    request.getParameter("rentalId"),
-                    request.getParameter("chargeType"),
-                    request.getParameter("amount"),
-                    request.getParameter("description"));
-        } else {
-            extraChargeService.update(
-                    chargeId,
-                    request.getParameter("chargeType"),
-                    request.getParameter("amount"),
-                    request.getParameter("description"));
+            throw new IllegalStateException("Manual extra charge creation is disabled.");
         }
+        extraChargeService.update(
+                chargeId,
+                request.getParameter("chargeType"),
+                request.getParameter("amount"),
+                request.getParameter("description"));
     }
 
     private void saveVehicle(HttpServletRequest request) {

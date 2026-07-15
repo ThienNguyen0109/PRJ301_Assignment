@@ -26,13 +26,16 @@ public class AdminDiscountDAO {
 
     public boolean codeExists(EntityManager em, String code, String excludedDiscountId) {
         String excludedId = trim(excludedDiscountId);
-        Long count = em.createQuery(
-                "SELECT COUNT(d) FROM Discount d "
-                + "WHERE UPPER(d.code) = :code "
-                + "AND (:excludedId = '' OR d.discountId <> :excludedId)", Long.class)
-                .setParameter("code", trim(code).toUpperCase())
-                .setParameter("excludedId", excludedId)
-                .getSingleResult();
+        String jpql = "SELECT COUNT(d) FROM Discount d WHERE UPPER(d.code) = :code";
+        if (!excludedId.isEmpty()) {
+            jpql += " AND d.discountId <> :excludedId";
+        }
+        javax.persistence.TypedQuery<Long> query = em.createQuery(jpql, Long.class)
+                .setParameter("code", trim(code).toUpperCase());
+        if (!excludedId.isEmpty()) {
+            query.setParameter("excludedId", excludedId);
+        }
+        Long count = query.getSingleResult();
         return count != null && count > 0;
     }
 

@@ -75,13 +75,8 @@ public class LoginController extends HttpServlet {
                 if (account != null) {
                     // Check if account status is ACTIVE
                     if ("ACTIVE".equals(account.getStatus())) {
-                        // Login successful - create session
-                        HttpSession session = request.getSession();
-                        session.setAttribute("user", account);
-                        session.setAttribute("userId", account.getAccountId());
-                        session.setAttribute("userEmail", account.getEmail());
-                        session.setAttribute("userRole", account.getRole().getValue());
-                        session.setAttribute("userName", account.getFullName());
+                        // Login successful - replace any existing browser session.
+                        HttpSession session = createFreshLoginSession(request, account);
                         
                         LOGGER.log(Level.INFO, "User logged in: " + email);
                         
@@ -121,6 +116,20 @@ public class LoginController extends HttpServlet {
             return "?action=staff-dashboard";
         }
         return "?action=home";
+    }
+
+    private HttpSession createFreshLoginSession(HttpServletRequest request, Account account) {
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+        HttpSession session = request.getSession(true);
+        session.setAttribute("user", account);
+        session.setAttribute("userId", account.getAccountId());
+        session.setAttribute("userEmail", account.getEmail());
+        session.setAttribute("userRole", account.getRole().getValue());
+        session.setAttribute("userName", account.getFullName());
+        return session;
     }
 }
 
